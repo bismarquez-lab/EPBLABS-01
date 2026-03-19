@@ -3,669 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compartilhamento de Arquivos - EPB</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Envio de Trabalhos - Laboratório de Informática</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* [Todo o CSS permanece igual] */
-        /* ... seu CSS atual ... */
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .drop-zone--over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
     </style>
 </head>
-<body>
-    <!-- Bolhas decorativas de fundo -->
-    <div class="bubble bubble-1"></div>
-    <div class="bubble bubble-2"></div>
-    <div class="bubble bubble-3"></div>
-    
-    <!-- Área de login -->
-    <div class="login-area" id="loginArea">
-        <div class="user-info" id="userInfo" style="display: none;">
-            <i class="fas fa-user-circle"></i>
-            <span id="usernameDisplay"></span>
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-8">
+            <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-upload text-white text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800">Portal do Aluno</h1>
+            <p class="text-slate-500">Envie suas atividades do laboratório</p>
+        </div>
+
+        <!-- Formulário -->
+        <!-- NOTA: No action abaixo, você colocará a URL do serviço de recebimento -->
+        <form id="uploadForm" action="https://formspree.io/f/SEU_ID_AQUI" method="POST" enctype="multipart/form-data" class="space-y-4">
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
+                <input type="text" name="nome" required placeholder="Ex: João Silva"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Turma / Matéria</label>
+                <select name="turma" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option>Informática Básica - Turma A</option>
+                    <option>Programação Web - Turma B</option>
+                    <option>Redes de Computadores</option>
+                </select>
+            </div>
+
+            <!-- Área de Upload -->
+            <div class="drop-zone rounded-lg p-6 text-center cursor-pointer" id="dropZone">
+                <input type="file" name="arquivo" id="fileInput" class="hidden" required>
+                <i class="fas fa-cloud-arrow-up text-slate-400 text-3xl mb-2"></i>
+                <p class="text-sm text-slate-600" id="fileName">Arraste seu arquivo ou clique para selecionar</p>
+                <p class="text-xs text-slate-400 mt-1">PDF, ZIP, DOCX ou Imagens (Máx: 10MB)</p>
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                Enviar Atividade
             </button>
-        </div>
-        <button class="login-btn" id="loginBtn">
-            <i class="fas fa-sign-in-alt"></i> Login Professor
-        </button>
-    </div>
-    
-    <div class="container">
-        <header>
-            <h1>Compartilhamento de Arquivos</h1>
-            <p class="subtitle">Sistema de compartilhamento de arquivos da EPB</p>
-        </header>
-        
-        <div class="professors-container">
-            <!-- Professor 1 -->
-            <div class="professor-card floating" style="animation-delay: 0.1s">
-                <div class="professor-name">
-                    <i class="fas fa-user-tie"></i>
-                    Prof. Wagner
-                </div>
-                
-                <div class="actions">
-                    <a href="#" class="folder-link" data-professor="wagner">
-                        <span class="folder-icon"><i class="fas fa-folder"></i></span>
-                        Materiais
-                    </a>
-                </div>
-                
-                <div class="upload-section">
-                    <div class="upload-header">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        Enviar arquivo
-                    </div>
-                    
-                    <form class="upload-form" id="form-wagner">
-                        <div class="file-input-wrapper">
-                            <div class="file-input-button">
-                                <i class="fas fa-file-arrow-up"></i>
-                                Selecionar arquivo
-                            </div>
-                            <input type="file" name="arquivo" required>
-                        </div>
-                        
-                        <div class="file-info">
-                            <i class="fas fa-info-circle"></i>
-                            Nenhum arquivo selecionado
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <i class="fas fa-paper-plane"></i> Enviar
-                        </button>
-                        
-                        <div class="upload-status" id="status-wagner"></div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Professor 2 -->
-            <div class="professor-card floating" style="animation-delay: 0.2s">
-                <div class="professor-name">
-                    <i class="fas fa-user-tie"></i>
-                    Prof. Juliano
-                </div>
-                
-                <div class="actions">
-                    <a href="#" class="folder-link" data-professor="juliano">
-                        <span class="folder-icon"><i class="fas fa-folder"></i></span>
-                        Materiais
-                    </a>
-                </div>
-                
-                <div class="upload-section">
-                    <div class="upload-header">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        Enviar arquivo
-                    </div>
-                    
-                    <form class="upload-form" id="form-juliano">
-                        <div class="file-input-wrapper">
-                            <div class="file-input-button">
-                                <i class="fas fa-file-arrow-up"></i>
-                                Selecionar arquivo
-                            </div>
-                            <input type="file" name="arquivo" required>
-                        </div>
-                        
-                        <div class="file-info">
-                            <i class="fas fa-info-circle"></i>
-                            Nenhum arquivo selecionado
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <i class="fas fa-paper-plane"></i> Enviar
-                        </button>
-                        
-                        <div class="upload-status" id="status-juliano"></div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Professor 3 -->
-            <div class="professor-card floating" style="animation-delay: 0.3s">
-                <div class="professor-name">
-                    <i class="fas fa-user-tie"></i>
-                    Prof. Douglas
-                </div>
-                
-                <div class="actions">
-                    <a href="#" class="folder-link" data-professor="douglas">
-                        <span class="folder-icon"><i class="fas fa-folder"></i></span>
-                        Materiais
-                    </a>
-                </div>
-                
-                <div class="upload-section">
-                    <div class="upload-header">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        Enviar arquivo
-                    </div>
-                    
-                    <form class="upload-form" id="form-douglas">
-                        <div class="file-input-wrapper">
-                            <div class="file-input-button">
-                                <i class="fas fa-file-arrow-up"></i>
-                                Selecionar arquivo
-                            </div>
-                            <input type="file" name="arquivo" required>
-                        </div>
-                        
-                        <div class="file-info">
-                            <i class="fas fa-info-circle"></i>
-                            Nenhum arquivo selecionado
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <i class="fas fa-paper-plane"></i> Enviar
-                        </button>
-                        
-                        <div class="upload-status" id="status-douglas"></div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Professor 4 -->
-            <div class="professor-card floating" style="animation-delay: 0.4s">
-                <div class="professor-name">
-                    <i class="fas fa-user-tie"></i>
-                    Profa. Lucia
-                </div>
-                
-                <div class="actions">
-                    <a href="#" class="folder-link" data-professor="lucia">
-                        <span class="folder-icon"><i class="fas fa-folder"></i></span>
-                        Materiais
-                    </a>
-                </div>
-                
-                <div class="upload-section">
-                    <div class="upload-header">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        Enviar arquivo
-                    </div>
-                    
-                    <form class="upload-form" id="form-lucia">
-                        <div class="file-input-wrapper">
-                            <div class="file-input-button">
-                                <i class="fas fa-file-arrow-up"></i>
-                                Selecionar arquivo
-                            </div>
-                            <input type="file" name="arquivo" required>
-                        </div>
-                        
-                        <div class="file-info">
-                            <i class="fas fa-info-circle"></i>
-                            Nenhum arquivo selecionado
-                        </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <i class="fas fa-paper-plane"></i> Enviar
-                        </button>
-                        
-                        <div class="upload-status" id="status-lucia"></div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Área do professor (inicialmente oculta) -->
-        <div class="teacher-dashboard" id="teacherDashboard">
-            <div class="dashboard-header">
-                <h2 class="dashboard-title">Arquivos Recebidos</h2>
-                <div class="user-info">
-                    <i class="fas fa-user-circle"></i>
-                    <span id="dashboardUsername"></span>
-                </div>
-            </div>
-            
-            <div class="files-container" id="filesContainer">
-                <!-- Os arquivos serão carregados aqui via JavaScript -->
-            </div>
-        </div>
-        
-        <div class="server-info">
-            <div class="server-badge">
-                <i class="fas fa-server"></i>
-                <span id="serverAddress">Conectando...</span>
-            </div>
-            <div class="server-badge" id="serverStatusBadge">
-                <i class="fas fa-circle-notch fa-spin"></i>
-                <span>Verificando servidor...</span>
-            </div>
-        </div>
-        
-        <footer>
-            <p>EPB</p>
-        </footer>
-    </div>
-    
-    <!-- Modal de login -->
-    <div class="login-modal" id="loginModal">
-        <div class="login-content">
-            <button class="close-modal" id="closeModal">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="login-header">
-                <h2>Acesso do Professor</h2>
-                <p>Faça login para acessar os arquivos enviados</p>
-            </div>
-            <form class="login-form" id="loginForm">
-                <div class="form-group">
-                    <label for="username">Usuário</label>
-                    <input type="text" id="username" placeholder="Digite seu usuário" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" placeholder="Digite sua senha" required>
-                </div>
-                <div class="form-group">
-                    <label for="serverUrl">URL do Servidor</label>
-                    <input type="text" id="serverUrl" placeholder="http://seu-ip:5000" required>
-                </div>
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-sign-in-alt"></i> Conectar e Entrar
-                </button>
-            </form>
-        </div>
+        </form>
+
+        <!-- Rodapé -->
+        <p class="text-center text-xs text-slate-400 mt-6">
+            &copy; 2023 Laboratório de Informática - Escola/Faculdade
+        </p>
     </div>
 
     <script>
-        // Configuração dinâmica do servidor
-        let SERVER_BASE_URL = '';
-        
-        // Elementos DOM
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loginModal = document.getElementById('loginModal');
-        const closeModal = document.getElementById('closeModal');
-        const loginForm = document.getElementById('loginForm');
-        const userInfo = document.getElementById('userInfo');
-        const usernameDisplay = document.getElementById('usernameDisplay');
-        const dashboardUsername = document.getElementById('dashboardUsername');
-        const teacherDashboard = document.getElementById('teacherDashboard');
-        const filesContainer = document.getElementById('filesContainer');
-        const serverAddressSpan = document.getElementById('serverAddress');
-        const serverStatusBadge = document.getElementById('serverStatusBadge');
-        const folderLinks = document.querySelectorAll('.folder-link');
-        
-        // Estado de autenticação
-        let currentUser = null;
-        
-        // Verificar se há configuração salva
-        const savedServerUrl = localStorage.getItem('serverUrl');
-        if (savedServerUrl) {
-            document.getElementById('serverUrl').value = savedServerUrl;
-            SERVER_BASE_URL = savedServerUrl;
-            checkServerStatus();
-        }
-        
-        // Função para verificar status do servidor
-        async function checkServerStatus() {
-            if (!SERVER_BASE_URL) return;
-            
-            try {
-                serverStatusBadge.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Verificando servidor...</span>';
-                
-                const response = await fetch(`${SERVER_BASE_URL}/status`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    serverAddressSpan.textContent = data.server_ip + ':' + data.server_port;
-                    serverStatusBadge.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i> <span>Servidor Online</span>';
-                    
-                    // Atualizar links para pastas
-                    updateFolderLinks();
-                } else {
-                    throw new Error('Servidor não respondeu corretamente');
-                }
-            } catch (error) {
-                serverStatusBadge.innerHTML = '<i class="fas fa-times-circle" style="color: #ef4444;"></i> <span>Servidor Offline</span>';
-                console.error('Erro ao verificar status do servidor:', error);
-            }
-        }
-        
-        // Atualizar links para pastas com URL do servidor
-        function updateFolderLinks() {
-            folderLinks.forEach(link => {
-                const professor = link.getAttribute('data-professor');
-                link.href = `${SERVER_BASE_URL}/files/${professor}`;
-            });
-        }
-        
-        // Função para mostrar o modal de login
-        loginBtn.addEventListener('click', () => {
-            loginModal.classList.add('active');
-        });
-        
-        // Função para fechar o modal
-        closeModal.addEventListener('click', () => {
-            loginModal.classList.remove('active');
-        });
-        
-        // Fechar modal ao clicar fora do conteúdo
-        loginModal.addEventListener('click', (e) => {
-            if (e.target === loginModal) {
-                loginModal.classList.remove('active');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+
+        // Abre seletor de arquivo ao clicar na zona
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Atualiza nome do arquivo na tela
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                fileName.innerText = fileInput.files[0].name;
+                fileName.classList.add('text-blue-600', 'font-medium');
             }
         });
-        
-        // Processar login
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const serverUrl = document.getElementById('serverUrl').value;
-            
-            // Validar URL do servidor
-            if (!serverUrl) {
-                showErrorMessage('URL do servidor é obrigatória');
-                return;
-            }
-            
-            // Salvar URL do servidor
-            SERVER_BASE_URL = serverUrl;
-            localStorage.setItem('serverUrl', serverUrl);
-            
-            try {
-                // Primeiro verificar se o servidor está online
-                const statusResponse = await fetch(`${SERVER_BASE_URL}/status`);
-                if (!statusResponse.ok) {
-                    throw new Error('Servidor não está respondendo');
-                }
-                
-                // Fazer login
-                const loginResponse = await fetch(`${SERVER_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await loginResponse.json();
-                
-                if (loginResponse.ok) {
-                    // Login bem-sucedido
-                    currentUser = data.user;
-                    updateUIAfterLogin();
-                    loginModal.classList.remove('active');
-                    showSuccessMessage('Login realizado com sucesso!');
-                    checkServerStatus();
-                } else {
-                    // Credenciais inválidas
-                    showErrorMessage(data.error || 'Erro no login');
-                }
-            } catch (error) {
-                showErrorMessage('Erro de conexão: ' + error.message);
-                console.error('Erro no login:', error);
-            }
-        });
-        
-        // Processar logout
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await fetch(`${SERVER_BASE_URL}/logout`, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-            } catch (error) {
-                console.error('Erro no logout:', error);
-            } finally {
-                currentUser = null;
-                userInfo.style.display = 'none';
-                loginBtn.style.display = 'block';
-                teacherDashboard.style.display = 'none';
-                showSuccessMessage('Logout realizado com sucesso!');
-            }
-        });
-        
-        // Atualizar UI após login
-        function updateUIAfterLogin() {
-            // Atualizar informações do usuário
-            usernameDisplay.textContent = currentUser.name;
-            dashboardUsername.textContent = currentUser.name;
-            userInfo.style.display = 'flex';
-            loginBtn.style.display = 'none';
-            
-            // Mostrar dashboard do professor
-            teacherDashboard.style.display = 'block';
-            
-            // Carregar arquivos do professor
-            loadTeacherFiles();
-        }
-        
-        // Carregar arquivos do professor
-        async function loadTeacherFiles() {
-            if (!currentUser) return;
-            
-            try {
-                const response = await fetch(`${SERVER_BASE_URL}/files/${currentUser.username}`, {
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const files = await response.json();
-                    displayFiles(files);
-                } else {
-                    throw new Error('Erro ao carregar arquivos');
-                }
-            } catch (error) {
-                filesContainer.innerHTML = `
-                    <div class="no-files">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: #ef4444;"></i>
-                        <p>Erro ao carregar arquivos: ${error.message}</p>
-                    </div>
-                `;
-                console.error('Erro ao carregar arquivos:', error);
-            }
-        }
-        
-        // Exibir arquivos na interface
-        function displayFiles(files) {
-            filesContainer.innerHTML = '';
-            
-            if (files.length === 0) {
-                filesContainer.innerHTML = `
-                    <div class="no-files">
-                        <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 15px; color: #cbd5e1;"></i>
-                        <p>Nenhum arquivo recebido ainda</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            files.forEach(file => {
-                const extension = file.nome_arquivo.split('.').pop().toLowerCase();
-                let icon = 'fa-file';
-                
-                // Definir ícone com base no tipo de arquivo
-                if (['pdf'].includes(extension)) icon = 'fa-file-pdf';
-                else if (['doc', 'docx'].includes(extension)) icon = 'fa-file-word';
-                else if (['xls', 'xlsx'].includes(extension)) icon = 'fa-file-excel';
-                else if (['ppt', 'pptx'].includes(extension)) icon = 'fa-file-powerpoint';
-                else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) icon = 'fa-file-image';
-                else if (['zip', 'rar'].includes(extension)) icon = 'fa-file-zipper';
-                
-                const fileCard = document.createElement('div');
-                fileCard.className = 'file-card';
-                fileCard.innerHTML = `
-                    <div class="file-icon">
-                        <i class="fas ${icon}"></i>
-                    </div>
-                    <div class="file-name">${file.nome_arquivo}</div>
-                    <div class="file-info">
-                        <div><i class="fas fa-calendar"></i> ${file.data_envio}</div>
-                        <div><i class="fas fa-weight-hanging"></i> ${file.tamanho_mb}</div>
-                    </div>
-                `;
-                filesContainer.appendChild(fileCard);
-            });
-        }
-        
-        // Função para manipular o upload de arquivos
-        document.querySelectorAll('.upload-form').forEach(form => {
-            const fileInput = form.querySelector('input[type="file"]');
-            const fileInfo = form.querySelector('.file-info');
-            const submitBtn = form.querySelector('.submit-btn');
-            const statusDiv = form.querySelector('.upload-status');
-            const professorId = form.id.split('-')[1];
-            
-            // Atualizar informações do arquivo selecionado
-            fileInput.addEventListener('change', function() {
-                if (this.files.length > 0) {
-                    const file = this.files[0];
-                    const fileSize = (file.size / (1024*1024)).toFixed(2);
-                    
-                    // Limitar o nome do arquivo se for muito longo
-                    let displayName = file.name;
-                    if (displayName.length > 30) {
-                        displayName = displayName.substring(0, 15) + '...' + displayName.substring(displayName.length - 10);
-                    }
-                    
-                    fileInfo.innerHTML = `<i class="fas fa-file"></i> ${displayName} (${fileSize} MB)`;
-                    fileInfo.style.animation = 'fadeIn 0.5s';
-                    
-                    // Verificar tamanho do arquivo
-                    if (file.size > 20 * 1024 * 1024) {
-                        fileInfo.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Arquivo muito grande (max 20MB)`;
-                        fileInfo.style.color = '#ef4444';
-                        submitBtn.disabled = true;
-                    } else {
-                        fileInfo.style.color = '#64748b';
-                        submitBtn.disabled = false;
-                    }
-                } else {
-                    fileInfo.innerHTML = `<i class="fas fa-info-circle"></i> Nenhum arquivo selecionado`;
-                    fileInfo.style.color = '#64748b';
-                    submitBtn.disabled = false;
-                }
-            });
-            
-            // Manipular envio do formulário
-            form.addEventListener('submit', async function(e) {
+
+        // Efeitos de drag and drop
+        ['dragover', 'dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => {
                 e.preventDefault();
-                
-                if (!SERVER_BASE_URL) {
-                    statusDiv.className = 'upload-status error';
-                    statusDiv.innerHTML = 'Configure o servidor primeiro';
-                    loginModal.classList.add('active');
-                    return;
-                }
-                
-                if (fileInput.files.length === 0) {
-                    statusDiv.className = 'upload-status error';
-                    statusDiv.innerHTML = 'Selecione um arquivo antes de enviar';
-                    return;
-                }
-                
-                const file = fileInput.files[0];
-                const fileSize = file.size / (1024*1024);
-                
-                if (fileSize > 20) {
-                    statusDiv.className = 'upload-status error';
-                    statusDiv.innerHTML = 'Erro: Arquivo excede 20MB';
-                    return;
-                }
-                
-                // Criar FormData para enviar o arquivo
-                const formData = new FormData();
-                formData.append('arquivo', file);
-                
-                // Desabilitar o botão durante o upload
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-                
-                try {
-                    // Enviar para o servidor
-                    const response = await fetch(`${SERVER_BASE_URL}/upload/${professorId}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        statusDiv.className = 'upload-status success';
-                        statusDiv.innerHTML = data.success;
-                        
-                        // Resetar o formulário após sucesso
-                        form.reset();
-                        fileInfo.innerHTML = `<i class="fas fa-info-circle"></i> Nenhum arquivo selecionado`;
-                    } else {
-                        throw new Error(data.error || 'Erro no upload');
-                    }
-                } catch (error) {
-                    statusDiv.className = 'upload-status error';
-                    statusDiv.innerHTML = error.message || 'Erro na conexão com o servidor';
-                } finally {
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
-                    submitBtn.disabled = false;
-                    
-                    // Resetar após 5 segundos
-                    setTimeout(() => {
-                        statusDiv.style.animation = 'fadeOut 0.5s forwards';
-                        setTimeout(() => {
-                            statusDiv.className = 'upload-status';
-                            statusDiv.innerHTML = '';
-                            statusDiv.style.animation = '';
-                        }, 500);
-                    }, 5000);
-                }
+                if (evt === 'dragover') dropZone.classList.add('drop-zone--over');
+                else dropZone.classList.remove('drop-zone--over');
             });
         });
-        
-        // Funções auxiliares para mensagens
-        function showSuccessMessage(message) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'upload-status success';
-            msgDiv.textContent = message;
-            msgDiv.style.position = 'fixed';
-            msgDiv.style.top = '20px';
-            msgDiv.style.left = '50%';
-            msgDiv.style.transform = 'translateX(-50%)';
-            msgDiv.style.zIndex = '1000';
-            document.body.appendChild(msgDiv);
-            
-            setTimeout(() => {
-                msgDiv.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => msgDiv.remove(), 500);
-            }, 3000);
-        }
-        
-        function showErrorMessage(message) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'upload-status error';
-            msgDiv.textContent = message;
-            msgDiv.style.position = 'fixed';
-            msgDiv.style.top = '20px';
-            msgDiv.style.left = '50%';
-            msgDiv.style.transform = 'translateX(-50%)';
-            msgDiv.style.zIndex = '1000';
-            document.body.appendChild(msgDiv);
-            
-            setTimeout(() => {
-                msgDiv.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => msgDiv.remove(), 500);
-            }, 3000);
-        }
-        
-        // Adicionar animação de fadeOut
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: translateY(0) translateX(-50%); }
-                to { opacity: 0; transform: translateY(-20px) translateX(-50%); }
+
+        dropZone.addEventListener('drop', (e) => {
+            fileInput.files = e.dataTransfer.files;
+            if (fileInput.files.length) {
+                fileName.innerText = fileInput.files[0].name;
+                fileName.classList.add('text-blue-600', 'font-medium');
             }
-        `;
-        document.head.appendChild(style);
+        });
     </script>
 </body>
 </html>
