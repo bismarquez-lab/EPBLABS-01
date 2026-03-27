@@ -3,297 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corrida do Aluno vs EPB</title>
+    <title>Teia Magnética Interativa</title>
     <style>
-        /* Reset e Centralização */
+        /* Removemos as margens e escondemos a barra de rolagem */
         body {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
+            background-color: #0b0c10; /* Fundo super escuro para destacar o neon */
+            font-family: sans-serif;
+        }
+
+        /* O Canvas ocupa a tela inteira */
+        canvas {
+            display: block;
+            width: 100vw;
             height: 100vh;
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
         }
 
-        /* Área Principal do Jogo */
-        #game-board {
-            width: 700px;
-            height: 250px;
-            background-color: white;
-            border-bottom: 4px solid #34495e;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0px 15px 30px rgba(0,0,0,0.1);
-            border-radius: 12px 12px 0 0;
-        }
-
-        /* --- O ALUNO (PERSONAGEM ANIMADO) --- */
-        #player {
-            width: 44px;  /* Largura de um frame */
-            height: 60px; /* Altura do personagem */
+        /* Título discreto por cima da animação */
+        #texto-fundo {
             position: absolute;
-            bottom: 0;
-            left: 60px;
-            z-index: 2;
-
-            /* Imagem Sprite do Menino Correndo (Embutida em Base64) */
-            /* Essa imagem contém 4 'frames' do movimento do menino lado a lado */
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAAA8CAYAAADc6S4KAAAACXBIWXMAAAsTAAALEwEAmpwYAAADfUlEQVR4nO2by43bMBCGxyXbXm4B6SAtJB2kg7SQVJB6bC0kN5AWkg7SQfKxbA0fggSBAXwYfR6S4vD/A49FUiS+/vGIsSgaBEEQBEEQBEEQBEEQBEEQBEEQREH4p+i7G3Dk8uW94S58i5i9E1fH183L+795C75Mh6N34XzE5pS9E9fHw8v7v3kLvkSHo3fBfCSNofUuXBeS7p24Po4u7//mNnwJ0vY89v3F34B/R//Nf9f9//4Xfxf+H8Q+N7fAn+X9b//7m/8C/7f8f97/+YVfG5v92gV+L+9//d/P/Ff4f6b/v84//PrY6scu8D/g//f/P7X//X3p385//X5uY6sfv4SjS4bI//v/P7X//X3p385//X5uY6ufv4RjXN0pI//v/P7X//X3p385//X5uY2ufv0SjnG1N5bE//v/P7X//X3p385//X5uY2ufu0RjnO1NxfE//v/P7X//X3p385//X5uY2uvuURjmO1N4fE//v/P7X//X3p385//X5uY2uvuURhmP9NpfE//v/P7X//X3p385//X5uY2uvuURhmP9NtXw/yP9v/386//DbyOzb5Yv65/m//n/b//v//v/+qFfG7NvO38YvP/X/wUAAAAAAACA586//F8Xg6L3bXv4AAAAAElFTkSuQmCC');
-            
-            background-repeat: no-repeat;
-            background-size: 176px 60px; /* Largura total da sprite sheet (44px * 4 frames) */
-            
-            /* Animação de corrida (troca de frames) */
-            animation: run-animation 0.6s steps(4) infinite;
-        }
-
-        /* Keyframes para a animação de corrida - move o background */
-        @keyframes run-animation {
-            from { background-position: 0px 0px; }
-            to { background-position: -176px 0px; }
-        }
-
-        /* Animação de Pulo - misturada com a animação de corrida */
-        .jump {
-            animation: run-animation 0.6s steps(4) infinite, jump-anim 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        @keyframes jump-anim {
-            0% { bottom: 0; }
-            45% { bottom: 130px; }
-            100% { bottom: 0; }
-        }
-
-        /* O Obstáculo: Texto EPB */
-        #cactus {
-            position: absolute;
-            bottom: 0;
-            right: -80px;
-            
-            font-size: 36px;
-            font-weight: 900;
-            color: #e74c3c;
-            letter-spacing: -2px;
-            
-            width: auto;
-            height: 40px;
-            line-height: 40px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 3rem;
+            font-weight: bold;
+            pointer-events: none; /* Deixa o mouse "atravessar" o texto */
             text-align: center;
-            white-space: nowrap;
-
-            animation: block-anim 1.5s infinite linear;
-        }
-
-        @keyframes block-anim {
-            0% { right: -80px; }
-            100% { right: 780px; }
-        }
-
-        /* HUD: Pontos e Nível */
-        #hud {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            text-align: right;
-            color: #2c3e50;
-            z-index: 5;
-            background: rgba(255,255,255,0.8);
-            padding: 5px 10px;
-            border-radius: 8px;
-        }
-        #score-board { font-size: 24px; font-weight: bold; }
-        #level-board { font-size: 13px; color: #7f8c8d; margin-top: -3px; }
-
-        /* Tela de Fim de Jogo */
-        #game-over {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(44, 62, 80, 0.95);
-            color: white;
-            text-align: center;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-        #game-over h2 { margin: 0 0 15px 0; font-size: 48px; color: #e74c3c; }
-        #game-over p { font-size: 18px; margin: 0; cursor: pointer; color: #ecf0f1; text-decoration: underline;}
-
-        /* Ajustes Mobile */
-        @media (max-width: 750px) {
-            #game-board { width: 95vw; height: 200px; }
-            #player { width: 37px; height: 50px; background-size: 148px 50px; left: 30px;}
-            #cactus { font-size: 28px; height: 30px; line-height: 30px; }
-            @keyframes run-animation {
-                from { background-position: 0px 0px; }
-                to { background-position: -148px 0px; }
-            }
-            @keyframes jump-anim {
-                0% { bottom: 0; }
-                45% { bottom: 100px; }
-                100% { bottom: 0; }
-            }
         }
     </style>
 </head>
 <body>
 
-    <div id="game-board">
-        <div id="hud">
-            <div id="score-board"><span id="score">0</span></div>
-            <div id="level-board">Velo: <span id="level">1</span></div>
-        </div>
-        
-        <div id="game-over">
-            <h2>O EPB PEGOU!</h2>
-            <p onclick="restartGame()">Tentar novamente (Espaço ou Toque)</p>
-        </div>
-        
-        <div id="player"></div>
-        
-        <div id="cactus">EPB</div>
-    </div>
+    <div id="texto-fundo">Passe o mouse (ou o dedo)</div>
+    <canvas id="meuCanvas"></canvas>
 
     <script>
-        // -- Seleção de Elementos --
-        const player = document.getElementById("player");
-        const cactus = document.getElementById("cactus");
-        const scoreElement = document.getElementById("score");
-        const levelElement = document.getElementById("level");
-        const gameOverScreen = document.getElementById("game-over");
+        const canvas = document.getElementById('meuCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // -- Variáveis de Estado do Jogo --
-        let isJumping = false;
-        let isGameOver = false;
-        let score = 0;
-        let scoreInterval;
-        
-        // -- Configurações de Dificuldade Dinâmica --
-        let currentSpeed = 1.5;         // Duração inicial da animação do EPB (segundos)
-        let currentLevel = 1;           // Nível inicial
-        const pointsPerLevel = 500;     // Pontos necessários para subir de nível
-        const speedIncrement = 0.15;    // Quanto a velocidade aumenta (reduz tempo) por nível
-        const minSpeed = 0.55;          // Velocidade máxima permitida (tempo mínimo)
+        // Ajusta o tamanho para a tela atual
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        // -- Função de Pulo --
-        function jump() {
-            if (isJumping || isGameOver) return;
-            isJumping = true;
-            player.classList.add("jump"); // Adiciona classe que aciona o pulo no CSS
-            
-            // Remove a classe após o tempo do pulo (500ms)
-            setTimeout(() => {
-                player.classList.remove("jump");
-                isJumping = false;
-            }, 500);
+        let particlesArray = [];
+        // Paleta de cores vibrantes (Cyberpunk / Neon)
+        const cores = ['#ff0055', '#00ff99', '#00ccff', '#ffcc00', '#aa00ff'];
+
+        // Posição do Mouse/Toque
+        let mouse = {
+            x: null,
+            y: null,
+            radius: 120 // Área de repulsão do mouse
         }
 
-        // -- Gerenciador de Controles (Teclado e Toque) --
-        function handleInput(e) {
-            // Se o jogo acabou e apertar Espaço/Toque, reinicia
-            if (isGameOver) {
-                if (e.type === 'touchstart' || e.code === 'Space') {
-                    restartGame();
+        // --- CONTROLES DE INTERAÇÃO ---
+        window.addEventListener('mousemove', function(event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        // Suporte para celular (Touch)
+        window.addEventListener('touchmove', function(event) {
+            mouse.x = event.touches[0].clientX;
+            mouse.y = event.touches[0].clientY;
+        });
+
+        // Quando o mouse sai da tela, para de empurrar
+        window.addEventListener('mouseout', function() {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+        // Reajusta tudo se o usuário girar o celular ou redimensionar a janela
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+
+        // --- CLASSE DA PARTÍCULA ---
+        class Particle {
+            constructor(x, y, direcaoX, direcaoY, tamanho, cor) {
+                this.x = x;
+                this.y = y;
+                this.direcaoX = direcaoX;
+                this.direcaoY = direcaoY;
+                this.tamanho = tamanho;
+                this.cor = cor;
+            }
+
+            // Desenha a bolinha na tela
+            desenhar() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.tamanho, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.cor;
+                ctx.fill();
+            }
+
+            // Calcula a física de movimento e a interação com o mouse
+            atualizar() {
+                // Checa se a partícula bateu na borda da tela e inverte a direção
+                if (this.x > canvas.width || this.x < 0) this.direcaoX = -this.direcaoX;
+                if (this.y > canvas.height || this.y < 0) this.direcaoY = -this.direcaoY;
+
+                // Lógica do Ímã (Repulsão do Mouse)
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distancia = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distancia < mouse.radius) {
+                    const forcaX = dx / distancia;
+                    const forcaY = dy / distancia;
+                    const forcaMaxima = (mouse.radius - distancia) / mouse.radius;
+                    // Multiplicador (7) define a força do "empurrão"
+                    const direcaoForcaX = forcaX * forcaMaxima * 7;
+                    const direcaoForcaY = forcaY * forcaMaxima * 7;
+
+                    this.x -= direcaoForcaX;
+                    this.y -= direcaoForcaY;
+                } else {
+                    // Movimento natural de flutuação se o mouse estiver longe
+                    this.x += this.direcaoX;
+                    this.y += this.direcaoY;
                 }
-                return;
-            }
-            
-            // Se o jogo está rodando e apertar Espaço/Seta Cima/Toque, pula
-            if (e.type === 'touchstart' || e.code === 'Space' || e.code === 'ArrowUp') {
-                e.preventDefault(); // Evita scroll no mobile
-                jump();
+
+                this.desenhar();
             }
         }
 
-        document.addEventListener("keydown", handleInput);
-        document.addEventListener("touchstart", handleInput);
+        // --- INICIALIZAÇÃO ---
+        function init() {
+            particlesArray = [];
+            // Calcula a quantidade de bolinhas baseada no tamanho da tela (para não travar)
+            let numeroDeParticulas = (canvas.height * canvas.width) / 8000;
+            
+            for (let i = 0; i < numeroDeParticulas; i++) {
+                let tamanho = (Math.random() * 3) + 1; // Tamanho entre 1 e 4
+                let x = (Math.random() * ((innerWidth - tamanho * 2) - (tamanho * 2)) + tamanho * 2);
+                let y = (Math.random() * ((innerHeight - tamanho * 2) - (tamanho * 2)) + tamanho * 2);
+                // Velocidade de flutuação
+                let direcaoX = (Math.random() * 2) - 1;
+                let direcaoY = (Math.random() * 2) - 1;
+                // Sorteia uma cor da paleta
+                let cor = cores[Math.floor(Math.random() * cores.length)];
+                
+                particlesArray.push(new Particle(x, y, direcaoX, direcaoY, tamanho, cor));
+            }
+        }
 
-        // -- Sistema de Pontuação e Dificuldade --
-        function updateScore() {
-            if (!isGameOver) {
-                score++;
-                scoreElement.innerText = score;
-
-                // Lógica de Dificuldade: Verifica se deve subir de nível
-                let newLevel = Math.floor(score / pointsPerLevel) + 1;
-                if (newLevel > currentLevel) {
-                    currentLevel = newLevel;
-                    levelElement.innerText = currentLevel;
-                    increaseSpeed(); // Deixa o jogo mais rápido
+        // --- CONEXÃO COM LINHAS ---
+        function conectar() {
+            let opacidade = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    // Calcula a distância entre duas partículas
+                    let distancia = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                                  + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    
+                    // Se estiverem perto o suficiente (valor 10000), desenha a linha
+                    if (distancia < 10000) {
+                        opacidade = 1 - (distancia / 10000);
+                        // A linha herda a cor da partícula 'a', com opacidade dinâmica
+                        ctx.strokeStyle = particlesArray[a].cor.replace(')', `, ${opacidade})`).replace('rgb', 'rgba');
+                        
+                        // Fallback de segurança se a cor for HEX em vez de RGB
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacidade * 0.3})`; 
+                        
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
                 }
             }
         }
-        
-        // -- Função que aumenta a velocidade do obstáculo --
-        function increaseSpeed() {
-            if (currentSpeed > minSpeed) {
-                currentSpeed -= speedIncrement;
-                // Aplica a nova velocidade diretamente na animação CSS do obstáculo
-                cactus.style.animationDuration = currentSpeed + "s";
+
+        // --- LOOP DE ANIMAÇÃO (Motor do Jogo/Canvas) ---
+        function animar() {
+            requestAnimationFrame(animar);
+            // Limpa a tela a cada frame para desenhar o próximo movimento
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].atualizar();
             }
+            conectar();
         }
 
-        // Inicia o contador de pontos
-        scoreInterval = setInterval(updateScore, 100);
-
-        // -- Motor de Colisão (Loop Principal) --
-        let gameLoop = setInterval(() => {
-            if (isGameOver) return;
-
-            // Pega as caixas de colisão exatas
-            let playerRect = player.getBoundingClientRect();
-            let cactusRect = cactus.getBoundingClientRect();
-
-            // Lógica de colisão
-            // Adicionamos pequenas margens (-10, -5) para a colisão parecer mais justa
-            if (
-                playerRect.right > cactusRect.left + 10 && 
-                playerRect.left < cactusRect.right - 10 &&
-                playerRect.bottom > cactusRect.top + 5
-            ) {
-                endGame();
-            }
-        }, 10);
-
-        // -- Função de Fim de Jogo --
-        function endGame() {
-            isGameOver = true;
-            
-            // Pausa as animações no ponto exato da batida
-            cactus.style.animationPlayState = 'paused';
-            
-            // Mostra a tela de Fim de Jogo
-            gameOverScreen.style.display = "flex";
-            clearInterval(scoreInterval);
-        }
-
-        // -- Função para Reiniciar o Jogo --
-        function restartGame() {
-            isGameOver = false;
-            score = 0;
-            currentLevel = 1;
-            currentSpeed = 1.5; // Reseta a velocidade original
-
-            scoreElement.innerText = score;
-            levelElement.innerText = currentLevel;
-            gameOverScreen.style.display = "none";
-            
-            // Reinicia as animações
-            cactus.style.animationPlayState = 'running';
-            
-            // "Força" o navegador a reiniciar a animação do obstáculo do zero
-            cactus.style.animation = 'none';
-            cactus.offsetHeight; // Truque de reflow
-            cactus.style.animation = `block-anim ${currentSpeed}s infinite linear`;
-
-            // Reinicia o placar
-            clearInterval(scoreInterval);
-            scoreInterval = setInterval(updateScore, 100);
-        }
+        init();
+        animar();
     </script>
 </body>
 </html>
