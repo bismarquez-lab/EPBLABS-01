@@ -75,4 +75,147 @@
         /* Placar e Textos */
         #score-board {
             position: absolute;
-            top
+            top: 15px;
+            right: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Tela de Fim de Jogo */
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #e74c3c;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e74c3c;
+            z-index: 10;
+        }
+
+        #game-over h2 { margin: 0 0 10px 0; }
+        #game-over p { 
+            margin: 0; 
+            font-size: 16px; 
+            cursor: pointer; 
+            color: #333; 
+            text-decoration: underline; 
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 650px) {
+            #game-board { width: 95vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-board">
+        <div id="score-board">Pontos: <span id="score">0</span></div>
+        <div id="game-over">
+            <h2>Fim de Jogo!</h2>
+            <p onclick="restartGame()">Clique para reiniciar</p>
+        </div>
+        <div id="dino"></div>
+        <div id="cactus"></div>
+    </div>
+
+    <script>
+        const dino = document.getElementById("dino");
+        const cactus = document.getElementById("cactus");
+        const scoreElement = document.getElementById("score");
+        const gameOverScreen = document.getElementById("game-over");
+
+        let isJumping = false;
+        let isGameOver = false;
+        let score = 0;
+        let scoreInterval;
+
+        // Função para Pular
+        function jump() {
+            if (isJumping || isGameOver) return; // Não pula se já estiver no ar ou o jogo tiver acabado
+            
+            isJumping = true;
+            dino.classList.add("jump");
+
+            // Remove a classe de pulo logo após a animação do CSS terminar (500ms)
+            setTimeout(() => {
+                dino.classList.remove("jump");
+                isJumping = false;
+            }, 500);
+        }
+
+        // Controles: Teclado ou Toque/Clique na Tela
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space" || event.code === "ArrowUp") {
+                jump();
+            }
+        });
+        document.addEventListener("touchstart", jump);
+        document.addEventListener("mousedown", jump);
+
+        // Sistema de Pontuação (aumenta a cada 100ms)
+        function updateScore() {
+            if (!isGameOver) {
+                score++;
+                scoreElement.innerText = score;
+            }
+        }
+        scoreInterval = setInterval(updateScore, 100);
+
+        // Motor de Colisão (Roda a cada 10ms verificando as posições)
+        let gameLoop = setInterval(() => {
+            if (isGameOver) return;
+
+            // Pega as posições reais exatas dos elementos na tela
+            let dinoRect = dino.getBoundingClientRect();
+            let cactusRect = cactus.getBoundingClientRect();
+
+            // Checa a Colisão (se as "caixas" dos elementos se sobrepõem)
+            if (
+                dinoRect.right > cactusRect.left &&
+                dinoRect.left < cactusRect.right &&
+                dinoRect.bottom > cactusRect.top
+            ) {
+                // Bateu!
+                isGameOver = true;
+                
+                // Pausa as animações no lugar exato da batida
+                cactus.style.animationPlayState = 'paused';
+                dino.style.animationPlayState = 'paused';
+
+                // Mostra a tela de Fim de Jogo e para o placar
+                gameOverScreen.style.display = "block";
+                clearInterval(scoreInterval);
+            }
+        }, 10);
+
+        // Reiniciar o Jogo
+        function restartGame() {
+            isGameOver = false;
+            score = 0;
+            scoreElement.innerText = score;
+            gameOverScreen.style.display = "none";
+            
+            // Retoma as animações
+            cactus.style.animationPlayState = 'running';
+            dino.style.animationPlayState = 'running';
+            
+            // Recomeça a animação do cacto do zero
+            cactus.style.animation = 'none';
+            cactus.offsetHeight; // Força a re-renderização (reflow) do navegador
+            cactus.style.animation = 'block-anim 1.5s infinite linear';
+
+            // Reinicia a pontuação
+            clearInterval(scoreInterval);
+            scoreInterval = setInterval(updateScore, 100);
+        }
+    </script>
+</body>
+</html>
