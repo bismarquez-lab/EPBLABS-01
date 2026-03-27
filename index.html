@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dino Game Clone</title>
+    <title>Corrida do Aluno - Fugindo do EPB</title>
     <style>
-        /* Reset de margens e centralização da tela */
+        /* Reset e Centralização */
         body {
             margin: 0;
             padding: 0;
@@ -13,206 +13,241 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f4f8;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden; /* Evita rolagem da tela no celular */
+            background-color: #ecf0f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
         }
 
-        /* Área do Jogo */
+        /* Área Principal do Jogo */
         #game-board {
-            width: 600px;
-            height: 200px;
-            background-color: #fff;
-            border-bottom: 3px solid #333;
+            width: 700px;
+            height: 250px;
+            background-color: white;
+            border-bottom: 4px solid #34495e;
             position: relative;
             overflow: hidden;
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
-            border-radius: 8px 8px 0 0;
+            box-shadow: 0px 15px 30px rgba(0,0,0,0.1);
+            border-radius: 10px 10px 0 0;
         }
 
-        /* O "Dinossauro" (Bloco Escuro) */
-        #dino {
-            width: 40px;
-            height: 40px;
-            background-color: #333;
+        /* O Aluno (Substituindo o Dino) */
+        #player {
+            width: 35px;
+            height: 60px; /* Mais alto, forma humana */
+            background-color: #f39c12; /* Amarelo-alaranjado */
             position: absolute;
             bottom: 0;
-            left: 50px;
-            border-radius: 6px;
+            left: 60px;
+            border-radius: 8px 8px 2px 2px;
+            z-index: 2;
         }
 
-        /* Animação de Pulo */
+        /* Animação de Pulo do Aluno */
         .jump {
-            animation: jump-anim 0.5s linear;
+            animation: jump-anim 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Curva mais suave */
         }
 
         @keyframes jump-anim {
             0% { bottom: 0; }
-            40% { bottom: 120px; }
-            50% { bottom: 130px; }
-            60% { bottom: 120px; }
+            45% { bottom: 140px; } /* Pula mais alto */
+            55% { bottom: 145px; }
+            65% { bottom: 140px; }
             100% { bottom: 0; }
         }
 
-        /* O "Cacto" (Bloco Vermelho) */
+        /* O Obstáculo: Texto EPB (Substituindo o Cacto) */
         #cactus {
-            width: 20px;
-            height: 40px;
-            background-color: #e74c3c;
             position: absolute;
             bottom: 0;
-            right: -20px;
-            border-radius: 4px 4px 0 0;
+            right: -80px; /* Começa mais fora da tela */
+            
+            /* Estilização do Texto "EPB" */
+            font-size: 32px;
+            font-weight: 900;
+            color: #c0392b; /* Vermelho escuro */
+            letter-spacing: -1px;
+            
+            /* Garante que a colisão funcione com o texto */
+            width: auto;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            white-space: nowrap;
+
+            /* Animação Inicial - a duração é controlada pelo JS */
             animation: block-anim 1.5s infinite linear;
         }
 
-        /* Animação do obstáculo vindo da direita para a esquerda */
+        /* Animação do obstáculo */
         @keyframes block-anim {
-            0% { right: -20px; }
-            100% { right: 620px; }
+            0% { right: -80px; }
+            100% { right: 780px; } /* Atravessa toda a área do jogo */
         }
 
-        /* Placar e Textos */
-        #score-board {
+        /* Placar e Nível */
+        #hud {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 20px;
-            font-weight: bold;
+            text-align: right;
             color: #333;
+            z-index: 5;
         }
+        #score-board { font-size: 24px; font-weight: bold; }
+        #level-board { font-size: 14px; color: #7f8c8d; }
 
         /* Tela de Fim de Jogo */
         #game-over {
             display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(231, 76, 60, 0.9); /* Vermelho translúcido */
+            color: white;
             text-align: center;
-            color: #e74c3c;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #e74c3c;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             z-index: 10;
         }
+        #game-over h2 { margin: 0 0 15px 0; font-size: 40px; }
+        #game-over p { font-size: 18px; margin: 0; cursor: pointer; text-decoration: underline;}
 
-        #game-over h2 { margin: 0 0 10px 0; }
-        #game-over p { 
-            margin: 0; 
-            font-size: 16px; 
-            cursor: pointer; 
-            color: #333; 
-            text-decoration: underline; 
-        }
-
-        /* Responsividade para telas menores */
-        @media (max-width: 650px) {
-            #game-board { width: 95vw; }
+        /* Ajustes Mobile */
+        @media (max-width: 750px) {
+            #game-board { width: 95vw; height: 200px; }
+            #player { width: 30px; height: 50px; left: 30px;}
+            #cactus { font-size: 26px; height: 30px; line-height: 30px; }
+            @keyframes jump-anim {
+                0% { bottom: 0; }
+                45% { bottom: 110px; }
+                100% { bottom: 0; }
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="game-board">
-        <div id="score-board">Pontos: <span id="score">0</span></div>
-        <div id="game-over">
-            <h2>Fim de Jogo!</h2>
-            <p onclick="restartGame()">Clique para reiniciar</p>
+        <div id="hud">
+            <div id="score-board">Pontos: <span id="score">0</span></div>
+            <div id="level-board">Nível de Velocidade: <span id="level">1</span></div>
         </div>
-        <div id="dino"></div>
-        <div id="cactus"></div>
+        
+        <div id="game-over">
+            <h2>Pegue o EPB!</h2>
+            <p onclick="restartGame()">Voltar para a sala de aula (Clique/Toque)</p>
+        </div>
+        
+        <div id="player"></div>
+        
+        <div id="cactus">EPB</div>
     </div>
 
     <script>
-        const dino = document.getElementById("dino");
+        const player = document.getElementById("player");
         const cactus = document.getElementById("cactus");
         const scoreElement = document.getElementById("score");
+        const levelElement = document.getElementById("level");
         const gameOverScreen = document.getElementById("game-over");
 
         let isJumping = false;
         let isGameOver = false;
         let score = 0;
         let scoreInterval;
+        
+        // --- Configurações de Dificuldade ---
+        let currentSpeed = 1.5; // Velocidade inicial (segundos que a animação dura)
+        let currentLevel = 1;
+        const pointsPerLevel = 500; // A cada 500 pontos, fica mais rápido
+        const speedIncrement = 0.15; // Quanto a animação diminui (fica mais rápido) por nível
+        const minSpeed = 0.6; // Velocidade máxima (mínimo de segundos)
 
-        // Função para Pular
         function jump() {
-            if (isJumping || isGameOver) return; // Não pula se já estiver no ar ou o jogo tiver acabado
-            
+            if (isJumping || isGameOver) return;
             isJumping = true;
-            dino.classList.add("jump");
-
-            // Remove a classe de pulo logo após a animação do CSS terminar (500ms)
+            player.classList.add("jump");
             setTimeout(() => {
-                dino.classList.remove("jump");
+                player.classList.remove("jump");
                 isJumping = false;
             }, 500);
         }
 
-        // Controles: Teclado ou Toque/Clique na Tela
-        document.addEventListener("keydown", (event) => {
-            if (event.code === "Space" || event.code === "ArrowUp") {
-                jump();
-            }
-        });
-        document.addEventListener("touchstart", jump);
-        document.addEventListener("mousedown", jump);
+        // Controles
+        document.addEventListener("keydown", (e) => { if ((e.code === "Space" || e.code === "ArrowUp") && !isGameOver) jump(); });
+        document.addEventListener("touchstart", (e) => { if (!isGameOver) jump(); });
+        document.addEventListener("mousedown", (e) => { if (!isGameOver) jump(); });
 
-        // Sistema de Pontuação (aumenta a cada 100ms)
+        // Sistema de Pontuação e Dificuldade
         function updateScore() {
             if (!isGameOver) {
                 score++;
                 scoreElement.innerText = score;
+
+                // Lógica de Dificuldade: Checa se mudou o nível
+                let newLevel = Math.floor(score / pointsPerLevel) + 1;
+                if (newLevel > currentLevel) {
+                    currentLevel = newLevel;
+                    levelElement.innerText = currentLevel;
+                    increaseSpeed();
+                }
             }
         }
+        
+        // Função que ajusta a velocidade da animação CSS
+        function increaseSpeed() {
+            if (currentSpeed > minSpeed) {
+                currentSpeed -= speedIncrement;
+                // Aplica a nova duração da animação diretamente no elemento
+                cactus.style.animationDuration = currentSpeed + "s";
+                console.log(`Nível ${currentLevel}: Velocidade aumentada para ${currentSpeed.toFixed(2)}s`);
+            }
+        }
+
         scoreInterval = setInterval(updateScore, 100);
 
-        // Motor de Colisão (Roda a cada 10ms verificando as posições)
+        // Motor de Colisão
         let gameLoop = setInterval(() => {
             if (isGameOver) return;
 
-            // Pega as posições reais exatas dos elementos na tela
-            let dinoRect = dino.getBoundingClientRect();
+            let playerRect = player.getBoundingClientRect();
             let cactusRect = cactus.getBoundingClientRect();
 
-            // Checa a Colisão (se as "caixas" dos elementos se sobrepõem)
+            // Lógica de colisão ajustada para as novas formas
             if (
-                dinoRect.right > cactusRect.left &&
-                dinoRect.left < cactusRect.right &&
-                dinoRect.bottom > cactusRect.top
+                playerRect.right > cactusRect.left + 5 && // Pequena margem para o texto "EPB"
+                playerRect.left < cactusRect.right - 5 &&
+                playerRect.bottom > cactusRect.top
             ) {
-                // Bateu!
                 isGameOver = true;
                 
-                // Pausa as animações no lugar exato da batida
                 cactus.style.animationPlayState = 'paused';
-                dino.style.animationPlayState = 'paused';
+                player.style.animationPlayState = 'paused';
 
-                // Mostra a tela de Fim de Jogo e para o placar
-                gameOverScreen.style.display = "block";
+                gameOverScreen.style.display = "flex";
                 clearInterval(scoreInterval);
             }
         }, 10);
 
-        // Reiniciar o Jogo
+        // Reiniciar
         function restartGame() {
             isGameOver = false;
             score = 0;
+            currentLevel = 1;
+            currentSpeed = 1.5; // Reseta a velocidade inicial
+
             scoreElement.innerText = score;
+            levelElement.innerText = currentLevel;
             gameOverScreen.style.display = "none";
             
-            // Retoma as animações
+            // Retoma e Reseta as animações
             cactus.style.animationPlayState = 'running';
-            dino.style.animationPlayState = 'running';
+            player.style.animationPlayState = 'running';
             
-            // Recomeça a animação do cacto do zero
             cactus.style.animation = 'none';
-            cactus.offsetHeight; // Força a re-renderização (reflow) do navegador
-            cactus.style.animation = 'block-anim 1.5s infinite linear';
+            cactus.offsetHeight; // Reflow
+            // Reaplica a animação com a velocidade inicial resetada
+            cactus.style.animation = `block-anim ${currentSpeed}s infinite linear`;
 
-            // Reinicia a pontuação
             clearInterval(scoreInterval);
             scoreInterval = setInterval(updateScore, 100);
         }
