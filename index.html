@@ -1,106 +1,78 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envio de Arquivos - Laboratório de Informática EPB</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Dino Game Clone</title>
     <style>
-        .drop-zone {
-            border: 2px dashed #cbd5e1;
-            transition: all 0.3s ease;
+        /* Reset de margens e centralização da tela */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f4f8;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden; /* Evita rolagem da tela no celular */
         }
-        .drop-zone--over {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
+
+        /* Área do Jogo */
+        #game-board {
+            width: 600px;
+            height: 200px;
+            background-color: #fff;
+            border-bottom: 3px solid #333;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
+            border-radius: 8px 8px 0 0;
         }
-    </style>
-</head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <!-- Cabeçalho -->
-        <div class="text-center mb-8">
-            <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-upload text-white text-2xl"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-slate-800">Portal do Aluno</h1>
-            <p class="text-slate-500">Envie suas atividades do laboratório</p>
-        </div>
+        /* O "Dinossauro" (Bloco Escuro) */
+        #dino {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            border-radius: 6px;
+        }
 
-        <!-- Formulário -->
-        <!-- NOTA: No action abaixo, você colocará a URL do serviço de recebimento -->
-        <form id="uploadForm" action="https://formspree.io/f/SEU_ID_AQUI" method="POST" enctype="multipart/form-data" class="space-y-4">
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
-                <input type="text" name="nome" required placeholder="Ex: João Silva"
-                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            </div>
+        /* Animação de Pulo */
+        .jump {
+            animation: jump-anim 0.5s linear;
+        }
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Turma / Matéria</label>
-                <select name="turma" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    <option>Informática Básica - Turma A</option>
-                    <option>Programação Web - Turma B</option>
-                    <option>Redes de Computadores</option>
-                </select>
-            </div>
+        @keyframes jump-anim {
+            0% { bottom: 0; }
+            40% { bottom: 120px; }
+            50% { bottom: 130px; }
+            60% { bottom: 120px; }
+            100% { bottom: 0; }
+        }
 
-            <!-- Área de Upload -->
-            <div class="drop-zone rounded-lg p-6 text-center cursor-pointer" id="dropZone">
-                <input type="file" name="arquivo" id="fileInput" class="hidden" required>
-                <i class="fas fa-cloud-arrow-up text-slate-400 text-3xl mb-2"></i>
-                <p class="text-sm text-slate-600" id="fileName">Arraste seu arquivo ou clique para selecionar</p>
-                <p class="text-xs text-slate-400 mt-1">PDF, ZIP, DOCX ou Imagens (Máx: 10MB)</p>
-            </div>
+        /* O "Cacto" (Bloco Vermelho) */
+        #cactus {
+            width: 20px;
+            height: 40px;
+            background-color: #e74c3c;
+            position: absolute;
+            bottom: 0;
+            right: -20px;
+            border-radius: 4px 4px 0 0;
+            animation: block-anim 1.5s infinite linear;
+        }
 
-            <button type="submit" 
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2">
-                <i class="fas fa-paper-plane"></i>
-                Enviar Atividade
-            </button>
-        </form>
+        /* Animação do obstáculo vindo da direita para a esquerda */
+        @keyframes block-anim {
+            0% { right: -20px; }
+            100% { right: 620px; }
+        }
 
-        <!-- Rodapé -->
-        <p class="text-center text-xs text-slate-400 mt-6">
-            &copy; 2025 Laboratório de Informática - Etec Parque Belém
-        </p>
-    </div>
-
-    <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileName = document.getElementById('fileName');
-
-        // Abre seletor de arquivo ao clicar na zona
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        // Atualiza nome do arquivo na tela
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length) {
-                fileName.innerText = fileInput.files[0].name;
-                fileName.classList.add('text-blue-600', 'font-medium');
-            }
-        });
-
-        // Efeitos de drag and drop
-        ['dragover', 'dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, (e) => {
-                e.preventDefault();
-                if (evt === 'dragover') dropZone.classList.add('drop-zone--over');
-                else dropZone.classList.remove('drop-zone--over');
-            });
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            fileInput.files = e.dataTransfer.files;
-            if (fileInput.files.length) {
-                fileName.innerText = fileInput.files[0].name;
-                fileName.classList.add('text-blue-600', 'font-medium');
-            }
-        });
-    </script>
-</body>
-</html>
+        /* Placar e Textos */
+        #score-board {
+            position: absolute;
+            top
