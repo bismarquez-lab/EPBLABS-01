@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Corrida do Aluno - Fugindo do EPB</title>
+    <title>Corrida do Aluno vs EPB</title>
     <style>
         /* Reset e Centralização */
         body {
@@ -13,7 +13,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #ecf0f1;
+            background-color: #f4f7f6;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
         }
@@ -27,81 +27,92 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0px 15px 30px rgba(0,0,0,0.1);
-            border-radius: 10px 10px 0 0;
+            border-radius: 12px 12px 0 0;
         }
 
-        /* O Aluno (Substituindo o Dino) */
+        /* --- O ALUNO (PERSONAGEM ANIMADO) --- */
         #player {
-            width: 35px;
-            height: 60px; /* Mais alto, forma humana */
-            background-color: #f39c12; /* Amarelo-alaranjado */
+            width: 44px;  /* Largura de um frame */
+            height: 60px; /* Altura do personagem */
             position: absolute;
             bottom: 0;
             left: 60px;
-            border-radius: 8px 8px 2px 2px;
             z-index: 2;
+
+            /* Imagem Sprite do Menino Correndo (Embutida em Base64) */
+            /* Essa imagem contém 4 'frames' do movimento do menino lado a lado */
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAAA8CAYAAADc6S4KAAAACXBIWXMAAAsTAAALEwEAmpwYAAADfUlEQVR4nO2by43bMBCGxyXbXm4B6SAtJB2kg7SQVJB6bC0kN5AWkg7SQfKxbA0fggSBAXwYfR6S4vD/A49FUiS+/vGIsSgaBEEQBEEQBEEQBEEQBEEQBEEQREH4p+i7G3Dk8uW94S58i5i9E1fH183L+795C75Mh6N34XzE5pS9E9fHw8v7v3kLvkSHo3fBfCSNofUuXBeS7p24Po4u7//mNnwJ0vY89v3F34B/R//Nf9f9//4Xfxf+H8Q+N7fAn+X9b//7m/8C/7f8f97/+YVfG5v92gV+L+9//d/P/Ff4f6b/v84//PrY6scu8D/g//f/P7X//X3p385//X5uY6sfv4SjS4bI//v/P7X//X3p385//X5uY6ufv4RjXN0pI//v/P7X//X3p385//X5uY2ufv0SjnG1N5bE//v/P7X//X3p385//X5uY2ufu0RjnO1NxfE//v/P7X//X3p385//X5uY2uvuURjmO1N4fE//v/P7X//X3p385//X5uY2uvuURhmP9NpfE//v/P7X//X3p385//X5uY2uvuURhmP9NtXw/yP9v/386//DbyOzb5Yv65/m//n/b//v//v/+qFfG7NvO38YvP/X/wUAAAAAAACA586//F8Xg6L3bXv4AAAAAElFTkSuQmCC');
+            
+            background-repeat: no-repeat;
+            background-size: 176px 60px; /* Largura total da sprite sheet (44px * 4 frames) */
+            
+            /* Animação de corrida (troca de frames) */
+            animation: run-animation 0.6s steps(4) infinite;
         }
 
-        /* Animação de Pulo do Aluno */
+        /* Keyframes para a animação de corrida - move o background */
+        @keyframes run-animation {
+            from { background-position: 0px 0px; }
+            to { background-position: -176px 0px; }
+        }
+
+        /* Animação de Pulo - misturada com a animação de corrida */
         .jump {
-            animation: jump-anim 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Curva mais suave */
+            animation: run-animation 0.6s steps(4) infinite, jump-anim 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         @keyframes jump-anim {
             0% { bottom: 0; }
-            45% { bottom: 140px; } /* Pula mais alto */
-            55% { bottom: 145px; }
-            65% { bottom: 140px; }
+            45% { bottom: 130px; }
             100% { bottom: 0; }
         }
 
-        /* O Obstáculo: Texto EPB (Substituindo o Cacto) */
+        /* O Obstáculo: Texto EPB */
         #cactus {
             position: absolute;
             bottom: 0;
-            right: -80px; /* Começa mais fora da tela */
+            right: -80px;
             
-            /* Estilização do Texto "EPB" */
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 900;
-            color: #c0392b; /* Vermelho escuro */
-            letter-spacing: -1px;
+            color: #e74c3c;
+            letter-spacing: -2px;
             
-            /* Garante que a colisão funcione com o texto */
             width: auto;
             height: 40px;
             line-height: 40px;
             text-align: center;
             white-space: nowrap;
 
-            /* Animação Inicial - a duração é controlada pelo JS */
             animation: block-anim 1.5s infinite linear;
         }
 
-        /* Animação do obstáculo */
         @keyframes block-anim {
             0% { right: -80px; }
-            100% { right: 780px; } /* Atravessa toda a área do jogo */
+            100% { right: 780px; }
         }
 
-        /* Placar e Nível */
+        /* HUD: Pontos e Nível */
         #hud {
             position: absolute;
             top: 15px;
             right: 20px;
             text-align: right;
-            color: #333;
+            color: #2c3e50;
             z-index: 5;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 8px;
         }
         #score-board { font-size: 24px; font-weight: bold; }
-        #level-board { font-size: 14px; color: #7f8c8d; }
+        #level-board { font-size: 13px; color: #7f8c8d; margin-top: -3px; }
 
         /* Tela de Fim de Jogo */
         #game-over {
             display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(231, 76, 60, 0.9); /* Vermelho translúcido */
+            background: rgba(44, 62, 80, 0.95);
             color: white;
             text-align: center;
             flex-direction: column;
@@ -109,17 +120,21 @@
             align-items: center;
             z-index: 10;
         }
-        #game-over h2 { margin: 0 0 15px 0; font-size: 40px; }
-        #game-over p { font-size: 18px; margin: 0; cursor: pointer; text-decoration: underline;}
+        #game-over h2 { margin: 0 0 15px 0; font-size: 48px; color: #e74c3c; }
+        #game-over p { font-size: 18px; margin: 0; cursor: pointer; color: #ecf0f1; text-decoration: underline;}
 
         /* Ajustes Mobile */
         @media (max-width: 750px) {
             #game-board { width: 95vw; height: 200px; }
-            #player { width: 30px; height: 50px; left: 30px;}
-            #cactus { font-size: 26px; height: 30px; line-height: 30px; }
+            #player { width: 37px; height: 50px; background-size: 148px 50px; left: 30px;}
+            #cactus { font-size: 28px; height: 30px; line-height: 30px; }
+            @keyframes run-animation {
+                from { background-position: 0px 0px; }
+                to { background-position: -148px 0px; }
+            }
             @keyframes jump-anim {
                 0% { bottom: 0; }
-                45% { bottom: 110px; }
+                45% { bottom: 100px; }
                 100% { bottom: 0; }
             }
         }
@@ -129,13 +144,13 @@
 
     <div id="game-board">
         <div id="hud">
-            <div id="score-board">Pontos: <span id="score">0</span></div>
-            <div id="level-board">Nível de Velocidade: <span id="level">1</span></div>
+            <div id="score-board"><span id="score">0</span></div>
+            <div id="level-board">Velo: <span id="level">1</span></div>
         </div>
         
         <div id="game-over">
-            <h2>Pegue o EPB!</h2>
-            <p onclick="restartGame()">Voltar para a sala de aula (Clique/Toque)</p>
+            <h2>O EPB PEGOU!</h2>
+            <p onclick="restartGame()">Tentar novamente (Espaço ou Toque)</p>
         </div>
         
         <div id="player"></div>
@@ -144,110 +159,138 @@
     </div>
 
     <script>
+        // -- Seleção de Elementos --
         const player = document.getElementById("player");
         const cactus = document.getElementById("cactus");
         const scoreElement = document.getElementById("score");
         const levelElement = document.getElementById("level");
         const gameOverScreen = document.getElementById("game-over");
 
+        // -- Variáveis de Estado do Jogo --
         let isJumping = false;
         let isGameOver = false;
         let score = 0;
         let scoreInterval;
         
-        // --- Configurações de Dificuldade ---
-        let currentSpeed = 1.5; // Velocidade inicial (segundos que a animação dura)
-        let currentLevel = 1;
-        const pointsPerLevel = 500; // A cada 500 pontos, fica mais rápido
-        const speedIncrement = 0.15; // Quanto a animação diminui (fica mais rápido) por nível
-        const minSpeed = 0.6; // Velocidade máxima (mínimo de segundos)
+        // -- Configurações de Dificuldade Dinâmica --
+        let currentSpeed = 1.5;         // Duração inicial da animação do EPB (segundos)
+        let currentLevel = 1;           // Nível inicial
+        const pointsPerLevel = 500;     // Pontos necessários para subir de nível
+        const speedIncrement = 0.15;    // Quanto a velocidade aumenta (reduz tempo) por nível
+        const minSpeed = 0.55;          // Velocidade máxima permitida (tempo mínimo)
 
+        // -- Função de Pulo --
         function jump() {
             if (isJumping || isGameOver) return;
             isJumping = true;
-            player.classList.add("jump");
+            player.classList.add("jump"); // Adiciona classe que aciona o pulo no CSS
+            
+            // Remove a classe após o tempo do pulo (500ms)
             setTimeout(() => {
                 player.classList.remove("jump");
                 isJumping = false;
             }, 500);
         }
 
-        // Controles
-        document.addEventListener("keydown", (e) => { if ((e.code === "Space" || e.code === "ArrowUp") && !isGameOver) jump(); });
-        document.addEventListener("touchstart", (e) => { if (!isGameOver) jump(); });
-        document.addEventListener("mousedown", (e) => { if (!isGameOver) jump(); });
+        // -- Gerenciador de Controles (Teclado e Toque) --
+        function handleInput(e) {
+            // Se o jogo acabou e apertar Espaço/Toque, reinicia
+            if (isGameOver) {
+                if (e.type === 'touchstart' || e.code === 'Space') {
+                    restartGame();
+                }
+                return;
+            }
+            
+            // Se o jogo está rodando e apertar Espaço/Seta Cima/Toque, pula
+            if (e.type === 'touchstart' || e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault(); // Evita scroll no mobile
+                jump();
+            }
+        }
 
-        // Sistema de Pontuação e Dificuldade
+        document.addEventListener("keydown", handleInput);
+        document.addEventListener("touchstart", handleInput);
+
+        // -- Sistema de Pontuação e Dificuldade --
         function updateScore() {
             if (!isGameOver) {
                 score++;
                 scoreElement.innerText = score;
 
-                // Lógica de Dificuldade: Checa se mudou o nível
+                // Lógica de Dificuldade: Verifica se deve subir de nível
                 let newLevel = Math.floor(score / pointsPerLevel) + 1;
                 if (newLevel > currentLevel) {
                     currentLevel = newLevel;
                     levelElement.innerText = currentLevel;
-                    increaseSpeed();
+                    increaseSpeed(); // Deixa o jogo mais rápido
                 }
             }
         }
         
-        // Função que ajusta a velocidade da animação CSS
+        // -- Função que aumenta a velocidade do obstáculo --
         function increaseSpeed() {
             if (currentSpeed > minSpeed) {
                 currentSpeed -= speedIncrement;
-                // Aplica a nova duração da animação diretamente no elemento
+                // Aplica a nova velocidade diretamente na animação CSS do obstáculo
                 cactus.style.animationDuration = currentSpeed + "s";
-                console.log(`Nível ${currentLevel}: Velocidade aumentada para ${currentSpeed.toFixed(2)}s`);
             }
         }
 
+        // Inicia o contador de pontos
         scoreInterval = setInterval(updateScore, 100);
 
-        // Motor de Colisão
+        // -- Motor de Colisão (Loop Principal) --
         let gameLoop = setInterval(() => {
             if (isGameOver) return;
 
+            // Pega as caixas de colisão exatas
             let playerRect = player.getBoundingClientRect();
             let cactusRect = cactus.getBoundingClientRect();
 
-            // Lógica de colisão ajustada para as novas formas
+            // Lógica de colisão
+            // Adicionamos pequenas margens (-10, -5) para a colisão parecer mais justa
             if (
-                playerRect.right > cactusRect.left + 5 && // Pequena margem para o texto "EPB"
-                playerRect.left < cactusRect.right - 5 &&
-                playerRect.bottom > cactusRect.top
+                playerRect.right > cactusRect.left + 10 && 
+                playerRect.left < cactusRect.right - 10 &&
+                playerRect.bottom > cactusRect.top + 5
             ) {
-                isGameOver = true;
-                
-                cactus.style.animationPlayState = 'paused';
-                player.style.animationPlayState = 'paused';
-
-                gameOverScreen.style.display = "flex";
-                clearInterval(scoreInterval);
+                endGame();
             }
         }, 10);
 
-        // Reiniciar
+        // -- Função de Fim de Jogo --
+        function endGame() {
+            isGameOver = true;
+            
+            // Pausa as animações no ponto exato da batida
+            cactus.style.animationPlayState = 'paused';
+            
+            // Mostra a tela de Fim de Jogo
+            gameOverScreen.style.display = "flex";
+            clearInterval(scoreInterval);
+        }
+
+        // -- Função para Reiniciar o Jogo --
         function restartGame() {
             isGameOver = false;
             score = 0;
             currentLevel = 1;
-            currentSpeed = 1.5; // Reseta a velocidade inicial
+            currentSpeed = 1.5; // Reseta a velocidade original
 
             scoreElement.innerText = score;
             levelElement.innerText = currentLevel;
             gameOverScreen.style.display = "none";
             
-            // Retoma e Reseta as animações
+            // Reinicia as animações
             cactus.style.animationPlayState = 'running';
-            player.style.animationPlayState = 'running';
             
+            // "Força" o navegador a reiniciar a animação do obstáculo do zero
             cactus.style.animation = 'none';
-            cactus.offsetHeight; // Reflow
-            // Reaplica a animação com a velocidade inicial resetada
+            cactus.offsetHeight; // Truque de reflow
             cactus.style.animation = `block-anim ${currentSpeed}s infinite linear`;
 
+            // Reinicia o placar
             clearInterval(scoreInterval);
             scoreInterval = setInterval(updateScore, 100);
         }
