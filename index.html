@@ -10,8 +10,8 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #0b0c10; /* Fundo super escuro para destacar o neon */
-            font-family: sans-serif;
+            /* A cor de fundo inicial. Ela será sobrescrita pelo JavaScript */
+            background-color: #0b0c10; 
         }
 
         /* O Canvas ocupa a tela inteira */
@@ -20,24 +20,10 @@
             width: 100vw;
             height: 100vh;
         }
-
-        /* Título discreto por cima da animação */
-        #texto-fundo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255, 255, 255, 0.1);
-            font-size: 3rem;
-            font-weight: bold;
-            pointer-events: none; /* Deixa o mouse "atravessar" o texto */
-            text-align: center;
-        }
     </style>
 </head>
 <body>
 
-    <div id="texto-fundo">Passe o mouse (ou o dedo)</div>
     <canvas id="meuCanvas"></canvas>
 
     <script>
@@ -58,6 +44,9 @@
             y: null,
             radius: 120 // Área de repulsão do mouse
         }
+
+        // Variável para controlar a cor do fundo
+        let hueFundo = 0;
 
         // --- CONTROLES DE INTERAÇÃO ---
         window.addEventListener('mousemove', function(event) {
@@ -137,17 +126,15 @@
         // --- INICIALIZAÇÃO ---
         function init() {
             particlesArray = [];
-            // Calcula a quantidade de bolinhas baseada no tamanho da tela (para não travar)
+            // Calcula a quantidade de bolinhas baseada no tamanho da tela
             let numeroDeParticulas = (canvas.height * canvas.width) / 8000;
             
             for (let i = 0; i < numeroDeParticulas; i++) {
-                let tamanho = (Math.random() * 3) + 1; // Tamanho entre 1 e 4
+                let tamanho = (Math.random() * 3) + 1;
                 let x = (Math.random() * ((innerWidth - tamanho * 2) - (tamanho * 2)) + tamanho * 2);
                 let y = (Math.random() * ((innerHeight - tamanho * 2) - (tamanho * 2)) + tamanho * 2);
-                // Velocidade de flutuação
                 let direcaoX = (Math.random() * 2) - 1;
                 let direcaoY = (Math.random() * 2) - 1;
-                // Sorteia uma cor da paleta
                 let cor = cores[Math.floor(Math.random() * cores.length)];
                 
                 particlesArray.push(new Particle(x, y, direcaoX, direcaoY, tamanho, cor));
@@ -159,19 +146,13 @@
             let opacidade = 1;
             for (let a = 0; a < particlesArray.length; a++) {
                 for (let b = a; b < particlesArray.length; b++) {
-                    // Calcula a distância entre duas partículas
                     let distancia = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
                                   + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
                     
-                    // Se estiverem perto o suficiente (valor 10000), desenha a linha
                     if (distancia < 10000) {
                         opacidade = 1 - (distancia / 10000);
-                        // A linha herda a cor da partícula 'a', com opacidade dinâmica
                         ctx.strokeStyle = particlesArray[a].cor.replace(')', `, ${opacidade})`).replace('rgb', 'rgba');
-                        
-                        // Fallback de segurança se a cor for HEX em vez de RGB
                         ctx.strokeStyle = `rgba(255, 255, 255, ${opacidade * 0.3})`; 
-                        
                         ctx.lineWidth = 1;
                         ctx.beginPath();
                         ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -182,12 +163,17 @@
             }
         }
 
-        // --- LOOP DE ANIMAÇÃO (Motor do Jogo/Canvas) ---
+        // --- LOOP DE ANIMAÇÃO ---
         function animar() {
             requestAnimationFrame(animar);
-            // Limpa a tela a cada frame para desenhar o próximo movimento
             ctx.clearRect(0, 0, innerWidth, innerHeight);
             
+            // --- NOVA LÓGICA DE COR DO FUNDO ---
+            // Aumenta o valor da cor ligeiramente a cada frame (ajuste o 0.1 para mais rápido/devagar)
+            hueFundo += 0.1; 
+            // Aplica a cor no CSS do Body. Saturação 40% e Luminosidade 8% mantém o fundo bem escuro.
+            document.body.style.backgroundColor = `hsl(${hueFundo}, 40%, 8%)`;
+
             for (let i = 0; i < particlesArray.length; i++) {
                 particlesArray[i].atualizar();
             }
