@@ -254,4 +254,78 @@
         let hueFundo = 0;
         let mouse = { x: null, y: null, radius: 150 };
 
-        window.addEventListener('mousemove', (e) => { mouse.x =
+        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+        window.addEventListener('touchmove', (e) => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
+        window.addEventListener('mouseout', () => { mouse.x = undefined; mouse.y = undefined; });
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initCanvas(); });
+
+        class Particle {
+            constructor(x, y, direcaoX, direcaoY, tamanho, cor) {
+                this.x = x; this.y = y; this.direcaoX = direcaoX; this.direcaoY = direcaoY;
+                this.tamanho = tamanho; this.cor = cor;
+            }
+            desenhar() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.tamanho, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.cor; ctx.fill();
+            }
+            atualizar() {
+                if (this.x > canvas.width || this.x < 0) this.direcaoX = -this.direcaoX;
+                if (this.y > canvas.height || this.y < 0) this.direcaoY = -this.direcaoY;
+
+                let dx = mouse.x - this.x; let dy = mouse.y - this.y;
+                let distancia = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distancia < mouse.radius) {
+                    const forcaMaxima = (mouse.radius - distancia) / mouse.radius;
+                    this.x -= (dx / distancia) * forcaMaxima * 5;
+                    this.y -= (dy / distancia) * forcaMaxima * 5;
+                } else {
+                    this.x += this.direcaoX; this.y += this.direcaoY;
+                }
+                this.desenhar();
+            }
+        }
+
+        function initCanvas() {
+            particlesArray = [];
+            let numeroDeParticulas = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numeroDeParticulas; i++) {
+                let tamanho = (Math.random() * 2) + 1;
+                let x = Math.random() * innerWidth; let y = Math.random() * innerHeight;
+                let direcaoX = (Math.random() * 1.5) - 0.75; let direcaoY = (Math.random() * 1.5) - 0.75;
+                let cor = cores[Math.floor(Math.random() * cores.length)];
+                particlesArray.push(new Particle(x, y, direcaoX, direcaoY, tamanho, cor));
+            }
+        }
+
+        function conectar() {
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distancia = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
+                    if (distancia < 12000) {
+                        let opacidade = 1 - (distancia / 12000);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacidade * 0.2})`; 
+                        ctx.lineWidth = 1; ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y); ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animar() {
+            requestAnimationFrame(animar);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            
+            hueFundo += 0.05; 
+            document.body.style.backgroundColor = `hsl(${hueFundo}, 40%, 8%)`;
+
+            for (let i = 0; i < particlesArray.length; i++) particlesArray[i].atualizar();
+            conectar();
+        }
+
+        initCanvas();
+        animar();
+    </script>
+</body>
+</html>
