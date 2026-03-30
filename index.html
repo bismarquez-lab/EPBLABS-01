@@ -3,54 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Interativo - Upload e Histórico</title>
+    <title>Portal da Turma</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
-        /* --- ESTILOS GERAIS E CANVAS --- */
-        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; }
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: white;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
-        /* --- PAINEL CENTRAL --- */
         #painel-central {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 40px; width: 380px; text-align: center; color: white; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; 
+            width: 400px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
+        
+        /* Custom Scrollbar pro Painel */
+        #painel-central::-webkit-scrollbar { width: 6px; }
+        #painel-central::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* --- LOGIN --- */
-        #secao-login h2 { margin-top: 0; font-size: 24px; font-weight: 400; }
-        #secao-login p { font-size: 14px; color: #ddd; margin-bottom: 25px; }
-        .google-btn-container { display: flex; justify-content: center; }
+        /* Estilos de Perfil */
+        #foto-perfil { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 5px; border: 3px solid #555; transition: border-color 0.3s;}
+        #nome-usuario { margin: 0; font-size: 22px; }
+        #badge-funcao { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;}
+        
+        /* Cores Temáticas */
+        .tema-aluno #foto-perfil { border-color: #00ff99; }
+        .tema-aluno #badge-funcao { background: #00ff99; color: #0b0c10; }
+        .tema-prof #foto-perfil { border-color: #ffcc00; }
+        .tema-prof #badge-funcao { background: #ffcc00; color: #0b0c10; }
 
-        /* --- DASHBOARD E UPLOAD --- */
+        /* Inputs e Botões */
+        input[type="file"] { width: 100%; padding: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; font-size: 13px;}
+        button { width: 100%; padding: 10px; color: #0b0c10; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:disabled { background: #555 !important; color: #888; cursor: not-allowed; }
+        
+        .btn-aluno { background: linear-gradient(45deg, #00ff99, #00ccff); }
+        .btn-aluno:hover { box-shadow: 0 0 15px rgba(0, 255, 153, 0.4); }
+        .btn-prof { background: linear-gradient(45deg, #ffcc00, #ff6600); }
+        .btn-prof:hover { box-shadow: 0 0 15px rgba(255, 204, 0, 0.4); }
+
+        /* Áreas de Listagem */
+        .box-arquivos { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; text-align: left; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .box-arquivos h4 { margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .box-arquivos ul { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+        .box-arquivos li { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
+        .box-arquivos a { color: #fff; text-decoration: none; word-break: break-all; margin-right: 10px;}
+        .box-arquivos a:hover { text-decoration: underline; color: #00ccff;}
+        
+        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; width: auto;}
+        
         #secao-dashboard { display: none; }
-        #foto-perfil { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #00ff99; margin-bottom: 10px; }
-        #nome-usuario { margin: 0 0 5px 0; font-size: 20px; }
-        #email-usuario { margin: 0 0 20px 0; font-size: 13px; color: #aaa; }
-
-        input[type="file"] { width: 100%; padding: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; }
-        
-        button { width: 100%; padding: 12px; background: linear-gradient(45deg, #00ff99, #00ccff); color: #0b0c10; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 255, 153, 0.4); }
-        button:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        #mensagem-status { margin-top: 10px; font-size: 14px; min-height: 20px;}
-
-        /* --- LISTA DE ARQUIVOS E BOTÃO APAGAR --- */
-        #area-arquivos { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
-        #area-arquivos h4 { margin: 0 0 10px 0; font-size: 14px; color: #00ff99; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-        
-        #lista-arquivos { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 13px; }
-        #lista-arquivos li { margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
-        #lista-arquivos a { color: #00ccff; text-decoration: none; font-weight: bold; }
-        #lista-arquivos a:hover { text-decoration: underline; }
-        
-        #lista-arquivos::-webkit-scrollbar { width: 6px; }
-        #lista-arquivos::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-
-        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; float: right; margin-top: 2px; width: auto; font-weight: normal; }
-        .btn-apagar:hover { background: #cc0044; transform: none; box-shadow: none; }
+        .google-btn-container { display: flex; justify-content: center; margin-top: 20px;}
     </style>
 </head>
 <body>
@@ -68,8 +71,8 @@
     <div id="painel-central">
         
         <div id="secao-login">
-            <h2>Portal do Aluno</h2>
-            <p>Faça login para acessar o sistema.</p>
+            <h2>Portal da Turma</h2>
+            <p>Faça login para continuar.</p>
             <div class="google-btn-container">
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_black" data-text="signin_with" data-size="large"></div>
             </div>
@@ -78,281 +81,226 @@
         <div id="secao-dashboard">
             <img id="foto-perfil" src="" alt="Sua foto">
             <h3 id="nome-usuario">Nome</h3>
-            <p id="email-usuario">email@gmail.com</p>
+            <span id="badge-funcao">Carregando...</span>
+            <span id="email-oculto" style="display:none;"></span>
 
-            <input type="file" id="arquivo-input">
-            <button id="btn-enviar" onclick="enviarArquivo()">Enviar Atividade</button>
-            <div id="mensagem-status"></div>
+            <div id="view-professor" style="display: none;">
+                <div class="box-arquivos" style="background: rgba(255, 204, 0, 0.1);">
+                    <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
+                    <input type="file" id="input-prof">
+                    <button class="btn-prof" id="btn-enviar-prof" onclick="enviarArquivo('professor')">Enviar para a Turma</button>
+                    <div id="status-prof" style="font-size: 12px; margin-top: 5px;"></div>
+                </div>
 
-            <div id="area-arquivos">
-                <h4>Seus Arquivos Enviados</h4>
-                <ul id="lista-arquivos">
-                    <li style="color: #aaa;">Aguardando login...</li>
-                </ul>
+                <div class="box-arquivos">
+                    <h4 style="color: #ffcc00;">📚 Materiais Ativos na Turma</h4>
+                    <ul id="lista-materiais-prof"></ul>
+                </div>
             </div>
+
+            <div id="view-aluno" style="display: none;">
+                <div class="box-arquivos">
+                    <h4 style="color: #00ccff;">📚 Materiais do Professor</h4>
+                    <ul id="lista-materiais-aluno"></ul>
+                </div>
+
+                <div class="box-arquivos" style="background: rgba(0, 255, 153, 0.1);">
+                    <h4 style="color: #00ff99;">📤 Enviar Minha Atividade</h4>
+                    <input type="file" id="input-aluno">
+                    <button class="btn-aluno" id="btn-enviar-aluno" onclick="enviarArquivo('aluno')">Entregar Trabalho</button>
+                    <div id="status-aluno" style="font-size: 12px; margin-top: 5px;"></div>
+                </div>
+
+                <div class="box-arquivos">
+                    <h4 style="color: #00ff99;">📂 Meus Envios</h4>
+                    <ul id="lista-meus-envios"></ul>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         // ==========================================
-        // URL DO SEU GOOGLE APPS SCRIPT
+        // CONFIGURAÇÕES
         // ==========================================
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
+        
+        // Coloque os e-mails dos professores aqui (separados por vírgula)
+        const PROFESSORES = ["bismarquez@gmail.com"]; 
+        
+        let roleAtual = "aluno"; // Variável global para saber quem está logado
 
         // ==========================================
-        // 1. LOGIN DO GOOGLE
+        // 1. LOGIN E ROTEAMENTO
         // ==========================================
         function decodificarJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
+            return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
         }
 
         function lidarComRespostaDoGoogle(response) {
-            const dadosUsuario = decodificarJwt(response.credential);
+            const dados = decodificarJwt(response.credential);
+            const email = dados.email;
             
-            document.getElementById('nome-usuario').innerText = "Olá, " + dadosUsuario.given_name;
-            document.getElementById('email-usuario').innerText = dadosUsuario.email;
-            document.getElementById('foto-perfil').src = dadosUsuario.picture;
+            document.getElementById('nome-usuario').innerText = dados.given_name;
+            document.getElementById('email-oculto').innerText = email;
+            document.getElementById('foto-perfil').src = dados.picture;
+            
+            // Verifica se é professor
+            const painel = document.getElementById('painel-central');
+            if (PROFESSORES.includes(email)) {
+                roleAtual = "professor";
+                painel.classList.add("tema-prof");
+                document.getElementById('badge-funcao').innerText = "PROFESSOR";
+                document.getElementById('view-professor').style.display = "block";
+            } else {
+                roleAtual = "aluno";
+                painel.classList.add("tema-aluno");
+                document.getElementById('badge-funcao').innerText = "ALUNO";
+                document.getElementById('view-aluno').style.display = "block";
+            }
             
             document.getElementById('secao-login').style.display = 'none';
             document.getElementById('secao-dashboard').style.display = 'block';
 
-            buscarMeusArquivos(dadosUsuario.email);
+            atualizarListas(email);
         }
 
         // ==========================================
-        // 2. BUSCAR ARQUIVOS E EXIBIR NA LISTA
+        // 2. BUSCAR ARQUIVOS DA NUVEM
         // ==========================================
-        async function buscarMeusArquivos(email) {
-            const listaHtml = document.getElementById('lista-arquivos');
-            listaHtml.innerHTML = '<li style="color: #00ccff;">Buscando seus arquivos na nuvem...</li>';
-
+        async function atualizarListas(email) {
             try {
                 const resposta = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(email)}`);
                 const resultado = await resposta.json();
 
                 if (resultado.status === "sucesso") {
-                    if (resultado.arquivos.length === 0) {
-                        listaHtml.innerHTML = '<li style="color: #aaa;">Você ainda não enviou nenhum arquivo.</li>';
+                    
+                    // Renderiza lista de materiais (Prof e Aluno vêm o mesmo material, mas só Prof pode apagar)
+                    let htmlMateriaisProf = '';
+                    let htmlMateriaisAluno = '';
+                    
+                    if(resultado.arquivosProfessor.length === 0){
+                        htmlMateriaisProf = '<li style="color:#aaa;">Nenhum material compartilhado.</li>';
+                        htmlMateriaisAluno = '<li style="color:#aaa;">Nenhum material disponível ainda.</li>';
                     } else {
-                        listaHtml.innerHTML = ''; 
-                        resultado.arquivos.forEach(arq => {
-                            listaHtml.innerHTML += `
-                                <li>
-                                    📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> 
-                                    <span style="color:#777; font-size:11px;">(${arq.data})</span>
-                                    <button class="btn-apagar" onclick="apagarArquivo('${arq.id}')">🗑️ Apagar</button>
-                                </li>
-                            `;
+                        resultado.arquivosProfessor.forEach(arq => {
+                            let docLink = `📄 <a href="${arq.link}" target="_blank">${arq.nome}</a>`;
+                            htmlMateriaisProf += `<li>${docLink} <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'professor')">Apagar</button></li>`;
+                            htmlMateriaisAluno += `<li>${docLink}</li>`; // Aluno só vê e clica, não apaga
                         });
                     }
-                } else {
-                    listaHtml.innerHTML = `<li style="color: #ff0055;">Erro: ${resultado.mensagem}</li>`;
+                    document.getElementById('lista-materiais-prof').innerHTML = htmlMateriaisProf;
+                    document.getElementById('lista-materiais-aluno').innerHTML = htmlMateriaisAluno;
+
+                    // Renderiza lista pessoal do Aluno
+                    if (roleAtual === "aluno") {
+                        let htmlMeus = '';
+                        if(resultado.arquivosAluno.length === 0){
+                            htmlMeus = '<li style="color:#aaa;">Você ainda não enviou nada.</li>';
+                        } else {
+                            resultado.arquivosAluno.forEach(arq => {
+                                htmlMeus += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'aluno')">Apagar</button></li>`;
+                            });
+                        }
+                        document.getElementById('lista-meus-envios').innerHTML = htmlMeus;
+                    }
+
                 }
             } catch (erro) {
-                listaHtml.innerHTML = `<li style="color: #ff0055;">Erro ao conectar com o servidor.</li>`;
-                console.error(erro);
+                console.error("Erro ao buscar arquivos", erro);
             }
         }
 
         // ==========================================
-        // 3. APAGAR ARQUIVO
+        // 3. ENVIAR E APAGAR ARQUIVOS
         // ==========================================
-        async function apagarArquivo(idDoArquivo) {
-            if (!confirm("Tem certeza que deseja apagar este arquivo definitivamente?")) {
-                return;
-            }
-
-            const emailNaTela = document.getElementById('email-usuario').innerText;
-            const statusTexto = document.getElementById('mensagem-status');
+        function enviarArquivo(tipo) {
+            const input = document.getElementById(tipo === 'professor' ? 'input-prof' : 'input-aluno');
+            const btn = document.getElementById(tipo === 'professor' ? 'btn-enviar-prof' : 'btn-enviar-aluno');
+            const status = document.getElementById(tipo === 'professor' ? 'status-prof' : 'status-aluno');
             
-            statusTexto.innerText = "Apagando arquivo...";
-            statusTexto.style.color = "#ffcc00";
-
-            const dadosParaEnviar = {
-                action: "delete", 
-                fileId: idDoArquivo,
-                userEmail: emailNaTela 
-            };
-
-            try {
-                const resposta = await fetch(URL_DO_SCRIPT, {
-                    method: 'POST',
-                    body: JSON.stringify(dadosParaEnviar),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
-                });
-
-                const resultado = await resposta.json();
-
-                if (resultado.status === "sucesso") {
-                    statusTexto.innerText = "✅ Arquivo apagado com sucesso!";
-                    statusTexto.style.color = "#00ff99";
-                    buscarMeusArquivos(emailNaTela); // Atualiza a lista na tela
-                } else {
-                    statusTexto.innerText = "❌ Erro ao apagar: " + resultado.mensagem;
-                    statusTexto.style.color = "#ff0055";
-                }
-            } catch (erro) {
-                statusTexto.innerText = "❌ Erro de conexão ao tentar apagar.";
-                statusTexto.style.color = "#ff0055";
-            }
-        }
-
-        // ==========================================
-        // 4. ENVIAR NOVO ARQUIVO (UPLOAD)
-        // ==========================================
-        function enviarArquivo() {
-            const input = document.getElementById('arquivo-input');
-            const statusTexto = document.getElementById('mensagem-status');
-            const botao = document.getElementById('btn-enviar');
-
-            if (input.files.length === 0) {
-                statusTexto.innerText = "⚠️ Selecione um arquivo.";
-                statusTexto.style.color = "#ffcc00";
-                return;
-            }
+            if (input.files.length === 0) { status.innerText = "⚠️ Escolha um arquivo!"; return; }
 
             const arquivo = input.files[0];
             const leitor = new FileReader();
-
-            botao.innerText = "Enviando... Aguarde";
-            botao.disabled = true;
-            statusTexto.innerText = "Preparando arquivo...";
-            statusTexto.style.color = "#00ccff";
+            
+            btn.disabled = true; btn.innerText = "Enviando..."; status.innerText = "";
 
             leitor.onload = async function(evento) {
                 const base64 = evento.target.result.split(',')[1];
-                const emailNaTela = document.getElementById('email-usuario').innerText;
+                const emailLogado = document.getElementById('email-oculto').innerText;
                 
-                const dadosParaEnviar = {
-                    action: "upload",
-                    fileName: arquivo.name,
-                    mimeType: arquivo.type,
-                    base64: base64,
-                    userEmail: emailNaTela 
+                const payload = {
+                    action: tipo === 'professor' ? 'upload_professor' : 'upload_aluno',
+                    fileName: arquivo.name, mimeType: arquivo.type, base64: base64, userEmail: emailLogado 
                 };
 
-                statusTexto.innerText = "Enviando para o Google Drive...";
-
                 try {
-                    const resposta = await fetch(URL_DO_SCRIPT, {
-                        method: 'POST',
-                        body: JSON.stringify(dadosParaEnviar),
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
-                    });
-
-                    const resultado = await resposta.json();
-
-                    if (resultado.status === "sucesso") {
-                        statusTexto.innerText = "✅ Arquivo enviado com sucesso!";
-                        statusTexto.style.color = "#00ff99";
-                        buscarMeusArquivos(emailNaTela); // Atualiza a lista na tela
-                    } else {
-                        statusTexto.innerText = "❌ Erro: " + resultado.mensagem;
-                        statusTexto.style.color = "#ff0055";
-                    }
-                } catch (erro) {
-                    statusTexto.innerText = "❌ Erro de conexão. Tente novamente.";
-                    statusTexto.style.color = "#ff0055";
-                }
-
-                botao.innerText = "Enviar Atividade";
-                botao.disabled = false;
-                input.value = ''; 
+                    const resposta = await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                    await resposta.json();
+                    status.innerText = "✅ Sucesso!";
+                    status.style.color = "#00ff99";
+                    atualizarListas(emailLogado);
+                } catch(e) { status.innerText = "❌ Erro ao enviar."; status.style.color = "red";}
+                
+                btn.disabled = false; btn.innerText = tipo === 'professor' ? "Enviar para a Turma" : "Entregar Trabalho"; input.value = '';
             };
-
             leitor.readAsDataURL(arquivo);
         }
 
-        // ==========================================
-        // 5. ANIMAÇÃO DE FUNDO (CANVAS TEIA MAGNÉTICA)
-        // ==========================================
-        const canvas = document.getElementById('meuCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        async function apagarArquivo(id, tipo) {
+            if (!confirm("Apagar este arquivo?")) return;
+            const emailLogado = document.getElementById('email-oculto').innerText;
+            
+            const payload = { action: tipo === 'professor' ? 'delete_professor' : 'delete_aluno', fileId: id, userEmail: emailLogado };
 
-        let particlesArray = [];
-        const cores = ['#ff0055', '#00ff99', '#00ccff', '#ffcc00', '#aa00ff'];
-        let hueFundo = 0;
-        let mouse = { x: null, y: null, radius: 150 };
+            try {
+                await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                atualizarListas(emailLogado);
+            } catch(e) { alert("Erro ao apagar arquivo."); }
+        }
 
-        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
-        window.addEventListener('touchmove', (e) => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('mouseout', () => { mouse.x = undefined; mouse.y = undefined; });
+        // ==========================================
+        // CANVAS (FUNDO)
+        // ==========================================
+        const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particlesArray = []; const cores = ['#ff0055', '#00ff99', '#00ccff', '#ffcc00', '#aa00ff'];
+        let hueFundo = 0; let mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initCanvas(); });
 
         class Particle {
-            constructor(x, y, direcaoX, direcaoY, tamanho, cor) {
-                this.x = x; this.y = y; this.direcaoX = direcaoX; this.direcaoY = direcaoY;
-                this.tamanho = tamanho; this.cor = cor;
-            }
-            desenhar() {
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.tamanho, 0, Math.PI * 2, false);
-                ctx.fillStyle = this.cor; ctx.fill();
-            }
+            constructor(x, y, dx, dy, tam, cor) { this.x = x; this.y = y; this.dx = dx; this.dy = dy; this.tam = tam; this.cor = cor; }
+            desenhar() { ctx.beginPath(); ctx.arc(this.x, this.y, this.tam, 0, Math.PI * 2); ctx.fillStyle = this.cor; ctx.fill(); }
             atualizar() {
-                if (this.x > canvas.width || this.x < 0) this.direcaoX = -this.direcaoX;
-                if (this.y > canvas.height || this.y < 0) this.direcaoY = -this.direcaoY;
-
-                let dx = mouse.x - this.x; let dy = mouse.y - this.y;
-                let distancia = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distancia < mouse.radius) {
-                    const forcaMaxima = (mouse.radius - distancia) / mouse.radius;
-                    this.x -= (dx / distancia) * forcaMaxima * 5;
-                    this.y -= (dy / distancia) * forcaMaxima * 5;
-                } else {
-                    this.x += this.direcaoX; this.y += this.direcaoY;
-                }
+                if (this.x > canvas.width || this.x < 0) this.dx = -this.dx; if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
+                let distX = mouse.x - this.x; let distY = mouse.y - this.y; let dist = Math.sqrt(distX * distX + distY * distY);
+                if (dist < mouse.radius) { this.x -= (distX / dist) * 3; this.y -= (distY / dist) * 3; } 
+                else { this.x += this.dx; this.y += this.dy; }
                 this.desenhar();
             }
         }
-
         function initCanvas() {
-            particlesArray = [];
-            let numeroDeParticulas = (canvas.height * canvas.width) / 9000;
-            for (let i = 0; i < numeroDeParticulas; i++) {
-                let tamanho = (Math.random() * 2) + 1;
-                let x = Math.random() * innerWidth; let y = Math.random() * innerHeight;
-                let direcaoX = (Math.random() * 1.5) - 0.75; let direcaoY = (Math.random() * 1.5) - 0.75;
-                let cor = cores[Math.floor(Math.random() * cores.length)];
-                particlesArray.push(new Particle(x, y, direcaoX, direcaoY, tamanho, cor));
-            }
+            particlesArray = []; let num = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < num; i++) particlesArray.push(new Particle(Math.random() * innerWidth, Math.random() * innerHeight, (Math.random()*1.5)-0.75, (Math.random()*1.5)-0.75, Math.random()*2+1, cores[Math.floor(Math.random()*cores.length)]));
         }
-
-        function conectar() {
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a; b < particlesArray.length; b++) {
-                    let distancia = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
-                    if (distancia < 12000) {
-                        let opacidade = 1 - (distancia / 12000);
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacidade * 0.2})`; 
-                        ctx.lineWidth = 1; ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y); ctx.stroke();
-                    }
+        function animar() {
+            requestAnimationFrame(animar); ctx.clearRect(0, 0, innerWidth, innerHeight);
+            hueFundo += 0.05; document.body.style.backgroundColor = `hsl(${hueFundo}, 40%, 8%)`;
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].atualizar();
+                for (let j = i; j < particlesArray.length; j++) {
+                    let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2);
+                    if (d < 12000) { ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - d/12000)*0.2})`; ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); }
                 }
             }
         }
-
-        function animar() {
-            requestAnimationFrame(animar);
-            ctx.clearRect(0, 0, innerWidth, innerHeight);
-            
-            hueFundo += 0.05; 
-            document.body.style.backgroundColor = `hsl(${hueFundo}, 40%, 8%)`;
-
-            for (let i = 0; i < particlesArray.length; i++) particlesArray[i].atualizar();
-            conectar();
-        }
-
-        initCanvas();
-        animar();
+        initCanvas(); animar();
     </script>
 </body>
 </html>
