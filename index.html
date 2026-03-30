@@ -44,6 +44,8 @@
         .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 15px !important; margin-bottom: 15px !important; border: 1px solid rgba(255,255,255,0.05) !important;}
         .ul-interna { width: 100%; margin-top: 10px !important; padding-left: 10px !important; }
         .ul-interna li { border: none; padding: 0; margin-bottom: 5px; }
+
+        .separador-turma { background: rgba(255,204,0,0.1); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #ffcc00; margin-top: 15px; border: 1px solid rgba(255,204,0,0.2); display: block !important; text-align: left;}
     </style>
 </head>
 <body>
@@ -97,47 +99,57 @@
             </div>
 
             <div class="box">
-                <h4 style="color: #00ff99;">🎒 3. Matricular Aluno</h4>
+                <h4 style="color: #00ff99;">🎒 3. Gerenciar Alunos</h4>
                 <input type="email" id="admin-novo-aluno" placeholder="Email do Google do Aluno">
                 <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
                 <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
+                <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
             </div>
         </div>
 
         <div id="pag-prof" class="pagina">
             <h3 style="color: #ffcc00; margin-top: 0;">Painel de Aulas</h3>
-            <div class="box">
+            <p id="prof-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
+
+            <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
                 <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
                 <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
                 <input type="file" id="prof-file">
                 <button class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
-                <p id="prof-status" style="min-height: 20px; font-weight: bold; font-size: 13px;"></p>
             </div>
             <div class="box">
-                <h4 style="color: #ffcc00;">📚 Materiais Ativos</h4>
+                <h4 style="color: #ffcc00;">📚 Materiais Ativos (Por Turma)</h4>
                 <ul class="lista-arq" id="lista-materiais-prof"></ul>
             </div>
         </div>
 
         <div id="pag-visao-prof" class="pagina">
-            <h3 style="color: #00ccff; margin-top: 0;">Visão Geral da Turma</h3>
-            <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Acompanhe todos os trabalhos enviados pelos alunos.</p>
+            <h3 style="color: #00ccff; margin-top: 0;">Gestão da Turma</h3>
+            <p id="prof-visao-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
+
             <div class="box" style="border: 1px solid rgba(0, 204, 255, 0.3); background: rgba(0,0,0,0.5);">
+                <h4 style="color: #00ccff;">👁️ Entregas Recebidas</h4>
                 <ul class="lista-arq" id="lista-visao-geral"></ul>
+            </div>
+
+            <div class="box" style="border: 1px solid rgba(255, 204, 0, 0.3); background: rgba(0,0,0,0.5);">
+                <h4 style="color: #ffcc00;">🎒 Meus Alunos Matriculados</h4>
+                <ul class="lista-arq" id="lista-prof-alunos"></ul>
             </div>
         </div>
 
         <div id="pag-aluno" class="pagina">
-            <h3 style="color: #00ff99; margin-top: 0;">Minha Sala Virtual</h3>
+            <h3 style="color: #00ff99; margin-top: 0;" id="titulo-turma-aluno">Minha Sala Virtual</h3>
+            <p id="aluno-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
+
             <div class="box">
                 <h4 style="color: #00ccff;">📚 Materiais da Turma</h4>
                 <ul class="lista-arq" id="lista-materiais-aluno"></ul>
             </div>
-            <div class="box">
+            <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
                 <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
                 <input type="file" id="aluno-file">
                 <button class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
-                <p id="aluno-status" style="min-height: 20px; font-weight: bold; font-size: 13px;"></p>
             </div>
             <div class="box">
                 <h4 style="color: #00ff99;">📂 Meus Envios</h4>
@@ -148,7 +160,6 @@
     </div>
 
     <script>
-        // ATENÇÃO: Cole o link gigante do seu Apps Script aqui
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         let DADOS_SISTEMA = null; 
 
@@ -174,7 +185,6 @@
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
         }
 
-        // --- CONSTRUIR O PAINEL DE ACORDO COM A FUNÇÃO ---
         function configurarPainel(dados) {
             let paginaAtivaId = 'pag-perfil'; 
             document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'block') paginaAtivaId = p.id; });
@@ -208,41 +218,64 @@
                 document.getElementById('admin-select-turma').innerHTML = htmlTurmas;
                 document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li style="color:#aaa;">Nenhuma turma criada.</li>';
 
+                let htmlAlunos = '';
+                Object.keys(dados.db.alunos).forEach(a => {
+                    htmlAlunos += `<li><span>👤 ${a} <span style="font-size:10px; color:#aaa;">(${dados.db.alunos[a]})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', 'admin-status')">🗑️</button></li>`;
+                });
+                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno matriculado.</li>';
+
             // -- MODO PROFESSOR --
             } else if (dados.role === "professor") {
                 badge.innerText = "👨‍🏫 PROFESSOR"; badge.style.background = "#ffcc00"; badge.style.color = "#000";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">📚 Minhas Turmas</button>`;
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">👁️ Visão Geral</button>`; // Botão Restaurado!
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">👁️ Gestão</button>`;
                 
-                // --- CORREÇÃO DO SELECT DE TURMAS (Usando o emailLogado) ---
                 let selectT = document.getElementById('prof-seleciona-turma');
                 selectT.innerHTML = '<option value="">Para qual Turma?</option>';
                 Object.keys(dados.db.turmas).forEach(t => {
-                    if(dados.db.turmas[t] === emailLogado) {
-                        selectT.innerHTML += `<option value="${t}">${t}</option>`;
-                    }
+                    if(dados.db.turmas[t] === emailLogado) selectT.innerHTML += `<option value="${t}">${t}</option>`;
                 });
 
+                // Agrupando materiais por turma
+                let matPorTurma = {};
+                dados.materiais.forEach(m => {
+                    if(!matPorTurma[m.turma]) matPorTurma[m.turma] = [];
+                    matPorTurma[m.turma].push(m);
+                });
                 let htmlMat = '';
-                dados.materiais.forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">[${m.turma}] ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`);
+                for(let t in matPorTurma) {
+                    htmlMat += `<li class="separador-turma">🏫 ${t}</li>`;
+                    matPorTurma[t].forEach(m => {
+                        htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`;
+                    });
+                }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
-                // --- RESTAURAÇÃO DA VISÃO GERAL ---
+                // Visão geral das entregas
                 let htmlVisao = '';
                 if (!dados.visaoGeral || dados.visaoGeral.length === 0) {
-                    htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida ainda.</li>';
+                    htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida.</li>';
                 } else {
                     dados.visaoGeral.forEach(aluno => {
                         htmlVisao += `<li class="li-visao-geral">
                             <strong style="color: #00ccff; font-size: 15px;">👤 ${aluno.aluno} <span style="font-size:11px; color:#aaa;">(${aluno.turma})</span></strong>
                             <ul class="ul-interna">`;
-                        aluno.arquivos.forEach(arq => {
-                            htmlVisao += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></li>`;
-                        });
+                        aluno.arquivos.forEach(arq => { htmlVisao += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></li>`; });
                         htmlVisao += `</ul></li>`;
                     });
                 }
                 document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
+
+                // Lista de Alunos (Gestão)
+                let htmlAlunosProf = '';
+                if (!dados.alunosDoProf || dados.alunosDoProf.length === 0) {
+                    htmlAlunosProf = '<li style="color:#aaa;">Nenhum aluno nas suas turmas.</li>';
+                } else {
+                    dados.alunosDoProf.forEach(a => {
+                        htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:10px; color:#aaa;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', 'prof-visao-status')">🗑️</button></li>`;
+                    });
+                }
+                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf;
 
             // -- MODO ALUNO --
             } else {
@@ -260,7 +293,6 @@
                 document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li>Nenhum envio feito.</li>';
             }
 
-            // Mantém a aba certa aberta
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.getElementById(paginaAtivaId).style.display = 'block';
             menu.querySelectorAll('.nav-btn').forEach(btn => {
@@ -277,22 +309,21 @@
 
         function fazerLogout() { google.accounts.id.disableAutoSelect(); location.reload(); }
 
-        // --- FETCH INVISÍVEL (NO RELOAD) ---
+        // --- FETCH INVISÍVEL ---
         async function fetchBanco(payload, msgElement) {
-            msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00";
+            if(msgElement) { msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00"; }
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
-                msgElement.innerText = "✅ Sucesso!"; msgElement.style.color = "#00ff99";
+                if(msgElement) { msgElement.innerText = "✅ Sucesso!"; msgElement.style.color = "#00ff99"; }
                 
-                // Recarrega os dados novos por trás dos panos
                 let emailLogado = document.getElementById('email-oculto').innerText;
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
                 configurarPainel(json);
                 
-                setTimeout(() => { msgElement.innerText = ""; }, 3000);
-            } catch(e) { msgElement.innerText = "❌ Erro."; msgElement.style.color = "red"; }
+                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3000);
+            } catch(e) { if(msgElement) { msgElement.innerText = "❌ Erro."; msgElement.style.color = "red"; } }
         }
 
         function adminAcao(acao) {
@@ -307,6 +338,13 @@
             if(!confirm(`⚠️ Tem certeza que deseja excluir '${alvo}' do sistema?`)) return;
             let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo };
             fetchBanco(payload, document.getElementById('admin-status'));
+        }
+
+        // Nova função para excluir aluno (usada por Admin e Professor)
+        function excluirAluno(alvoEmail, idStatusElemento) {
+            if(!confirm(`Remover matrícula do aluno '${alvoEmail}'?`)) return;
+            let payload = { action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail };
+            fetchBanco(payload, document.getElementById(idStatusElemento));
         }
 
         function upload(tipo) {
