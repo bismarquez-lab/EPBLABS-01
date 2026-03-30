@@ -127,6 +127,12 @@
             <h3 style="color: #00ccff; margin-top: 0;">Gestão da Turma</h3>
             <p id="prof-visao-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
+            <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
+                <h4 style="color: #ffcc00;">🏫 Criar Nova Turma</h4>
+                <input type="text" id="prof-nova-turma" placeholder="Ex: Matemática - 1º Ano">
+                <button class="action-btn" style="background: #ffcc00;" onclick="profAddTurma()">Criar Minha Turma</button>
+            </div>
+
             <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
                 <h4 style="color: #00ff99;">➕ Matricular Aluno</h4>
                 <input type="email" id="prof-novo-aluno" placeholder="Email do Google do Aluno">
@@ -140,13 +146,13 @@
             </div>
 
             <div class="box" style="border: 1px solid rgba(0, 204, 255, 0.3); background: rgba(0,0,0,0.5);">
-                <h4 style="color: #00ccff;">👁️ Entregas Recebidas</h4>
+                <h4 style="color: #00ccff;">👁️ Entregas Recebidas (Alunos)</h4>
                 <ul class="lista-arq" id="lista-visao-geral"></ul>
             </div>
         </div>
 
         <div id="pag-aluno" class="pagina">
-            <h3 style="color: #00ff99; margin-top: 0;">Minha Sala Virtual</h3>
+            <h3 style="color: #00ff99; margin-top: 0;" id="titulo-turma-aluno">Minha Sala Virtual</h3>
             <p id="aluno-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
             <div class="box">
@@ -196,7 +202,6 @@
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
         }
 
-        // --- FUNÇÃO PARA O ALUNO FILTRAR OS MATERIAIS ---
         function renderMateriaisAluno() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
             let filtro = document.getElementById('aluno-filtro-turma').value;
@@ -245,7 +250,7 @@
                 let htmlAlunos = '';
                 Object.keys(dados.db.alunos).forEach(a => {
                     let turmasAluno = dados.db.alunos[a];
-                    if(typeof turmasAluno === 'string') turmasAluno = [turmasAluno]; // Proteção
+                    if(typeof turmasAluno === 'string') turmasAluno = [turmasAluno]; 
                     turmasAluno.forEach(t => {
                         htmlAlunos += `<li><span>👤 ${a} <span style="font-size:10px; color:#aaa;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">🗑️</button></li>`;
                     });
@@ -280,11 +285,12 @@
                 for(let t in matPorTurma) {
                     htmlMat += `<li class="separador-turma">🏫 ${t}</li>`;
                     matPorTurma[t].forEach(m => {
-                        htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`;
+                        htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">X</button></li>`;
                     });
                 }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
+                // --- VISÃO GERAL (AGORA COM BOTÃO DE APAGAR ARQUIVOS DOS ALUNOS) ---
                 let htmlVisao = '';
                 if (!dados.visaoGeral || dados.visaoGeral.length === 0) {
                     htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida.</li>';
@@ -293,7 +299,10 @@
                         htmlVisao += `<li class="li-visao-geral">
                             <strong style="color: #00ccff; font-size: 15px;">👤 ${aluno.aluno} <span style="font-size:11px; color:#aaa;">(${aluno.turma})</span></strong>
                             <ul class="ul-interna">`;
-                        aluno.arquivos.forEach(arq => { htmlVisao += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></li>`; });
+                        aluno.arquivos.forEach(arq => { 
+                            // Professor agora tem o botão X para deletar arquivos enviados pelos alunos
+                            htmlVisao += `<li><span>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">🗑️</button></li>`; 
+                        });
                         htmlVisao += `</ul></li>`;
                     });
                 }
@@ -318,7 +327,6 @@
                     badge.style.background = "#00ff99"; badge.style.color = "#000";
                     menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">🎓 Sala de Aula</button>`;
                     
-                    // Preenche os selects
                     let optsFiltro = '<option value="todas">Todas as Turmas</option>';
                     let optsUpload = '<option value="">Selecione para qual Turma...</option>';
                     turmas.forEach(t => {
@@ -328,11 +336,10 @@
                     document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro;
                     document.getElementById('aluno-select-turma').innerHTML = optsUpload;
 
-                    // Renderiza materiais (via função para permitir filtro)
                     renderMateriaisAluno();
 
                     let htmlEnv = '';
-                    dados.envios.forEach(m => htmlEnv += `<li><span>📄 <a href="${m.link}" target="_blank">[${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`);
+                    dados.envios.forEach(m => htmlEnv += `<li><span>📄 <a href="${m.link}" target="_blank">[${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'aluno-status')">X</button></li>`);
                     document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li style="color:#aaa;">Nenhum envio feito.</li>';
 
                 } else {
@@ -389,17 +396,24 @@
             fetchBanco(payload, document.getElementById('admin-status'));
         }
 
+        // --- Novas Ações do Professor ---
+        function profAddTurma() {
+            let nomeTurma = document.getElementById('prof-nova-turma').value;
+            if(!nomeTurma) return alert("Digite o nome da turma que deseja criar!");
+            let payload = { action: 'prof_add_turma', userEmail: document.getElementById('email-oculto').innerText, nomeTurma: nomeTurma };
+            fetchBanco(payload, document.getElementById('prof-visao-status'));
+            document.getElementById('prof-nova-turma').value = '';
+        }
+
         function profAddAluno() {
             let emailAluno = document.getElementById('prof-novo-aluno').value;
             let turma = document.getElementById('prof-select-turma-add').value;
             if(!emailAluno || !turma) return alert("Preencha o email e selecione a turma!");
-            
             let payload = { action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma };
             fetchBanco(payload, document.getElementById('prof-visao-status'));
             document.getElementById('prof-novo-aluno').value = '';
         }
 
-        // AGORA REQUER A TURMA ESPECÍFICA PARA NÃO APAGAR O ALUNO DE TODAS AS AULAS
         function excluirAluno(alvoEmail, turmaAlvo, idStatusElemento) {
             if(!confirm(`Remover aluno '${alvoEmail}' da turma '${turmaAlvo}'?`)) return;
             let payload = { action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo };
@@ -424,10 +438,11 @@
             reader.readAsDataURL(input.files[0]);
         }
 
-        async function apagar(id) {
-            if(!confirm("Apagar este arquivo definitivamente?")) return;
+        // Função de apagar adaptada para aceitar o campo de status onde a mensagem vai aparecer
+        async function apagar(id, idStatusElemento) {
+            if(!confirm("Apagar este arquivo definitivamente da nuvem?")) return;
             let payload = { action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText };
-            await fetchBanco(payload, document.getElementById(DADOS_SISTEMA.role === 'professor' ? 'prof-status' : 'aluno-status'));
+            await fetchBanco(payload, document.getElementById(idStatusElemento));
         }
 
         // --- Canvas Background ---
