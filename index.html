@@ -78,6 +78,7 @@
             border-radius: 8px;
             color: white;
             border: 1px solid rgba(255,255,255,0.1);
+            box-sizing: border-box;
         }
 
         button {
@@ -145,11 +146,9 @@
 
     <script>
         // ==========================================
-        // CONFIGURAÇÕES DO SISTEMA (PREENCHA AQUI)
+        // URL DO SCRIPT DO GOOGLE DRIVE
         // ==========================================
-        // ⚠️ ATENÇÃO: COLOQUE O LINK GIGANTE DO SEU SCRIPT DO DRIVE AQUI
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
-
 
         // ==========================================
         // LÓGICA DE LOGIN (GOOGLE)
@@ -176,7 +175,6 @@
             document.getElementById('secao-dashboard').style.display = 'block';
         }
 
-
         // ==========================================
         // LÓGICA DE UPLOAD (DRIVE)
         // ==========================================
@@ -202,22 +200,15 @@
             leitor.onload = async function(evento) {
                 const base64 = evento.target.result.split(',')[1];
                 
-                const dadosParaEnviar = leitor.onload = async function(evento) {
-            const base64 = evento.target.result.split(',')[1];
-            
-            // Pega o e-mail que está escrito na tela do usuário
-            const emailNaTela = document.getElementById('email-usuario').innerText;
-            
-            // Adicionamos o userEmail aqui!
-            const dadosParaEnviar = {
-                fileName: arquivo.name,
-                mimeType: arquivo.type,
-                base64: base64,
-                userEmail: emailNaTela 
-            };
-
-            statusTexto.innerText = "Enviando para o Google Drive...";
-            // ... (o resto do código fetch(URL_DO_SCRIPT...) continua igualzinho)
+                // Pega o e-mail que está escrito na tela do usuário
+                const emailNaTela = document.getElementById('email-usuario').innerText;
+                
+                const dadosParaEnviar = {
+                    fileName: arquivo.name,
+                    mimeType: arquivo.type,
+                    base64: base64,
+                    userEmail: emailNaTela 
+                };
 
                 statusTexto.innerText = "Enviando para o Google Drive...";
 
@@ -250,7 +241,6 @@
 
             leitor.readAsDataURL(arquivo);
         }
-
 
         // ==========================================
         // LÓGICA DO FUNDO ANIMADO (CANVAS)
