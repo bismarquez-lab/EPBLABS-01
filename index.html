@@ -87,7 +87,89 @@
             
             // Mostra o perfil na tela
             document.getElementById('perfil-usuario').style.display = 'block';
+            <div id="area-upload" style="margin-top: 30px; text-align: center; font-family: sans-serif; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h3>Enviar um arquivo para o sistema</h3>
+    
+    <input type="file" id="arquivo-input" style="margin-bottom: 15px;">
+    <br>
+    <button id="btn-enviar" onclick="enviarArquivo()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+        Enviar Arquivo
+    </button>
+    
+    <p id="mensagem-status" style="color: #666; margin-top: 15px;"></p>
+</div>
+
+<script>
+    // COLE AQUI O LINK DO GOOGLE APPS SCRIPT QUE VOCÊ COPIOU NO PASSO 2
+    const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
+
+    function enviarArquivo() {
+        const input = document.getElementById('arquivo-input');
+        const statusTexto = document.getElementById('mensagem-status');
+        const botao = document.getElementById('btn-enviar');
+
+        if (input.files.length === 0) {
+            statusTexto.innerText = "Por favor, selecione um arquivo primeiro.";
+            statusTexto.style.color = "red";
+            return;
+        }
+
+        const arquivo = input.files[0];
+        const leitor = new FileReader();
+
+        // Mostra que está carregando
+        botao.innerText = "Enviando... Aguarde";
+        botao.disabled = true;
+        statusTexto.innerText = "Preparando arquivo...";
+        statusTexto.style.color = "blue";
+
+        // Quando o navegador terminar de ler o arquivo:
+        leitor.onload = async function(evento) {
+            // Pega o arquivo e transforma num código base64 (texto)
+            const base64 = evento.target.result.split(',')[1];
             
+            const dadosParaEnviar = {
+                fileName: arquivo.name,
+                mimeType: arquivo.type,
+                base64: base64
+            };
+
+            statusTexto.innerText = "Fazendo upload para o Google Drive...";
+
+            try {
+                // Envia para o seu Google Apps Script
+                const resposta = await fetch(URL_DO_SCRIPT, {
+                    method: 'POST',
+                    body: JSON.stringify(dadosParaEnviar),
+                    // Usamos text/plain para evitar bloqueios de CORS do navegador
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
+                });
+
+                const resultado = await resposta.json();
+
+                if (resultado.status === "sucesso") {
+                    statusTexto.innerText = "✅ Arquivo enviado com sucesso!";
+                    statusTexto.style.color = "green";
+                } else {
+                    statusTexto.innerText = "❌ Erro ao enviar: " + resultado.mensagem;
+                    statusTexto.style.color = "red";
+                }
+            } catch (erro) {
+                statusTexto.innerText = "❌ Erro de conexão ao enviar o arquivo.";
+                statusTexto.style.color = "red";
+                console.error(erro);
+            }
+
+            // Volta o botão ao normal
+            botao.innerText = "Enviar Arquivo";
+            botao.disabled = false;
+            input.value = ''; // Limpa o campo
+        };
+
+        // Começa a ler o arquivo
+        leitor.readAsDataURL(arquivo);
+    }
+</script>
             // Aqui você poderia salvar o e-mail no seu banco de dados ou liberar o jogo!
         }
     </script>
