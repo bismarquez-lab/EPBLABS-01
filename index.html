@@ -7,65 +7,82 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
+        /* --- ESTILOS GERAIS --- */
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: white;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
-        #painel-central {
+        /* --- BARRA DE NAVEGAÇÃO (TOP MENU) --- */
+        #navbar {
+            position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 20;
+            background: rgba(11, 12, 16, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: none; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box;
+        }
+
+        .nav-links { display: flex; gap: 10px; }
+        .nav-btn {
+            background: transparent; color: #ccc; border: none; padding: 8px 15px; border-radius: 6px; 
+            font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-btn.active { background: rgba(255,255,255,0.2); color: white; }
+        
+        /* Botão Sair isolado na direita */
+        .btn-sair-nav { background: rgba(255,0,85,0.2); color: #ff0055; border: 1px solid #ff0055; padding: 6px 15px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; font-weight: bold;}
+        .btn-sair-nav:hover { background: #ff0055; color: white; }
+
+        /* --- TELA DE LOGIN (CENTRALIZADA) --- */
+        #tela-login {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
-            background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; 
-            width: 400px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            transition: border-color 0.4s;
+            background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 15px; padding: 40px; width: 350px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .google-btn-container { display: flex; justify-content: center; margin-top: 20px;}
+
+        /* --- ÁREA DE CONTEÚDO PRINCIPAL (MAIS LARGA E ESPAÇOSA) --- */
+        #area-conteudo {
+            position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10;
+            width: 90%; max-width: 800px; height: calc(100vh - 110px); display: none;
+        }
+
+        /* Cada "Página" dentro da área de conteúdo */
+        .pagina {
+            background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: none; height: 100%; box-sizing: border-box; overflow-y: auto;
         }
         
-        #painel-central::-webkit-scrollbar { width: 6px; }
-        #painel-central::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .pagina::-webkit-scrollbar { width: 6px; }
+        .pagina::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* Estilos de Perfil e Logout */
-        .cabecalho-perfil { position: relative; margin-bottom: 15px; }
-        #btn-sair { position: absolute; top: 0; right: 0; background: rgba(255,0,85,0.2); color: #ff0055; border: 1px solid #ff0055; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: 0.2s; font-weight: bold;}
-        #btn-sair:hover { background: #ff0055; color: white; }
+        /* --- ESTILOS DE PERFIL --- */
+        .perfil-container { text-align: center; margin-top: 20px; }
+        #foto-perfil { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px; border: 3px solid #555; }
+        #nome-usuario { margin: 0; font-size: 26px; }
+        #email-usuario { color: #aaa; margin-top: 5px; font-size: 14px;}
+        #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 15px; letter-spacing: 1px;}
 
-        #foto-perfil { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 5px; border: 3px solid #555; transition: border-color 0.3s;}
-        #nome-usuario { margin: 0; font-size: 22px; }
-        #badge-funcao { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; letter-spacing: 1px;}
-        
-        /* Cores Temáticas */
-        .tema-aluno { border-color: rgba(0, 255, 153, 0.3) !important; }
-        .tema-aluno #foto-perfil { border-color: #00ff99; }
-        .tema-aluno #badge-funcao { background: #00ff99; color: #0b0c10; }
-        
-        .tema-prof { border-color: rgba(255, 204, 0, 0.3) !important; }
-        .tema-prof #foto-perfil { border-color: #ffcc00; }
-        .tema-prof #badge-funcao { background: #ffcc00; color: #0b0c10; }
-
-        /* Inputs e Botões */
-        input[type="file"] { width: 100%; padding: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; font-size: 13px;}
-        button { width: 100%; padding: 10px; color: #0b0c10; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:disabled { background: #555 !important; color: #888; cursor: not-allowed; }
-        
-        .btn-aluno { background: linear-gradient(45deg, #00ff99, #00ccff); }
-        .btn-aluno:hover { box-shadow: 0 0 15px rgba(0, 255, 153, 0.4); }
-        .btn-prof { background: linear-gradient(45deg, #ffcc00, #ff6600); }
-        .btn-prof:hover { box-shadow: 0 0 15px rgba(255, 204, 0, 0.4); }
-
-        /* Áreas de Listagem */
-        .box-arquivos { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; text-align: left; margin-top: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .box-arquivos h4 { margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-        .box-arquivos ul { list-style: none; padding: 0; margin: 0; font-size: 12px; }
-        .box-arquivos li { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
-        .box-arquivos a { color: #fff; text-decoration: none; word-break: break-all; margin-right: 10px;}
+        /* --- INPUTS, LISTAS E BOTÕES --- */
+        .box-arquivos { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .box-arquivos h4 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+        .box-arquivos ul { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+        .box-arquivos li { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
+        .box-arquivos a { color: #fff; text-decoration: none; word-break: break-all; margin-right: 15px;}
         .box-arquivos a:hover { text-decoration: underline; color: #00ccff;}
-        
-        /* Lista Específica da Visão Geral (Aninhada) */
-        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 10px !important; margin-bottom: 10px !important; border: 1px solid rgba(255,255,255,0.05) !important;}
-        .ul-interna { width: 100%; margin-top: 8px !important; padding-left: 5px !important; }
+
+        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 15px !important; margin-bottom: 15px !important; border: 1px solid rgba(255,255,255,0.05) !important;}
+        .ul-interna { width: 100%; margin-top: 10px !important; padding-left: 10px !important; }
         .ul-interna li { border: none; padding: 0; margin-bottom: 5px; }
 
-        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; width: auto;}
+        input[type="file"] { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; color: white;}
+        .btn-upload { width: 100%; padding: 12px; color: #0b0c10; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-upload:disabled { background: #555 !important; color: #888; cursor: not-allowed; }
         
-        #secao-dashboard { display: none; }
-        .google-btn-container { display: flex; justify-content: center; margin-top: 20px;}
+        .btn-aluno { background: linear-gradient(45deg, #00ff99, #00ccff); }
+        .btn-prof { background: linear-gradient(45deg, #ffcc00, #ff6600); }
+        
+        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+        .btn-apagar:hover { background: #cc0044; }
     </style>
 </head>
 <body>
@@ -80,64 +97,93 @@
          data-auto_prompt="false">
     </div>
 
-    <div id="painel-central">
+    <div id="tela-login">
+        <h2 style="margin-top: 0; font-size: 28px;">Portal da Turma</h2>
+        <p style="color: #ccc; margin-bottom: 30px;">Faça login para continuar.</p>
+        <div class="google-btn-container">
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_black" data-text="signin_with" data-size="large"></div>
+        </div>
+    </div>
+
+    <nav id="navbar">
+        <div id="menu-aluno" class="nav-links" style="display: none;">
+            <button class="nav-btn active" onclick="abrirPagina('pag-perfil', this)">👤 Perfil</button>
+            <button class="nav-btn" onclick="abrirPagina('pag-materiais-aluno', this)">📚 Materiais</button>
+            <button class="nav-btn" onclick="abrirPagina('pag-entregas-aluno', this)">📤 Entregas</button>
+        </div>
         
-        <div id="secao-login">
-            <h2>Portal da Turma</h2>
-            <p>Faça login para continuar.</p>
-            <div class="google-btn-container">
-                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_black" data-text="signin_with" data-size="large"></div>
-            </div>
+        <div id="menu-prof" class="nav-links" style="display: none;">
+            <button class="nav-btn active" onclick="abrirPagina('pag-perfil', this)">👤 Perfil</button>
+            <button class="nav-btn" onclick="abrirPagina('pag-materiais-prof', this)">📚 Gerenciar Materiais</button>
+            <button class="nav-btn" onclick="abrirPagina('pag-entregas-prof', this)">👁️ Visão Geral</button>
         </div>
 
-        <div id="secao-dashboard">
-            <div class="cabecalho-perfil">
-                <button id="btn-sair" onclick="fazerLogout()">Sair da Conta</button>
+        <button class="btn-sair-nav" onclick="fazerLogout()">🚪 Sair</button>
+    </nav>
+
+    <div id="area-conteudo">
+        <span id="email-oculto" style="display:none;"></span>
+
+        <div id="pag-perfil" class="pagina" style="display: block;">
+            <div class="perfil-container">
                 <img id="foto-perfil" src="" alt="Sua foto">
                 <h3 id="nome-usuario">Nome</h3>
+                <p id="email-usuario">email@gmail.com</p>
                 <span id="badge-funcao">Carregando...</span>
-                <span id="email-oculto" style="display:none;"></span>
             </div>
-
-            <div id="view-professor" style="display: none;">
-                <div class="box-arquivos" style="background: rgba(255, 204, 0, 0.1);">
-                    <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
-                    <input type="file" id="input-prof">
-                    <button class="btn-prof" id="btn-enviar-prof" onclick="enviarArquivo('professor')">Enviar para a Turma</button>
-                    <div id="status-prof" style="font-size: 12px; margin-top: 5px;"></div>
-                </div>
-
-                <div class="box-arquivos">
-                    <h4 style="color: #ffcc00;">📚 Materiais Ativos</h4>
-                    <ul id="lista-materiais-prof"></ul>
-                </div>
-
-                <div class="box-arquivos" style="border: 1px solid rgba(0, 204, 255, 0.3);">
-                    <h4 style="color: #00ccff;">👁️ Entregas dos Alunos</h4>
-                    <ul id="lista-visao-geral"></ul>
-                </div>
+            <div style="text-align: center; margin-top: 40px; color: #888;">
+                <p>Selecione uma das opções no menu superior para começar.</p>
             </div>
-
-            <div id="view-aluno" style="display: none;">
-                <div class="box-arquivos">
-                    <h4 style="color: #00ccff;">📚 Materiais da Turma</h4>
-                    <ul id="lista-materiais-aluno"></ul>
-                </div>
-
-                <div class="box-arquivos" style="background: rgba(0, 255, 153, 0.1);">
-                    <h4 style="color: #00ff99;">📤 Entregar Atividade</h4>
-                    <input type="file" id="input-aluno">
-                    <button class="btn-aluno" id="btn-enviar-aluno" onclick="enviarArquivo('aluno')">Enviar Trabalho</button>
-                    <div id="status-aluno" style="font-size: 12px; margin-top: 5px;"></div>
-                </div>
-
-                <div class="box-arquivos">
-                    <h4 style="color: #00ff99;">📂 Meus Envios</h4>
-                    <ul id="lista-meus-envios"></ul>
-                </div>
-            </div>
-
         </div>
+
+        <div id="pag-materiais-aluno" class="pagina">
+            <h3 style="color: #00ccff; margin-top: 0;">Materiais da Turma</h3>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Arquivos compartilhados pelo professor para estudo.</p>
+            <div class="box-arquivos">
+                <ul id="lista-materiais-aluno"></ul>
+            </div>
+        </div>
+
+        <div id="pag-entregas-aluno" class="pagina">
+            <h3 style="color: #00ff99; margin-top: 0;">Entregar Atividade</h3>
+            
+            <div class="box-arquivos" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
+                <input type="file" id="input-aluno">
+                <button class="btn-upload btn-aluno" id="btn-enviar-aluno" onclick="enviarArquivo('aluno')">Enviar Trabalho para o Professor</button>
+                <div id="status-aluno" style="font-size: 13px; margin-top: 10px; font-weight: bold;"></div>
+            </div>
+
+            <h4 style="color: #00ff99; margin-top: 30px;">📂 Meu Histórico de Envios</h4>
+            <div class="box-arquivos">
+                <ul id="lista-meus-envios"></ul>
+            </div>
+        </div>
+
+        <div id="pag-materiais-prof" class="pagina">
+            <h3 style="color: #ffcc00; margin-top: 0;">Gerenciar Materiais</h3>
+            
+            <div class="box-arquivos" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
+                <h4 style="color: #ffcc00;">📤 Compartilhar Novo Material</h4>
+                <input type="file" id="input-prof">
+                <button class="btn-upload btn-prof" id="btn-enviar-prof" onclick="enviarArquivo('professor')">Enviar para a Turma</button>
+                <div id="status-prof" style="font-size: 13px; margin-top: 10px; font-weight: bold;"></div>
+            </div>
+
+            <h4 style="color: #ffcc00; margin-top: 30px;">📚 Materiais Ativos na Plataforma</h4>
+            <div class="box-arquivos">
+                <ul id="lista-materiais-prof"></ul>
+            </div>
+        </div>
+
+        <div id="pag-entregas-prof" class="pagina">
+            <h3 style="color: #00ccff; margin-top: 0;">Visão Geral da Turma</h3>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">Acompanhe todos os trabalhos enviados pelos alunos.</p>
+            
+            <div class="box-arquivos" style="border: 1px solid rgba(0, 204, 255, 0.3); background: rgba(0,0,0,0.5);">
+                <ul id="lista-visao-geral"></ul>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -149,7 +195,25 @@
         let roleAtual = "aluno"; 
 
         // ==========================================
-        // 1. LOGIN, LOGOUT E ROTEAMENTO
+        // SISTEMA DE NAVEGAÇÃO (ABAS)
+        // ==========================================
+        function abrirPagina(idPagina, elementoBotao) {
+            // Esconde todas as páginas
+            let paginas = document.querySelectorAll('.pagina');
+            paginas.forEach(pag => pag.style.display = 'none');
+            
+            // Tira a cor de 'ativo' de todos os botões do menu atual
+            let menuAtivo = roleAtual === 'professor' ? document.getElementById('menu-prof') : document.getElementById('menu-aluno');
+            let botoes = menuAtivo.querySelectorAll('.nav-btn');
+            botoes.forEach(btn => btn.classList.remove('active'));
+
+            // Mostra a página escolhida e acende o botão
+            document.getElementById(idPagina).style.display = 'block';
+            if(elementoBotao) elementoBotao.classList.add('active');
+        }
+
+        // ==========================================
+        // LOGIN E LOGOUT
         // ==========================================
         function decodificarJwt(token) {
             let base64Url = token.split('.')[1];
@@ -161,50 +225,57 @@
             const dados = decodificarJwt(response.credential);
             const email = dados.email;
             
+            // Preenche Perfil
             document.getElementById('nome-usuario').innerText = dados.given_name;
+            document.getElementById('email-usuario').innerText = email;
             document.getElementById('email-oculto').innerText = email;
             document.getElementById('foto-perfil').src = dados.picture;
             
-            const painel = document.getElementById('painel-central');
-            painel.classList.remove("tema-prof", "tema-aluno"); // Limpa temas antigos
-
+            // Define o layout baseado no e-mail
             if (PROFESSORES.includes(email)) {
                 roleAtual = "professor";
-                painel.classList.add("tema-prof");
-                document.getElementById('badge-funcao').innerText = "PROFESSOR";
-                document.getElementById('view-professor').style.display = "block";
-                document.getElementById('view-aluno').style.display = "none";
+                document.getElementById('badge-funcao').innerText = "👨‍🏫 PROFESSOR";
+                document.getElementById('badge-funcao').style.background = "#ffcc00";
+                document.getElementById('badge-funcao').style.color = "#000";
+                document.getElementById('foto-perfil').style.borderColor = "#ffcc00";
+                
+                document.getElementById('menu-prof').style.display = "flex";
+                document.getElementById('menu-aluno').style.display = "none";
             } else {
                 roleAtual = "aluno";
-                painel.classList.add("tema-aluno");
-                document.getElementById('badge-funcao').innerText = "ALUNO";
-                document.getElementById('view-aluno').style.display = "block";
-                document.getElementById('view-professor').style.display = "none";
+                document.getElementById('badge-funcao').innerText = "🎒 ALUNO";
+                document.getElementById('badge-funcao').style.background = "#00ff99";
+                document.getElementById('badge-funcao').style.color = "#000";
+                document.getElementById('foto-perfil').style.borderColor = "#00ff99";
+                
+                document.getElementById('menu-aluno').style.display = "flex";
+                document.getElementById('menu-prof').style.display = "none";
             }
             
-            document.getElementById('secao-login').style.display = 'none';
-            document.getElementById('secao-dashboard').style.display = 'block';
+            // Troca de Telas (Esconde Login, Mostra Navbar e Conteúdo)
+            document.getElementById('tela-login').style.display = 'none';
+            document.getElementById('navbar').style.display = 'flex';
+            document.getElementById('area-conteudo').style.display = 'block';
+            
+            // Sempre abre o perfil por padrão ao logar
+            abrirPagina('pag-perfil', roleAtual === 'professor' ? document.getElementById('menu-prof').children[0] : document.getElementById('menu-aluno').children[0]);
 
             atualizarListas(email);
         }
 
         function fazerLogout() {
-            // Desativa o auto-login do Google temporariamente
             google.accounts.id.disableAutoSelect();
             
-            // Esconde o dashboard e mostra o login novamente
-            document.getElementById('secao-dashboard').style.display = 'none';
-            document.getElementById('secao-login').style.display = 'block';
-            
-            // Limpa o painel
-            document.getElementById('painel-central').classList.remove("tema-prof", "tema-aluno");
+            // Esconde tudo e volta pra tela inicial
+            document.getElementById('navbar').style.display = 'none';
+            document.getElementById('area-conteudo').style.display = 'none';
+            document.getElementById('tela-login').style.display = 'block';
         }
 
         // ==========================================
-        // 2. BUSCAR ARQUIVOS DA NUVEM
+        // BUSCAR E RENDERIZAR ARQUIVOS DA NUVEM
         // ==========================================
         async function atualizarListas(email) {
-            // Mensagens de carregamento
             document.getElementById('lista-materiais-prof').innerHTML = '<li>Carregando...</li>';
             document.getElementById('lista-materiais-aluno').innerHTML = '<li>Carregando...</li>';
             document.getElementById('lista-visao-geral').innerHTML = '<li>Carregando entregas...</li>';
@@ -216,35 +287,31 @@
 
                 if (resultado.status === "sucesso") {
                     
-                    // Renderiza lista de materiais compartilhados
-                    let htmlMateriaisProf = '';
-                    let htmlMateriaisAluno = '';
-                    
+                    let htmlMateriaisProf = ''; let htmlMateriaisAluno = '';
                     if(resultado.arquivosProfessor.length === 0){
                         htmlMateriaisProf = '<li style="color:#aaa;">Nenhum material compartilhado.</li>';
                         htmlMateriaisAluno = '<li style="color:#aaa;">Nenhum material disponível ainda.</li>';
                     } else {
                         resultado.arquivosProfessor.forEach(arq => {
-                            let docLink = `📄 <a href="${arq.link}" target="_blank">${arq.nome}</a>`;
-                            htmlMateriaisProf += `<li>${docLink} <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'professor')">Apagar</button></li>`;
-                            htmlMateriaisAluno += `<li>${docLink}</li>`; 
+                            let docLink = `📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#777; font-size:11px;">(${arq.data})</span>`;
+                            htmlMateriaisProf += `<li><span>${docLink}</span> <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'professor')">🗑️ Apagar</button></li>`;
+                            htmlMateriaisAluno += `<li><span>${docLink}</span></li>`; 
                         });
                     }
                     document.getElementById('lista-materiais-prof').innerHTML = htmlMateriaisProf;
                     document.getElementById('lista-materiais-aluno').innerHTML = htmlMateriaisAluno;
 
-                    // Renderiza Visão Geral (Apenas para Professor)
                     if (roleAtual === "professor" && resultado.visaoGeral) {
                         let htmlVisao = '';
                         if (resultado.visaoGeral.length === 0) {
-                            htmlVisao = '<li style="color:#aaa;">Nenhuma entrega ainda.</li>';
+                            htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida ainda.</li>';
                         } else {
                             resultado.visaoGeral.forEach(aluno => {
                                 htmlVisao += `<li class="li-visao-geral">
-                                    <strong style="color: #00ff99; font-size: 13px;">👤 ${aluno.aluno}</strong>
+                                    <strong style="color: #00ccff; font-size: 15px;">👤 ${aluno.aluno}</strong>
                                     <ul class="ul-interna">`;
                                 aluno.arquivos.forEach(arq => {
-                                    htmlVisao += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:10px;">(${arq.data})</span></li>`;
+                                    htmlVisao += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></li>`;
                                 });
                                 htmlVisao += `</ul></li>`;
                             });
@@ -252,39 +319,35 @@
                         document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
                     }
 
-                    // Renderiza Envios do Aluno (Apenas para Aluno)
                     if (roleAtual === "aluno") {
                         let htmlMeus = '';
                         if(resultado.arquivosAluno.length === 0){
-                            htmlMeus = '<li style="color:#aaa;">Você ainda não enviou nada.</li>';
+                            htmlMeus = '<li style="color:#aaa;">Você ainda não enviou nenhum trabalho.</li>';
                         } else {
                             resultado.arquivosAluno.forEach(arq => {
-                                htmlMeus += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'aluno')">Apagar</button></li>`;
+                                htmlMeus += `<li><span>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#777; font-size:11px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'aluno')">🗑️ Apagar</button></li>`;
                             });
                         }
                         document.getElementById('lista-meus-envios').innerHTML = htmlMeus;
                     }
-
                 }
-            } catch (erro) {
-                console.error("Erro ao buscar arquivos", erro);
-            }
+            } catch (erro) { console.error("Erro ao buscar arquivos", erro); }
         }
 
         // ==========================================
-        // 3. ENVIAR E APAGAR ARQUIVOS
+        // UPLOAD E DELETE
         // ==========================================
         function enviarArquivo(tipo) {
             const input = document.getElementById(tipo === 'professor' ? 'input-prof' : 'input-aluno');
             const btn = document.getElementById(tipo === 'professor' ? 'btn-enviar-prof' : 'btn-enviar-aluno');
             const status = document.getElementById(tipo === 'professor' ? 'status-prof' : 'status-aluno');
             
-            if (input.files.length === 0) { status.innerText = "⚠️ Escolha um arquivo!"; return; }
+            if (input.files.length === 0) { status.innerText = "⚠️ Selecione um arquivo primeiro."; return; }
 
             const arquivo = input.files[0];
             const leitor = new FileReader();
             
-            btn.disabled = true; btn.innerText = "Enviando..."; status.innerText = "";
+            btn.disabled = true; btn.innerText = "Enviando para a nuvem..."; status.innerText = "";
 
             leitor.onload = async function(evento) {
                 const base64 = evento.target.result.split(',')[1];
@@ -296,32 +359,30 @@
                 };
 
                 try {
-                    const resposta = await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
-                    await resposta.json();
-                    status.innerText = "✅ Sucesso!";
+                    await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                    status.innerText = "✅ Arquivo enviado com sucesso!";
                     status.style.color = "#00ff99";
                     atualizarListas(emailLogado);
-                } catch(e) { status.innerText = "❌ Erro ao enviar."; status.style.color = "red";}
+                } catch(e) { status.innerText = "❌ Falha no envio."; status.style.color = "red";}
                 
-                btn.disabled = false; btn.innerText = tipo === 'professor' ? "Enviar para a Turma" : "Entregar Trabalho"; input.value = '';
+                btn.disabled = false; btn.innerText = tipo === 'professor' ? "Enviar para a Turma" : "Enviar Trabalho"; input.value = '';
             };
             leitor.readAsDataURL(arquivo);
         }
 
         async function apagarArquivo(id, tipo) {
-            if (!confirm("Apagar este arquivo?")) return;
+            if (!confirm("Excluir este arquivo permanentemente?")) return;
             const emailLogado = document.getElementById('email-oculto').innerText;
-            
             const payload = { action: tipo === 'professor' ? 'delete_professor' : 'delete_aluno', fileId: id, userEmail: emailLogado };
 
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
                 atualizarListas(emailLogado);
-            } catch(e) { alert("Erro ao apagar arquivo."); }
+            } catch(e) { alert("Erro ao tentar excluir."); }
         }
 
         // ==========================================
-        // CANVAS (FUNDO)
+        // CANVAS (ANIMAÇÃO DE FUNDO)
         // ==========================================
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -337,8 +398,7 @@
             atualizar() {
                 if (this.x > canvas.width || this.x < 0) this.dx = -this.dx; if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
                 let distX = mouse.x - this.x; let distY = mouse.y - this.y; let dist = Math.sqrt(distX * distX + distY * distY);
-                if (dist < mouse.radius) { this.x -= (distX / dist) * 3; this.y -= (distY / dist) * 3; } 
-                else { this.x += this.dx; this.y += this.dy; }
+                if (dist < mouse.radius) { this.x -= (distX / dist) * 3; this.y -= (distY / dist) * 3; } else { this.x += this.dx; this.y += this.dy; }
                 this.desenhar();
             }
         }
