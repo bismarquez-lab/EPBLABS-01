@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPB LAB</title>
+    <title>Portal da Instituição</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: white;}
@@ -58,7 +58,7 @@
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLogin" data-auto_prompt="false"></div>
 
     <div id="tela-login">
-        <h2>EPB LAB</h2>
+        <h2>Portal da Instituição</h2>
         <p style="color: #ccc;">Acesse com sua conta Google.</p>
         <div style="display: flex; justify-content: center; margin-top: 20px;">
             <div class="g_id_signin" data-type="standard" data-theme="filled_black"></div>
@@ -117,8 +117,8 @@
             <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
                 <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
                 <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
-                <input type="file" id="prof-file" accept=".pdf, .doc, .docx, .png, .jpg, .jpeg">
-                <span class="info-upload">Permitido: PDF, DOC, Imagens (Máx. 5MB)</span>
+                <input type="file" id="prof-file">
+                <span class="info-upload">Carregando regras...</span>
                 <button id="btn-prof-upload" class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
             </div>
             <div class="box">
@@ -168,8 +168,8 @@
             <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
                 <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
                 <select id="aluno-select-turma"><option value="">Selecione para qual Turma...</option></select>
-                <input type="file" id="aluno-file" accept=".pdf, .doc, .docx, .png, .jpg, .jpeg">
-                <span class="info-upload">Permitido: PDF, DOC, Imagens (Máx. 5MB)</span>
+                <input type="file" id="aluno-file">
+                <span class="info-upload">Carregando regras...</span>
                 <button id="btn-aluno-upload" class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
             </div>
             
@@ -220,6 +220,21 @@
         }
 
         function configurarPainel(dados) {
+            // ===== NOVO: Atualiza as regras de arquivo na tela automaticamente =====
+            if (dados.config) {
+                let textoExtensoes = dados.config.extensoes.join(', ').toUpperCase();
+                let limiteMB = dados.config.limiteMB;
+                
+                document.querySelectorAll('.info-upload').forEach(el => {
+                    el.innerText = `Permitido: ${textoExtensoes} (Máx. ${limiteMB}MB)`;
+                });
+
+                let aceitos = dados.config.extensoes.map(ext => '.' + ext).join(', ');
+                document.getElementById('prof-file').setAttribute('accept', aceitos);
+                document.getElementById('aluno-file').setAttribute('accept', aceitos);
+            }
+            // =======================================================================
+
             let paginaAtivaId = 'pag-perfil'; 
             document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'block') paginaAtivaId = p.id; });
 
@@ -423,7 +438,7 @@
         }
 
         // ==========================================
-        // NOVA LÓGICA DE UPLOAD BLINDADA
+        // UPLOAD DINÂMICO E BLINDADO
         // ==========================================
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
@@ -435,33 +450,34 @@
             if (!selectTurma.value) { status.innerText = "⚠️ Selecione a Turma!"; return; }
             
             let arquivo = input.files[0];
-            let limiteMB = 5; // <- Mude o limite aqui se quiser
+            
+            // Lendo as regras direto do Servidor!
+            let limiteMB = DADOS_SISTEMA.config.limiteMB; 
+            let extensoesPermitidas = DADOS_SISTEMA.config.extensoes;
             let limiteBytes = limiteMB * 1024 * 1024;
-            let extensoesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
             
             let extensao = arquivo.name.split('.').pop().toLowerCase();
 
-            // Checagem Frontend
             if (arquivo.size > limiteBytes) {
                 status.innerText = `⚠️ O arquivo é muito pesado! O limite é ${limiteMB}MB.`;
                 status.style.color = "#ff0055";
                 input.value = ''; return;
             }
             if (!extensoesPermitidas.includes(extensao)) {
-                status.innerText = `⚠️ Formato inválido! Use: ${extensoesPermitidas.join(', ')}`;
+                status.innerText = `⚠️ Formato inválido! Use: ${extensoesPermitidas.join(', ').toUpperCase()}`;
                 status.style.color = "#ff0055";
                 input.value = ''; return;
             }
 
             let reader = new FileReader();
             status.innerText = "Enviando para o Drive..."; status.style.color = "#ffcc00";
-            btn.disabled = true; // Desliga o botão
+            btn.disabled = true; 
 
             reader.onload = async function(e) {
                 let payload = { action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value };
                 await fetchBanco(payload, status);
                 input.value = ''; 
-                btn.disabled = false; // Liga o botão
+                btn.disabled = false; 
             };
             reader.readAsDataURL(arquivo);
         }
