@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EPB LAB</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         /* --- FUNDO E NAVEGAÇÃO --- */
@@ -21,15 +24,15 @@
         /* --- LAYOUT TELA CHEIA (SEM SCROLL GERAL) --- */
         #area-conteudo { 
             position: absolute; top: 75px; left: 50%; transform: translateX(-50%); z-index: 10; 
-            width: 96%; max-width: 1300px; /* Alargado para caber o formato painel */
+            width: 96%; max-width: 1300px; 
             height: calc(100vh - 90px); display: none; 
         }
         
         .pagina { 
             background: rgba(20, 20, 25, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; 
             display: none; height: 100%; box-sizing: border-box; 
-            overflow: hidden; /* TRAVA O SCROLL DA PÁGINA */
-            flex-direction: column; /* Organiza itens em coluna principal */
+            overflow: hidden; 
+            flex-direction: column; 
         }
 
         .pagina > h3 { margin-top: 0; margin-bottom: 10px; flex-shrink: 0; }
@@ -38,16 +41,16 @@
         /* --- O SEGREDO DO DASHBOARD: CSS GRID --- */
         .grid-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Caixas lado a lado dinâmicas */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
             gap: 15px;
-            flex-grow: 1; /* Ocupa o restante da tela verticalmente */
-            overflow: hidden; /* Garante que as caixas não vazem */
+            flex-grow: 1; 
+            overflow: hidden; 
         }
 
         .box { 
             background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin: 0; 
             border: 1px solid rgba(255,255,255,0.05); 
-            display: flex; flex-direction: column; /* Permite rolar apenas dentro da caixa */
+            display: flex; flex-direction: column; 
             overflow: hidden; 
         }
         .box h4 { margin: 0 0 10px 0; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; color: #00ccff; flex-shrink: 0;}
@@ -295,7 +298,6 @@
             }
 
             let paginaAtivaId = 'pag-perfil'; 
-            // CÓDIGO CORRIGIDO: display agora é flex em vez de block
             document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; });
 
             let menu = document.getElementById('menu-dinamico');
@@ -429,7 +431,6 @@
             }
 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
-            // CÓDIGO CORRIGIDO: exibe a página ativa como 'flex' em vez de 'block'
             document.getElementById(paginaAtivaId).style.display = 'flex';
             menu.querySelectorAll('.nav-btn').forEach(btn => {
                 if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active');
@@ -439,7 +440,6 @@
         function abrirPagina(id, btn) {
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            // CÓDIGO CORRIGIDO: usar display flex para ativar o grid
             document.getElementById(id).style.display = 'flex';
             btn.classList.add('active');
         }
