@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPB LAB</title>
+    <title>Portal da Instituição</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
@@ -98,7 +98,7 @@
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLogin" data-auto_prompt="false"></div>
 
     <div id="tela-login">
-        <h2>EPB LAB</h2>
+        <h2>Portal da Instituição</h2>
         <p style="color: #ccc;">Acesse com sua conta Google.</p>
         <div style="display: flex; justify-content: center; margin-top: 20px;">
             <div class="g_id_signin" data-type="standard" data-theme="filled_black"></div>
@@ -267,7 +267,9 @@
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
-                configurarPainel(json);
+                
+                // MUDANÇA AQUI: Passamos 'true' avisando que é o primeiro carregamento
+                configurarPainel(json, true); 
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
         }
 
@@ -283,7 +285,8 @@
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#aaa;">Nenhum material disponível.</li>';
         }
 
-        function configurarPainel(dados) {
+        // MUDANÇA AQUI: Função agora aceita saber se é login inicial
+        function configurarPainel(dados, isInitialLogin = false) {
             if (dados.config) {
                 let textoExtensoes = dados.config.extensoes.join(', ').toUpperCase();
                 let limiteMB = dados.config.limiteMB;
@@ -298,7 +301,16 @@
             }
 
             let paginaAtivaId = 'pag-perfil'; 
-            document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; });
+            
+            // MUDANÇA AQUI: Lógica inteligente de redirecionamento
+            if (isInitialLogin) {
+                if (dados.role === 'admin') paginaAtivaId = 'pag-admin';
+                else if (dados.role === 'professor') paginaAtivaId = 'pag-prof';
+                else paginaAtivaId = 'pag-aluno';
+            } else {
+                // Se não for o primeiro login (atualização no fundo), mantém a aba atual
+                document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; });
+            }
 
             let menu = document.getElementById('menu-dinamico');
             let badge = document.getElementById('badge-funcao');
