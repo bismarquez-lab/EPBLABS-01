@@ -32,6 +32,7 @@
         input, select { width: 100%; padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; box-sizing: border-box;}
         button.action-btn { width: 100%; padding: 12px; background: #00ff99; color: black; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;}
         button.action-btn:hover { box-shadow: 0 0 10px rgba(0,255,153,0.4); }
+        button.action-btn:disabled { background: #555; cursor: not-allowed; box-shadow: none;}
         
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; }
         .lista-arq li { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
@@ -46,6 +47,8 @@
         .ul-interna li { border: none; padding: 0; margin-bottom: 5px; }
 
         .separador-turma { background: rgba(255,204,0,0.1); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #ffcc00; margin-top: 15px; border: 1px solid rgba(255,204,0,0.2); display: block !important; text-align: left;}
+        
+        .info-upload { font-size: 11px; color: #aaa; text-align: center; margin-bottom: 10px; display: block;}
     </style>
 </head>
 <body>
@@ -114,8 +117,9 @@
             <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
                 <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
                 <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
-                <input type="file" id="prof-file">
-                <button class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
+                <input type="file" id="prof-file" accept=".pdf, .doc, .docx, .png, .jpg, .jpeg">
+                <span class="info-upload">Permitido: PDF, DOC, Imagens (Máx. 5MB)</span>
+                <button id="btn-prof-upload" class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
             </div>
             <div class="box">
                 <h4 style="color: #ffcc00;">📚 Materiais Ativos (Por Turma)</h4>
@@ -164,8 +168,9 @@
             <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
                 <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
                 <select id="aluno-select-turma"><option value="">Selecione para qual Turma...</option></select>
-                <input type="file" id="aluno-file">
-                <button class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
+                <input type="file" id="aluno-file" accept=".pdf, .doc, .docx, .png, .jpg, .jpeg">
+                <span class="info-upload">Permitido: PDF, DOC, Imagens (Máx. 5MB)</span>
+                <button id="btn-aluno-upload" class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
             </div>
             
             <div class="box">
@@ -290,7 +295,6 @@
                 }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
-                // --- VISÃO GERAL (AGORA COM BOTÃO DE APAGAR ARQUIVOS DOS ALUNOS) ---
                 let htmlVisao = '';
                 if (!dados.visaoGeral || dados.visaoGeral.length === 0) {
                     htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida.</li>';
@@ -300,7 +304,6 @@
                             <strong style="color: #00ccff; font-size: 15px;">👤 ${aluno.aluno} <span style="font-size:11px; color:#aaa;">(${aluno.turma})</span></strong>
                             <ul class="ul-interna">`;
                         aluno.arquivos.forEach(arq => { 
-                            // Professor agora tem o botão X para deletar arquivos enviados pelos alunos
                             htmlVisao += `<li><span>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">🗑️</button></li>`; 
                         });
                         htmlVisao += `</ul></li>`;
@@ -396,7 +399,6 @@
             fetchBanco(payload, document.getElementById('admin-status'));
         }
 
-        // --- Novas Ações do Professor ---
         function profAddTurma() {
             let nomeTurma = document.getElementById('prof-nova-turma').value;
             if(!nomeTurma) return alert("Digite o nome da turma que deseja criar!");
@@ -420,25 +422,50 @@
             fetchBanco(payload, document.getElementById(idStatusElemento));
         }
 
+        // ==========================================
+        // NOVA LÓGICA DE UPLOAD BLINDADA
+        // ==========================================
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
             let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
             let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
+            let btn = document.getElementById(tipo === 'professor' ? 'btn-prof-upload' : 'btn-aluno-upload');
             
             if (input.files.length === 0) { status.innerText = "⚠️ Escolha um arquivo!"; return; }
             if (!selectTurma.value) { status.innerText = "⚠️ Selecione a Turma!"; return; }
             
+            let arquivo = input.files[0];
+            let limiteMB = 5; // <- Mude o limite aqui se quiser
+            let limiteBytes = limiteMB * 1024 * 1024;
+            let extensoesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+            
+            let extensao = arquivo.name.split('.').pop().toLowerCase();
+
+            // Checagem Frontend
+            if (arquivo.size > limiteBytes) {
+                status.innerText = `⚠️ O arquivo é muito pesado! O limite é ${limiteMB}MB.`;
+                status.style.color = "#ff0055";
+                input.value = ''; return;
+            }
+            if (!extensoesPermitidas.includes(extensao)) {
+                status.innerText = `⚠️ Formato inválido! Use: ${extensoesPermitidas.join(', ')}`;
+                status.style.color = "#ff0055";
+                input.value = ''; return;
+            }
+
             let reader = new FileReader();
             status.innerText = "Enviando para o Drive..."; status.style.color = "#ffcc00";
+            btn.disabled = true; // Desliga o botão
+
             reader.onload = async function(e) {
-                let payload = { action: `upload_${tipo}`, fileName: input.files[0].name, mimeType: input.files[0].type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value };
+                let payload = { action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value };
                 await fetchBanco(payload, status);
                 input.value = ''; 
+                btn.disabled = false; // Liga o botão
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(arquivo);
         }
 
-        // Função de apagar adaptada para aceitar o campo de status onde a mensagem vai aparecer
         async function apagar(id, idStatusElemento) {
             if(!confirm("Apagar este arquivo definitivamente da nuvem?")) return;
             let payload = { action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText };
