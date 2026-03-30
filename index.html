@@ -34,9 +34,11 @@
         button.action-btn:hover { box-shadow: 0 0 10px rgba(0,255,153,0.4); }
         
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; }
-        .lista-arq li { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between;}
+        .lista-arq li { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
         .lista-arq a { color: white; text-decoration: none; } .lista-arq a:hover { color: #00ccff; }
+        
         .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+        .btn-apagar:hover { background: #cc0044; }
     </style>
 </head>
 <body>
@@ -73,18 +75,21 @@
 
         <div id="pag-admin" class="pagina">
             <h3 style="color: #aa00ff; margin-top: 0;">⚙️ Configurações do Sistema</h3>
+            <p id="admin-status" style="text-align: center; font-weight: bold;"></p>
             
             <div class="box">
-                <h4 style="color: #aa00ff;">👨‍🏫 1. Cadastrar Professor</h4>
+                <h4 style="color: #aa00ff;">👨‍🏫 1. Gerenciar Professores</h4>
                 <input type="email" id="admin-novo-prof" placeholder="Email do Google do Professor">
                 <button class="action-btn" style="background: #aa00ff; color: white;" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
+                <ul class="lista-arq" id="lista-admin-profs" style="margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
             </div>
             
             <div class="box">
-                <h4 style="color: #ffcc00;">🏫 2. Criar Nova Turma</h4>
+                <h4 style="color: #ffcc00;">🏫 2. Gerenciar Turmas</h4>
                 <input type="text" id="admin-nome-turma" placeholder="Ex: 9º Ano A">
                 <select id="admin-select-prof"><option value="">Selecione o Professor Responsável...</option></select>
                 <button class="action-btn" style="background: #ffcc00;" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
+                <ul class="lista-arq" id="lista-admin-turmas" style="margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
             </div>
 
             <div class="box">
@@ -93,7 +98,6 @@
                 <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
                 <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
             </div>
-            <p id="admin-status" style="text-align: center; font-weight: bold;"></p>
         </div>
 
         <div id="pag-prof" class="pagina">
@@ -133,7 +137,7 @@
 
     <script>
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
-        let DADOS_SISTEMA = null; // Guarda as configs do banco
+        let DADOS_SISTEMA = null; 
 
         function decodificarJwt(token) { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
 
@@ -148,7 +152,6 @@
             document.getElementById('navbar').style.display = 'flex';
             document.getElementById('area-conteudo').style.display = 'block';
 
-            // Busca os dados no Banco para saber quem é essa pessoa
             document.getElementById('badge-funcao').innerText = "Carregando sistema...";
             try {
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
@@ -167,27 +170,35 @@
                 badge.innerText = "👑 ADMINISTRADOR"; badge.style.background = "#aa00ff"; badge.style.color = "#fff";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">⚙️ Admin</button>`;
                 
-                // Preenche os selects do Admin
+                // Configura as listas e selects do Admin
                 let htmlProfs = '<option value="">Selecione o Professor...</option>';
-                dados.db.professores.forEach(p => htmlProfs += `<option value="${p}">${p}</option>`);
+                let htmlProfsLista = '';
+                dados.db.professores.forEach(p => {
+                    htmlProfs += `<option value="${p}">${p}</option>`;
+                    htmlProfsLista += `<li><span>👤 ${p}</span> <button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">🗑️</button></li>`;
+                });
                 document.getElementById('admin-select-prof').innerHTML = htmlProfs;
+                document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li style="color:#aaa;">Nenhum professor cadastrado.</li>';
 
                 let htmlTurmas = '<option value="">Selecione a Turma...</option>';
-                Object.keys(dados.db.turmas).forEach(t => htmlTurmas += `<option value="${t}">${t}</option>`);
+                let htmlTurmasLista = '';
+                Object.keys(dados.db.turmas).forEach(t => {
+                    htmlTurmas += `<option value="${t}">${t}</option>`;
+                    htmlTurmasLista += `<li><span>🏫 ${t} <span style="font-size:10px; color:#aaa;">(Prof: ${dados.db.turmas[t]})</span></span> <button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">🗑️</button></li>`;
+                });
                 document.getElementById('admin-select-turma').innerHTML = htmlTurmas;
+                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li style="color:#aaa;">Nenhuma turma criada.</li>';
 
             } else if (dados.role === "professor") {
                 badge.innerText = "👨‍🏫 PROFESSOR"; badge.style.background = "#ffcc00"; badge.style.color = "#000";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">📚 Minhas Turmas</button>`;
                 
-                // Preenche as turmas que esse professor cuida
                 let selectT = document.getElementById('prof-seleciona-turma');
                 selectT.innerHTML = '<option value="">Para qual Turma?</option>';
                 Object.keys(dados.db.turmas).forEach(t => {
                     if(dados.db.turmas[t] === dados.db.email) selectT.innerHTML += `<option value="${t}">${t}</option>`;
                 });
 
-                // Lista os materiais dele
                 let htmlMat = '';
                 dados.materiais.forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">[${m.turma}] ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`);
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material.</li>';
@@ -219,11 +230,14 @@
 
         // --- Ações do Banco ---
         async function fetchBanco(payload, msgElement) {
-            msgElement.innerText = "Processando..."; msgElement.style.color = "#ffcc00";
+            msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00";
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
-                msgElement.innerText = "✅ Salvo com sucesso! (Recarregue para atualizar)"; msgElement.style.color = "#00ff99";
-            } catch(e) { msgElement.innerText = "❌ Erro."; msgElement.style.color = "red"; }
+                msgElement.innerText = "✅ Ação concluída! Atualizando página..."; msgElement.style.color = "#00ff99";
+                
+                // Recarrega a página automaticamente após 1.5s para exibir os dados novos
+                setTimeout(() => { location.reload(); }, 1500);
+            } catch(e) { msgElement.innerText = "❌ Erro de conexão."; msgElement.style.color = "red"; }
         }
 
         function adminAcao(acao) {
@@ -234,13 +248,19 @@
             fetchBanco(payload, document.getElementById('admin-status'));
         }
 
+        function adminExcluir(acao, alvo) {
+            if(!confirm(`⚠️ Tem certeza que deseja excluir '${alvo}' do sistema?`)) return;
+            let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo };
+            fetchBanco(payload, document.getElementById('admin-status'));
+        }
+
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
             let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
             if (input.files.length === 0) return;
             
             let reader = new FileReader();
-            status.innerText = "Enviando...";
+            status.innerText = "Enviando para o Drive...";
             reader.onload = async function(e) {
                 let payload = { action: `upload_${tipo}`, fileName: input.files[0].name, mimeType: input.files[0].type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText };
                 if (tipo === 'professor') payload.turmaAlvo = document.getElementById('prof-seleciona-turma').value;
@@ -251,7 +271,7 @@
         }
 
         async function apagar(id) {
-            if(!confirm("Apagar arquivo?")) return;
+            if(!confirm("Apagar este arquivo definitivamente?")) return;
             let payload = { action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText };
             await fetchBanco(payload, document.getElementById(DADOS_SISTEMA.role === 'professor' ? 'prof-status' : 'aluno-status'));
         }
