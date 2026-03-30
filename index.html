@@ -127,14 +127,21 @@
             <h3 style="color: #00ccff; margin-top: 0;">Gestão da Turma</h3>
             <p id="prof-visao-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
-            <div class="box" style="border: 1px solid rgba(0, 204, 255, 0.3); background: rgba(0,0,0,0.5);">
-                <h4 style="color: #00ccff;">👁️ Entregas Recebidas</h4>
-                <ul class="lista-arq" id="lista-visao-geral"></ul>
+            <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
+                <h4 style="color: #00ff99;">➕ Matricular Aluno</h4>
+                <input type="email" id="prof-novo-aluno" placeholder="Email do Google do Aluno">
+                <select id="prof-select-turma-add"><option value="">Selecione a sua Turma...</option></select>
+                <button class="action-btn" onclick="profAddAluno()">Adicionar Aluno</button>
             </div>
 
             <div class="box" style="border: 1px solid rgba(255, 204, 0, 0.3); background: rgba(0,0,0,0.5);">
                 <h4 style="color: #ffcc00;">🎒 Meus Alunos Matriculados</h4>
                 <ul class="lista-arq" id="lista-prof-alunos"></ul>
+            </div>
+
+            <div class="box" style="border: 1px solid rgba(0, 204, 255, 0.3); background: rgba(0,0,0,0.5);">
+                <h4 style="color: #00ccff;">👁️ Entregas Recebidas</h4>
+                <ul class="lista-arq" id="lista-visao-geral"></ul>
             </div>
         </div>
 
@@ -231,12 +238,18 @@
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">👁️ Gestão</button>`;
                 
                 let selectT = document.getElementById('prof-seleciona-turma');
+                let selectTAdd = document.getElementById('prof-select-turma-add'); // Novo select de matrícula
+                
                 selectT.innerHTML = '<option value="">Para qual Turma?</option>';
+                selectTAdd.innerHTML = '<option value="">Selecione a sua Turma...</option>';
+
                 Object.keys(dados.db.turmas).forEach(t => {
-                    if(dados.db.turmas[t] === emailLogado) selectT.innerHTML += `<option value="${t}">${t}</option>`;
+                    if(dados.db.turmas[t] === emailLogado) {
+                        selectT.innerHTML += `<option value="${t}">${t}</option>`;
+                        selectTAdd.innerHTML += `<option value="${t}">${t}</option>`;
+                    }
                 });
 
-                // Agrupando materiais por turma
                 let matPorTurma = {};
                 dados.materiais.forEach(m => {
                     if(!matPorTurma[m.turma]) matPorTurma[m.turma] = [];
@@ -251,7 +264,6 @@
                 }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
-                // Visão geral das entregas
                 let htmlVisao = '';
                 if (!dados.visaoGeral || dados.visaoGeral.length === 0) {
                     htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida.</li>';
@@ -266,7 +278,6 @@
                 }
                 document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
 
-                // Lista de Alunos (Gestão)
                 let htmlAlunosProf = '';
                 if (!dados.alunosDoProf || dados.alunosDoProf.length === 0) {
                     htmlAlunosProf = '<li style="color:#aaa;">Nenhum aluno nas suas turmas.</li>';
@@ -309,7 +320,6 @@
 
         function fazerLogout() { google.accounts.id.disableAutoSelect(); location.reload(); }
 
-        // --- FETCH INVISÍVEL ---
         async function fetchBanco(payload, msgElement) {
             if(msgElement) { msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00"; }
             try {
@@ -326,6 +336,7 @@
             } catch(e) { if(msgElement) { msgElement.innerText = "❌ Erro."; msgElement.style.color = "red"; } }
         }
 
+        // --- Ações do Admin ---
         function adminAcao(acao) {
             let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText };
             if (acao === 'admin_add_prof') { payload.novoEmail = document.getElementById('admin-novo-prof').value; document.getElementById('admin-novo-prof').value = ''; }
@@ -340,13 +351,25 @@
             fetchBanco(payload, document.getElementById('admin-status'));
         }
 
-        // Nova função para excluir aluno (usada por Admin e Professor)
+        // --- Ações do Professor ---
+        function profAddAluno() {
+            let emailAluno = document.getElementById('prof-novo-aluno').value;
+            let turma = document.getElementById('prof-select-turma-add').value;
+            if(!emailAluno || !turma) return alert("Preencha o email e selecione a turma!");
+            
+            let payload = { action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma };
+            fetchBanco(payload, document.getElementById('prof-visao-status'));
+            document.getElementById('prof-novo-aluno').value = '';
+        }
+
+        // Função universal de excluir aluno (Admin e Prof usam a mesma lógica na nuvem)
         function excluirAluno(alvoEmail, idStatusElemento) {
             if(!confirm(`Remover matrícula do aluno '${alvoEmail}'?`)) return;
             let payload = { action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail };
             fetchBanco(payload, document.getElementById(idStatusElemento));
         }
 
+        // --- Arquivos ---
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
             let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
