@@ -3,111 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Interativo - Upload</title>
+    <title>Portal Interativo - Upload e Histórico</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
-        /* --- ESTILOS GERAIS --- */
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Esconde a barra de rolagem */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0b0c10;
-        }
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; }
+        canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
-        /* O Canvas (Fundo Animado) */
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 1; /* Fica no fundo */
-        }
-
-        /* --- PAINEL CENTRAL (UI) --- */
         #painel-central {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10; /* Fica por cima do canvas */
-            
-            /* Efeito "Glassmorphism" (Vidro) */
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 40px;
-            width: 350px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 40px; width: 380px; text-align: center; color: white; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        /* Seção de Login */
         #secao-login h2 { margin-top: 0; font-size: 24px; font-weight: 400; }
         #secao-login p { font-size: 14px; color: #ddd; margin-bottom: 25px; }
-        
-        /* Contêiner para centralizar o botão do Google */
         .google-btn-container { display: flex; justify-content: center; }
 
-        /* Seção do Usuário logado e Upload (Escondida no início) */
         #secao-dashboard { display: none; }
+        #foto-perfil { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #00ff99; margin-bottom: 10px; }
+        #nome-usuario { margin: 0 0 5px 0; font-size: 20px; }
+        #email-usuario { margin: 0 0 20px 0; font-size: 13px; color: #aaa; }
+
+        input[type="file"] { width: 100%; padding: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; }
         
-        #foto-perfil {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid #00ff99;
-            margin-bottom: 15px;
+        button { width: 100%; padding: 12px; background: linear-gradient(45deg, #00ff99, #00ccff); color: #0b0c10; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 255, 153, 0.4); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        #mensagem-status { margin-top: 10px; font-size: 14px; min-height: 20px;}
+
+        /* --- NOVA ÁREA: LISTA DE ARQUIVOS --- */
+        #area-arquivos {
+            margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
         }
+        #area-arquivos h4 { margin: 0 0 10px 0; font-size: 14px; color: #00ff99; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         
-        #nome-usuario { margin: 0 0 5px 0; font-size: 22px; }
-        #email-usuario { margin: 0 0 25px 0; font-size: 14px; color: #aaa; }
-
-        /* Estilos do Upload */
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 8px;
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-sizing: border-box;
+        #lista-arquivos {
+            list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 13px;
         }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #00ff99, #00ccff);
-            color: #0b0c10;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 153, 0.4);
-        }
-
-        button:disabled {
-            background: #555;
-            color: #888;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        #mensagem-status { margin-top: 15px; font-size: 14px; min-height: 20px;}
+        #lista-arquivos li { margin-bottom: 8px; }
+        #lista-arquivos a { color: #00ccff; text-decoration: none; font-weight: bold; }
+        #lista-arquivos a:hover { text-decoration: underline; }
+        
+        /* Personalizando a barrinha de rolagem */
+        #lista-arquivos::-webkit-scrollbar { width: 6px; }
+        #lista-arquivos::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -123,10 +64,9 @@
     </div>
 
     <div id="painel-central">
-        
         <div id="secao-login">
-            <h2>Bem-vindo</h2>
-            <p>Faça login para acessar o sistema de envio de arquivos.</p>
+            <h2>Portal do Aluno</h2>
+            <p>Faça login para acessar o sistema.</p>
             <div class="google-btn-container">
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="filled_black" data-text="signin_with" data-size="large"></div>
             </div>
@@ -138,21 +78,23 @@
             <p id="email-usuario">email@gmail.com</p>
 
             <input type="file" id="arquivo-input">
-            <button id="btn-enviar" onclick="enviarArquivo()">Enviar para o Drive</button>
+            <button id="btn-enviar" onclick="enviarArquivo()">Enviar Atividade</button>
             <div id="mensagem-status"></div>
-        </div>
 
+            <div id="area-arquivos">
+                <h4>Seus Arquivos Enviados</h4>
+                <ul id="lista-arquivos">
+                    <li style="color: #aaa;">Aguardando login...</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ==========================================
-        // URL DO SCRIPT DO GOOGLE DRIVE
-        // ==========================================
+        // ⚠️ ATENÇÃO: COLOQUE O LINK GIGANTE DO SEU SCRIPT DO DRIVE AQUI
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
 
-        // ==========================================
-        // LÓGICA DE LOGIN (GOOGLE)
-        // ==========================================
+        // === 1. LOGIN E CARREGAMENTO DE DADOS ===
         function decodificarJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -165,19 +107,52 @@
         function lidarComRespostaDoGoogle(response) {
             const dadosUsuario = decodificarJwt(response.credential);
             
-            // Preenche os dados na tela
             document.getElementById('nome-usuario').innerText = "Olá, " + dadosUsuario.given_name;
             document.getElementById('email-usuario').innerText = dadosUsuario.email;
             document.getElementById('foto-perfil').src = dadosUsuario.picture;
             
-            // Troca as telas
             document.getElementById('secao-login').style.display = 'none';
             document.getElementById('secao-dashboard').style.display = 'block';
+
+            // ASSIM QUE LOGAR, CHAMA A FUNÇÃO QUE BUSCA OS ARQUIVOS!
+            buscarMeusArquivos(dadosUsuario.email);
         }
 
-        // ==========================================
-        // LÓGICA DE UPLOAD (DRIVE)
-        // ==========================================
+        // === 2. NOVA FUNÇÃO: BUSCAR ARQUIVOS NO DRIVE ===
+        async function buscarMeusArquivos(email) {
+            const listaHtml = document.getElementById('lista-arquivos');
+            listaHtml.innerHTML = '<li style="color: #00ccff;">Buscando seus arquivos na nuvem...</li>';
+
+            try {
+                // Chama o Script passando o e-mail pela URL (aciona o doGet)
+                const resposta = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(email)}`);
+                const resultado = await resposta.json();
+
+                if (resultado.status === "sucesso") {
+                    if (resultado.arquivos.length === 0) {
+                        listaHtml.innerHTML = '<li style="color: #aaa;">Você ainda não enviou nenhum arquivo.</li>';
+                    } else {
+                        listaHtml.innerHTML = ''; // Limpa a lista
+                        // Cria um link na tela para cada arquivo encontrado
+                        resultado.arquivos.forEach(arq => {
+                            listaHtml.innerHTML += `
+                                <li>
+                                    📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> 
+                                    <span style="color:#777; font-size:11px;">(${arq.data})</span>
+                                </li>
+                            `;
+                        });
+                    }
+                } else {
+                    listaHtml.innerHTML = `<li style="color: #ff0055;">Erro: ${resultado.mensagem}</li>`;
+                }
+            } catch (erro) {
+                listaHtml.innerHTML = `<li style="color: #ff0055;">Erro ao conectar com o servidor.</li>`;
+                console.error(erro);
+            }
+        }
+
+        // === 3. FUNÇÃO DE UPLOAD ===
         function enviarArquivo() {
             const input = document.getElementById('arquivo-input');
             const statusTexto = document.getElementById('mensagem-status');
@@ -199,8 +174,6 @@
 
             leitor.onload = async function(evento) {
                 const base64 = evento.target.result.split(',')[1];
-                
-                // Pega o e-mail que está escrito na tela do usuário
                 const emailNaTela = document.getElementById('email-usuario').innerText;
                 
                 const dadosParaEnviar = {
@@ -224,6 +197,10 @@
                     if (resultado.status === "sucesso") {
                         statusTexto.innerText = "✅ Arquivo enviado com sucesso!";
                         statusTexto.style.color = "#00ff99";
+                        
+                        // DEPOIS DE ENVIAR, ATUALIZA A LISTA DE ARQUIVOS AUTOMATICAMENTE!
+                        buscarMeusArquivos(emailNaTela);
+                        
                     } else {
                         statusTexto.innerText = "❌ Erro: " + resultado.mensagem;
                         statusTexto.style.color = "#ff0055";
@@ -231,10 +208,9 @@
                 } catch (erro) {
                     statusTexto.innerText = "❌ Erro de conexão. Tente novamente.";
                     statusTexto.style.color = "#ff0055";
-                    console.error(erro);
                 }
 
-                botao.innerText = "Enviar outro arquivo";
+                botao.innerText = "Enviar Atividade";
                 botao.disabled = false;
                 input.value = ''; 
             };
@@ -242,9 +218,7 @@
             leitor.readAsDataURL(arquivo);
         }
 
-        // ==========================================
-        // LÓGICA DO FUNDO ANIMADO (CANVAS)
-        // ==========================================
+        // === 4. LÓGICA DO FUNDO ANIMADO (CANVAS) ===
         const canvas = document.getElementById('meuCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
