@@ -6,6 +6,7 @@
     <title>Portal da Instituição</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
+        /* --- FUNDO E NAVEGAÇÃO --- */
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: white;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
@@ -16,39 +17,75 @@
         .btn-sair-nav { background: rgba(255,0,85,0.2); color: #ff0055; border: 1px solid #ff0055; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
         #tela-login { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: rgba(20, 20, 25, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 40px; width: 350px; text-align: center; }
-        #area-conteudo { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10; width: 90%; max-width: 800px; height: calc(100vh - 110px); display: none; }
         
-        .pagina { background: rgba(20, 20, 25, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; display: none; height: 100%; box-sizing: border-box; overflow-y: auto; }
-        .pagina::-webkit-scrollbar { width: 6px; } .pagina::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-
-        .perfil-container { text-align: center; margin-top: 20px; }
-        #foto-perfil { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px; border: 3px solid #555; }
-        #nome-usuario { margin: 0; font-size: 26px; } #email-usuario { color: #aaa; font-size: 14px;}
-        #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 15px; }
-
-        .box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .box h4 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; color: #00ccff;}
+        /* --- LAYOUT TELA CHEIA (SEM SCROLL GERAL) --- */
+        #area-conteudo { 
+            position: absolute; top: 75px; left: 50%; transform: translateX(-50%); z-index: 10; 
+            width: 96%; max-width: 1300px; /* Alargado para caber o formato painel */
+            height: calc(100vh - 90px); display: none; 
+        }
         
-        input, select { width: 100%; padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; box-sizing: border-box;}
-        button.action-btn { width: 100%; padding: 12px; background: #00ff99; color: black; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 10px;}
+        .pagina { 
+            background: rgba(20, 20, 25, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; 
+            display: none; height: 100%; box-sizing: border-box; 
+            overflow: hidden; /* TRAVA O SCROLL DA PÁGINA */
+            flex-direction: column; /* Organiza itens em coluna principal */
+        }
+
+        .pagina > h3 { margin-top: 0; margin-bottom: 10px; flex-shrink: 0; }
+        .pagina > p { margin-top: 0; margin-bottom: 15px; flex-shrink: 0; }
+
+        /* --- O SEGREDO DO DASHBOARD: CSS GRID --- */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Caixas lado a lado dinâmicas */
+            gap: 15px;
+            flex-grow: 1; /* Ocupa o restante da tela verticalmente */
+            overflow: hidden; /* Garante que as caixas não vazem */
+        }
+
+        .box { 
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin: 0; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            display: flex; flex-direction: column; /* Permite rolar apenas dentro da caixa */
+            overflow: hidden; 
+        }
+        .box h4 { margin: 0 0 10px 0; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; color: #00ccff; flex-shrink: 0;}
+        
+        /* --- ROLAGEM INTERNA APENAS PARA AS LISTAS --- */
+        .scroll-interno {
+            flex-grow: 1; overflow-y: auto; padding-right: 5px;
+        }
+        .scroll-interno::-webkit-scrollbar { width: 5px; } 
+        .scroll-interno::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        /* --- ELEMENTOS DE FORMULÁRIO COMPACTOS --- */
+        input, select { width: 100%; padding: 8px; margin-bottom: 8px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; box-sizing: border-box; font-size: 13px;}
+        button.action-btn { width: 100%; padding: 10px; background: #00ff99; color: black; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 5px; font-size: 13px;}
         button.action-btn:hover { box-shadow: 0 0 10px rgba(0,255,153,0.4); }
         button.action-btn:disabled { background: #555; cursor: not-allowed; box-shadow: none;}
         
-        .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; }
-        .lista-arq li { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
+        /* --- LISTAS E TEXTOS --- */
+        .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+        .lista-arq li { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
         .lista-arq a { color: white; text-decoration: none; word-break: break-all; margin-right: 15px;} 
         .lista-arq a:hover { color: #00ccff; }
         
-        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; flex-shrink: 0;}
+        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; cursor: pointer; flex-shrink: 0;}
         .btn-apagar:hover { background: #cc0044; }
 
-        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 15px !important; margin-bottom: 15px !important; border: 1px solid rgba(255,255,255,0.05) !important;}
-        .ul-interna { width: 100%; margin-top: 10px !important; padding-left: 10px !important; }
-        .ul-interna li { border: none; padding: 0; margin-bottom: 5px; }
+        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 10px !important; margin-bottom: 10px !important; border: 1px solid rgba(255,255,255,0.05) !important;}
+        .ul-interna { width: 100%; margin-top: 8px !important; padding-left: 10px !important; }
+        .ul-interna li { border: none; padding: 0; margin-bottom: 4px; }
 
-        .separador-turma { background: rgba(255,204,0,0.1); padding: 5px 10px; border-radius: 4px; font-weight: bold; color: #ffcc00; margin-top: 15px; border: 1px solid rgba(255,204,0,0.2); display: block !important; text-align: left;}
+        .separador-turma { background: rgba(255,204,0,0.1); padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #ffcc00; margin-top: 10px; border: 1px solid rgba(255,204,0,0.2); display: block !important; text-align: left; font-size: 12px;}
         
-        .info-upload { font-size: 11px; color: #aaa; text-align: center; margin-bottom: 10px; display: block;}
+        .info-upload { font-size: 11px; color: #aaa; text-align: center; margin-bottom: 8px; display: block;}
+
+        .perfil-container { text-align: center; margin-top: 5vh; }
+        #foto-perfil { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px; border: 3px solid #555; }
+        #nome-usuario { margin: 0; font-size: 26px; } #email-usuario { color: #aaa; font-size: 14px;}
+        #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -73,7 +110,7 @@
     <div id="area-conteudo">
         <span id="email-oculto" style="display:none;"></span>
 
-        <div id="pag-perfil" class="pagina" style="display: block;">
+        <div id="pag-perfil" class="pagina" style="display: flex;">
             <div class="perfil-container">
                 <img id="foto-perfil" src="">
                 <h3 id="nome-usuario">Nome</h3>
@@ -83,99 +120,123 @@
         </div>
 
         <div id="pag-admin" class="pagina">
-            <h3 style="color: #aa00ff; margin-top: 0;">⚙️ Configurações do Sistema</h3>
-            <p id="admin-status" style="text-align: center; font-weight: bold; min-height: 20px;"></p>
+            <h3 style="color: #aa00ff;">⚙️ Configurações do Sistema</h3>
+            <p id="admin-status" style="text-align: center; font-weight: bold; min-height: 15px; font-size: 13px;"></p>
             
-            <div class="box">
-                <h4 style="color: #aa00ff;">👨‍🏫 1. Gerenciar Professores</h4>
-                <input type="email" id="admin-novo-prof" placeholder="Email do Google do Professor">
-                <button class="action-btn" style="background: #aa00ff; color: white;" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
-                <ul class="lista-arq" id="lista-admin-profs" style="margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
-            </div>
-            
-            <div class="box">
-                <h4 style="color: #ffcc00;">🏫 2. Gerenciar Turmas</h4>
-                <input type="text" id="admin-nome-turma" placeholder="Ex: 9º Ano A">
-                <select id="admin-select-prof"><option value="">Selecione o Professor Responsável...</option></select>
-                <button class="action-btn" style="background: #ffcc00;" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
-                <ul class="lista-arq" id="lista-admin-turmas" style="margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
-            </div>
+            <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="box">
+                    <h4 style="color: #aa00ff;">👨‍🏫 1. Gerenciar Professores</h4>
+                    <input type="email" id="admin-novo-prof" placeholder="Email do Google do Professor">
+                    <button class="action-btn" style="background: #aa00ff; color: white;" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-admin-profs" style="margin-top:10px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
+                    </div>
+                </div>
+                
+                <div class="box">
+                    <h4 style="color: #ffcc00;">🏫 2. Gerenciar Turmas</h4>
+                    <input type="text" id="admin-nome-turma" placeholder="Ex: 9º Ano A">
+                    <select id="admin-select-prof"><option value="">Professor Responsável...</option></select>
+                    <button class="action-btn" style="background: #ffcc00;" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-admin-turmas" style="margin-top:10px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
+                    </div>
+                </div>
 
-            <div class="box">
-                <h4 style="color: #00ff99;">🎒 3. Gerenciar Alunos</h4>
-                <input type="email" id="admin-novo-aluno" placeholder="Email do Google do Aluno">
-                <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
-                <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
-                <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
+                <div class="box">
+                    <h4 style="color: #00ff99;">🎒 3. Gerenciar Alunos</h4>
+                    <input type="email" id="admin-novo-aluno" placeholder="Email do Google do Aluno">
+                    <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
+                    <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:10px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="pag-prof" class="pagina">
-            <h3 style="color: #ffcc00; margin-top: 0;">Painel de Aulas</h3>
-            <p id="prof-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
+            <h3 style="color: #ffcc00;">Painel de Aulas</h3>
+            <p id="prof-status" style="min-height: 15px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
-            <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
-                <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
-                <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
-                <input type="file" id="prof-file">
-                <span class="info-upload">Carregando regras...</span>
-                <button id="btn-prof-upload" class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
-            </div>
-            <div class="box">
-                <h4 style="color: #ffcc00;">📚 Materiais Ativos (Por Turma)</h4>
-                <ul class="lista-arq" id="lista-materiais-prof"></ul>
+            <div class="grid-layout" style="grid-template-columns: 1fr 2fr;">
+                <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
+                    <h4 style="color: #ffcc00;">📤 Compartilhar Material</h4>
+                    <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
+                    <input type="file" id="prof-file" accept=".pdf, .doc, .docx, .png, .jpg, .jpeg">
+                    <span class="info-upload">Carregando regras...</span>
+                    <button id="btn-prof-upload" class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
+                </div>
+                <div class="box">
+                    <h4 style="color: #ffcc00;">📚 Materiais Ativos (Por Turma)</h4>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-materiais-prof"></ul>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="pag-visao-prof" class="pagina">
-            <h3 style="color: #00ccff; margin-top: 0;">Gestão da Turma</h3>
-            <p id="prof-visao-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
+            <h3 style="color: #00ccff;">Gestão da Turma</h3>
+            <p id="prof-visao-status" style="min-height: 15px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
-            <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
-                <h4 style="color: #ffcc00;">🏫 Criar Nova Turma</h4>
-                <input type="text" id="prof-nova-turma" placeholder="Ex: Matemática - 1º Ano">
-                <button class="action-btn" style="background: #ffcc00;" onclick="profAddTurma()">Criar Minha Turma</button>
-            </div>
+            <div class="grid-layout" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="box" style="background: rgba(255, 204, 0, 0.05); border-color: rgba(255, 204, 0, 0.2);">
+                    <h4 style="color: #ffcc00;">🏫 Criar Nova Turma</h4>
+                    <input type="text" id="prof-nova-turma" placeholder="Ex: Matemática - 1º Ano">
+                    <button class="action-btn" style="background: #ffcc00;" onclick="profAddTurma()">Criar Turma</button>
+                </div>
 
-            <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
-                <h4 style="color: #00ff99;">➕ Matricular Aluno</h4>
-                <input type="email" id="prof-novo-aluno" placeholder="Email do Google do Aluno">
-                <select id="prof-select-turma-add"><option value="">Selecione a sua Turma...</option></select>
-                <button class="action-btn" onclick="profAddAluno()">Adicionar Aluno</button>
-            </div>
+                <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
+                    <h4 style="color: #00ff99;">➕ Matricular Aluno</h4>
+                    <input type="email" id="prof-novo-aluno" placeholder="Email do Aluno">
+                    <select id="prof-select-turma-add"><option value="">Selecione a Turma...</option></select>
+                    <button class="action-btn" onclick="profAddAluno()">Adicionar Aluno</button>
+                </div>
 
-            <div class="box" style="border: 1px solid rgba(255, 204, 0, 0.3); background: rgba(0,0,0,0.5);">
-                <h4 style="color: #ffcc00;">🎒 Meus Alunos Matriculados</h4>
-                <ul class="lista-arq" id="lista-prof-alunos"></ul>
-            </div>
+                <div class="box" style="border: 1px solid rgba(255, 204, 0, 0.3);">
+                    <h4 style="color: #ffcc00;">🎒 Alunos Matriculados</h4>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-prof-alunos"></ul>
+                    </div>
+                </div>
 
-            <div class="box" style="border: 1px solid rgba(0, 204, 255, 0.3); background: rgba(0,0,0,0.5);">
-                <h4 style="color: #00ccff;">👁️ Entregas Recebidas (Alunos)</h4>
-                <ul class="lista-arq" id="lista-visao-geral"></ul>
+                <div class="box" style="border: 1px solid rgba(0, 204, 255, 0.3);">
+                    <h4 style="color: #00ccff;">👁️ Entregas Recebidas</h4>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-visao-geral"></ul>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="pag-aluno" class="pagina">
-            <h3 style="color: #00ff99; margin-top: 0;" id="titulo-turma-aluno">Minha Sala Virtual</h3>
-            <p id="aluno-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
+            <h3 style="color: #00ff99;" id="titulo-turma-aluno">Minha Sala Virtual</h3>
+            <p id="aluno-status" style="min-height: 15px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
-            <div class="box">
-                <h4 style="color: #00ccff;">📚 Materiais</h4>
-                <select id="aluno-filtro-turma" onchange="renderMateriaisAluno()"><option value="todas">Todas as Turmas</option></select>
-                <ul class="lista-arq" id="lista-materiais-aluno" style="margin-top: 15px;"></ul>
-            </div>
-            
-            <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
-                <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
-                <select id="aluno-select-turma"><option value="">Selecione para qual Turma...</option></select>
-                <input type="file" id="aluno-file">
-                <span class="info-upload">Carregando regras...</span>
-                <button id="btn-aluno-upload" class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
-            </div>
-            
-            <div class="box">
-                <h4 style="color: #00ff99;">📂 Meus Envios Recentes</h4>
-                <ul class="lista-arq" id="lista-envios-aluno"></ul>
+            <div class="grid-layout" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
+                    <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
+                    <select id="aluno-select-turma"><option value="">Para qual Turma...</option></select>
+                    <input type="file" id="aluno-file" accept=".pdf, .doc, .docx, .png, .jpg, .jpeg">
+                    <span class="info-upload">Carregando regras...</span>
+                    <button id="btn-aluno-upload" class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
+                </div>
+
+                <div class="box">
+                    <h4 style="color: #00ccff;">📚 Materiais</h4>
+                    <select id="aluno-filtro-turma" onchange="renderMateriaisAluno()"><option value="todas">Todas as Turmas</option></select>
+                    <div class="scroll-interno" style="margin-top: 10px;">
+                        <ul class="lista-arq" id="lista-materiais-aluno"></ul>
+                    </div>
+                </div>
+                
+                <div class="box">
+                    <h4 style="color: #00ff99;">📂 Meus Envios</h4>
+                    <div class="scroll-interno">
+                        <ul class="lista-arq" id="lista-envios-aluno"></ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -220,7 +281,6 @@
         }
 
         function configurarPainel(dados) {
-            // ===== NOVO: Atualiza as regras de arquivo na tela automaticamente =====
             if (dados.config) {
                 let textoExtensoes = dados.config.extensoes.join(', ').toUpperCase();
                 let limiteMB = dados.config.limiteMB;
@@ -233,10 +293,10 @@
                 document.getElementById('prof-file').setAttribute('accept', aceitos);
                 document.getElementById('aluno-file').setAttribute('accept', aceitos);
             }
-            // =======================================================================
 
             let paginaAtivaId = 'pag-perfil'; 
-            document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'block') paginaAtivaId = p.id; });
+            // CÓDIGO CORRIGIDO: display agora é flex em vez de block
+            document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; });
 
             let menu = document.getElementById('menu-dinamico');
             let badge = document.getElementById('badge-funcao');
@@ -369,7 +429,8 @@
             }
 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
-            document.getElementById(paginaAtivaId).style.display = 'block';
+            // CÓDIGO CORRIGIDO: exibe a página ativa como 'flex' em vez de 'block'
+            document.getElementById(paginaAtivaId).style.display = 'flex';
             menu.querySelectorAll('.nav-btn').forEach(btn => {
                 if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active');
             });
@@ -378,7 +439,8 @@
         function abrirPagina(id, btn) {
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).style.display = 'block';
+            // CÓDIGO CORRIGIDO: usar display flex para ativar o grid
+            document.getElementById(id).style.display = 'flex';
             btn.classList.add('active');
         }
 
@@ -437,9 +499,6 @@
             fetchBanco(payload, document.getElementById(idStatusElemento));
         }
 
-        // ==========================================
-        // UPLOAD DINÂMICO E BLINDADO
-        // ==========================================
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
             let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
@@ -451,7 +510,6 @@
             
             let arquivo = input.files[0];
             
-            // Lendo as regras direto do Servidor!
             let limiteMB = DADOS_SISTEMA.config.limiteMB; 
             let extensoesPermitidas = DADOS_SISTEMA.config.extensoes;
             let limiteBytes = limiteMB * 1024 * 1024;
