@@ -7,19 +7,23 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
+        /* --- ESTILOS GERAIS E CANVAS --- */
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; }
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
+        /* --- PAINEL CENTRAL --- */
         #painel-central {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 40px; width: 380px; text-align: center; color: white; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
+        /* --- LOGIN --- */
         #secao-login h2 { margin-top: 0; font-size: 24px; font-weight: 400; }
         #secao-login p { font-size: 14px; color: #ddd; margin-bottom: 25px; }
         .google-btn-container { display: flex; justify-content: center; }
 
+        /* --- DASHBOARD E UPLOAD --- */
         #secao-dashboard { display: none; }
         #foto-perfil { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #00ff99; margin-bottom: 10px; }
         #nome-usuario { margin: 0 0 5px 0; font-size: 20px; }
@@ -33,22 +37,20 @@
 
         #mensagem-status { margin-top: 10px; font-size: 14px; min-height: 20px;}
 
-        /* --- NOVA ÁREA: LISTA DE ARQUIVOS --- */
-        #area-arquivos {
-            margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
-        }
+        /* --- LISTA DE ARQUIVOS E BOTÃO APAGAR --- */
+        #area-arquivos { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
         #area-arquivos h4 { margin: 0 0 10px 0; font-size: 14px; color: #00ff99; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         
-        #lista-arquivos {
-            list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 13px;
-        }
-        #lista-arquivos li { margin-bottom: 8px; }
+        #lista-arquivos { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; font-size: 13px; }
+        #lista-arquivos li { margin-bottom: 12px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
         #lista-arquivos a { color: #00ccff; text-decoration: none; font-weight: bold; }
         #lista-arquivos a:hover { text-decoration: underline; }
         
-        /* Personalizando a barrinha de rolagem */
         #lista-arquivos::-webkit-scrollbar { width: 6px; }
         #lista-arquivos::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; float: right; margin-top: 2px; width: auto; font-weight: normal; }
+        .btn-apagar:hover { background: #cc0044; transform: none; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -64,6 +66,7 @@
     </div>
 
     <div id="painel-central">
+        
         <div id="secao-login">
             <h2>Portal do Aluno</h2>
             <p>Faça login para acessar o sistema.</p>
@@ -91,10 +94,14 @@
     </div>
 
     <script>
-        // ⚠️ ATENÇÃO: COLOQUE O LINK GIGANTE DO SEU SCRIPT DO DRIVE AQUI
+        // ==========================================
+        // URL DO SEU GOOGLE APPS SCRIPT
+        // ==========================================
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
 
-        // === 1. LOGIN E CARREGAMENTO DE DADOS ===
+        // ==========================================
+        // 1. LOGIN DO GOOGLE
+        // ==========================================
         function decodificarJwt(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -114,17 +121,17 @@
             document.getElementById('secao-login').style.display = 'none';
             document.getElementById('secao-dashboard').style.display = 'block';
 
-            // ASSIM QUE LOGAR, CHAMA A FUNÇÃO QUE BUSCA OS ARQUIVOS!
             buscarMeusArquivos(dadosUsuario.email);
         }
 
-        // === 2. NOVA FUNÇÃO: BUSCAR ARQUIVOS NO DRIVE ===
+        // ==========================================
+        // 2. BUSCAR ARQUIVOS E EXIBIR NA LISTA
+        // ==========================================
         async function buscarMeusArquivos(email) {
             const listaHtml = document.getElementById('lista-arquivos');
             listaHtml.innerHTML = '<li style="color: #00ccff;">Buscando seus arquivos na nuvem...</li>';
 
             try {
-                // Chama o Script passando o e-mail pela URL (aciona o doGet)
                 const resposta = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(email)}`);
                 const resultado = await resposta.json();
 
@@ -132,13 +139,13 @@
                     if (resultado.arquivos.length === 0) {
                         listaHtml.innerHTML = '<li style="color: #aaa;">Você ainda não enviou nenhum arquivo.</li>';
                     } else {
-                        listaHtml.innerHTML = ''; // Limpa a lista
-                        // Cria um link na tela para cada arquivo encontrado
+                        listaHtml.innerHTML = ''; 
                         resultado.arquivos.forEach(arq => {
                             listaHtml.innerHTML += `
                                 <li>
                                     📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> 
                                     <span style="color:#777; font-size:11px;">(${arq.data})</span>
+                                    <button class="btn-apagar" onclick="apagarArquivo('${arq.id}')">🗑️ Apagar</button>
                                 </li>
                             `;
                         });
@@ -152,7 +159,52 @@
             }
         }
 
-        // === 3. FUNÇÃO DE UPLOAD ===
+        // ==========================================
+        // 3. APAGAR ARQUIVO
+        // ==========================================
+        async function apagarArquivo(idDoArquivo) {
+            if (!confirm("Tem certeza que deseja apagar este arquivo definitivamente?")) {
+                return;
+            }
+
+            const emailNaTela = document.getElementById('email-usuario').innerText;
+            const statusTexto = document.getElementById('mensagem-status');
+            
+            statusTexto.innerText = "Apagando arquivo...";
+            statusTexto.style.color = "#ffcc00";
+
+            const dadosParaEnviar = {
+                action: "delete", 
+                fileId: idDoArquivo,
+                userEmail: emailNaTela 
+            };
+
+            try {
+                const resposta = await fetch(URL_DO_SCRIPT, {
+                    method: 'POST',
+                    body: JSON.stringify(dadosParaEnviar),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
+                });
+
+                const resultado = await resposta.json();
+
+                if (resultado.status === "sucesso") {
+                    statusTexto.innerText = "✅ Arquivo apagado com sucesso!";
+                    statusTexto.style.color = "#00ff99";
+                    buscarMeusArquivos(emailNaTela); // Atualiza a lista na tela
+                } else {
+                    statusTexto.innerText = "❌ Erro ao apagar: " + resultado.mensagem;
+                    statusTexto.style.color = "#ff0055";
+                }
+            } catch (erro) {
+                statusTexto.innerText = "❌ Erro de conexão ao tentar apagar.";
+                statusTexto.style.color = "#ff0055";
+            }
+        }
+
+        // ==========================================
+        // 4. ENVIAR NOVO ARQUIVO (UPLOAD)
+        // ==========================================
         function enviarArquivo() {
             const input = document.getElementById('arquivo-input');
             const statusTexto = document.getElementById('mensagem-status');
@@ -177,6 +229,7 @@
                 const emailNaTela = document.getElementById('email-usuario').innerText;
                 
                 const dadosParaEnviar = {
+                    action: "upload",
                     fileName: arquivo.name,
                     mimeType: arquivo.type,
                     base64: base64,
@@ -197,10 +250,7 @@
                     if (resultado.status === "sucesso") {
                         statusTexto.innerText = "✅ Arquivo enviado com sucesso!";
                         statusTexto.style.color = "#00ff99";
-                        
-                        // DEPOIS DE ENVIAR, ATUALIZA A LISTA DE ARQUIVOS AUTOMATICAMENTE!
-                        buscarMeusArquivos(emailNaTela);
-                        
+                        buscarMeusArquivos(emailNaTela); // Atualiza a lista na tela
                     } else {
                         statusTexto.innerText = "❌ Erro: " + resultado.mensagem;
                         statusTexto.style.color = "#ff0055";
@@ -218,7 +268,9 @@
             leitor.readAsDataURL(arquivo);
         }
 
-        // === 4. LÓGICA DO FUNDO ANIMADO (CANVAS) ===
+        // ==========================================
+        // 5. ANIMAÇÃO DE FUNDO (CANVAS TEIA MAGNÉTICA)
+        // ==========================================
         const canvas = document.getElementById('meuCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
