@@ -35,9 +35,10 @@
         
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; }
         .lista-arq li { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;}
-        .lista-arq a { color: white; text-decoration: none; } .lista-arq a:hover { color: #00ccff; }
+        .lista-arq a { color: white; text-decoration: none; word-break: break-all; margin-right: 15px;} 
+        .lista-arq a:hover { color: #00ccff; }
         
-        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+        .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; flex-shrink: 0;}
         .btn-apagar:hover { background: #cc0044; }
     </style>
 </head>
@@ -75,7 +76,7 @@
 
         <div id="pag-admin" class="pagina">
             <h3 style="color: #aa00ff; margin-top: 0;">⚙️ Configurações do Sistema</h3>
-            <p id="admin-status" style="text-align: center; font-weight: bold;"></p>
+            <p id="admin-status" style="text-align: center; font-weight: bold; min-height: 20px;"></p>
             
             <div class="box">
                 <h4 style="color: #aa00ff;">👨‍🏫 1. Gerenciar Professores</h4>
@@ -107,7 +108,7 @@
                 <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
                 <input type="file" id="prof-file">
                 <button class="action-btn" style="background: #ffcc00;" onclick="upload('professor')">Enviar Material</button>
-                <p id="prof-status"></p>
+                <p id="prof-status" style="min-height: 20px; font-weight: bold; font-size: 13px;"></p>
             </div>
             <div class="box">
                 <h4 style="color: #ffcc00;">📚 Materiais Ativos</h4>
@@ -125,7 +126,7 @@
                 <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
                 <input type="file" id="aluno-file">
                 <button class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
-                <p id="aluno-status"></p>
+                <p id="aluno-status" style="min-height: 20px; font-weight: bold; font-size: 13px;"></p>
             </div>
             <div class="box">
                 <h4 style="color: #00ff99;">📂 Meus Envios</h4>
@@ -136,6 +137,7 @@
     </div>
 
     <script>
+        // ATENÇÃO: Cole o link gigante do seu Apps Script aqui
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         let DADOS_SISTEMA = null; 
 
@@ -161,16 +163,20 @@
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
         }
 
+        // --- MÁGICA 1: Configurar e reconstruir painéis mantendo a aba ativa ---
         function configurarPainel(dados) {
+            // Guarda qual aba o usuário está vendo agora (para não jogar ele pro Perfil de volta)
+            let paginaAtivaId = 'pag-perfil'; 
+            document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'block') paginaAtivaId = p.id; });
+
             let menu = document.getElementById('menu-dinamico');
             let badge = document.getElementById('badge-funcao');
-            menu.innerHTML = `<button class="nav-btn active" onclick="abrirPagina('pag-perfil', this)">👤 Perfil</button>`;
+            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">👤 Perfil</button>`;
 
             if (dados.role === "admin") {
                 badge.innerText = "👑 ADMINISTRADOR"; badge.style.background = "#aa00ff"; badge.style.color = "#fff";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">⚙️ Admin</button>`;
                 
-                // Configura as listas e selects do Admin
                 let htmlProfs = '<option value="">Selecione o Professor...</option>';
                 let htmlProfsLista = '';
                 dados.db.professores.forEach(p => {
@@ -217,6 +223,14 @@
                 dados.envios.forEach(m => htmlEnv += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`);
                 document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li>Nenhum envio.</li>';
             }
+
+            // Restaura a aba que estava ativa e acende o botão do menu correspondente
+            document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
+            document.getElementById(paginaAtivaId).style.display = 'block';
+            
+            menu.querySelectorAll('.nav-btn').forEach(btn => {
+                if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active');
+            });
         }
 
         function abrirPagina(id, btn) {
@@ -228,23 +242,36 @@
 
         function fazerLogout() { google.accounts.id.disableAutoSelect(); location.reload(); }
 
-        // --- Ações do Banco ---
+        // --- MÁGICA 2: Função FetchBanco sem usar Reload ---
         async function fetchBanco(payload, msgElement) {
             msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00";
             try {
+                // 1. Envia o comando para o servidor
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
-                msgElement.innerText = "✅ Ação concluída! Atualizando página..."; msgElement.style.color = "#00ff99";
+                msgElement.innerText = "✅ Sucesso!"; msgElement.style.color = "#00ff99";
                 
-                // Recarrega a página automaticamente após 1.5s para exibir os dados novos
-                setTimeout(() => { location.reload(); }, 1500);
-            } catch(e) { msgElement.innerText = "❌ Erro de conexão."; msgElement.style.color = "red"; }
+                // 2. Busca os dados super novos em silêncio
+                let emailLogado = document.getElementById('email-oculto').innerText;
+                const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
+                const json = await res.json();
+                DADOS_SISTEMA = json;
+                
+                // 3. Atualiza a tela sem piscar!
+                configurarPainel(json);
+                
+                // 4. Apaga a mensagem de sucesso após 3 segundos
+                setTimeout(() => { msgElement.innerText = ""; }, 3000);
+
+            } catch(e) { 
+                msgElement.innerText = "❌ Erro de conexão."; msgElement.style.color = "red"; 
+            }
         }
 
         function adminAcao(acao) {
             let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText };
-            if (acao === 'admin_add_prof') payload.novoEmail = document.getElementById('admin-novo-prof').value;
-            if (acao === 'admin_add_turma') { payload.nomeTurma = document.getElementById('admin-nome-turma').value; payload.profResp = document.getElementById('admin-select-prof').value; }
-            if (acao === 'admin_add_aluno') { payload.alunoEmail = document.getElementById('admin-novo-aluno').value; payload.turmaDestino = document.getElementById('admin-select-turma').value; }
+            if (acao === 'admin_add_prof') { payload.novoEmail = document.getElementById('admin-novo-prof').value; document.getElementById('admin-novo-prof').value = ''; }
+            if (acao === 'admin_add_turma') { payload.nomeTurma = document.getElementById('admin-nome-turma').value; payload.profResp = document.getElementById('admin-select-prof').value; document.getElementById('admin-nome-turma').value = '';}
+            if (acao === 'admin_add_aluno') { payload.alunoEmail = document.getElementById('admin-novo-aluno').value; payload.turmaDestino = document.getElementById('admin-select-turma').value; document.getElementById('admin-novo-aluno').value = '';}
             fetchBanco(payload, document.getElementById('admin-status'));
         }
 
@@ -261,11 +288,12 @@
             
             let reader = new FileReader();
             status.innerText = "Enviando para o Drive...";
+            status.style.color = "#ffcc00";
             reader.onload = async function(e) {
                 let payload = { action: `upload_${tipo}`, fileName: input.files[0].name, mimeType: input.files[0].type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText };
                 if (tipo === 'professor') payload.turmaAlvo = document.getElementById('prof-seleciona-turma').value;
                 await fetchBanco(payload, status);
-                input.value = '';
+                input.value = ''; // Limpa o input de arquivo
             };
             reader.readAsDataURL(input.files[0]);
         }
