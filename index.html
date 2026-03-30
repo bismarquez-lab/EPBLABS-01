@@ -202,11 +202,22 @@
             leitor.onload = async function(evento) {
                 const base64 = evento.target.result.split(',')[1];
                 
-                const dadosParaEnviar = {
-                    fileName: arquivo.name,
-                    mimeType: arquivo.type,
-                    base64: base64
-                };
+                const dadosParaEnviar = leitor.onload = async function(evento) {
+            const base64 = evento.target.result.split(',')[1];
+            
+            // Pega o e-mail que está escrito na tela do usuário
+            const emailNaTela = document.getElementById('email-usuario').innerText;
+            
+            // Adicionamos o userEmail aqui!
+            const dadosParaEnviar = {
+                fileName: arquivo.name,
+                mimeType: arquivo.type,
+                base64: base64,
+                userEmail: emailNaTela 
+            };
+
+            statusTexto.innerText = "Enviando para o Google Drive...";
+            // ... (o resto do código fetch(URL_DO_SCRIPT...) continua igualzinho)
 
                 statusTexto.innerText = "Enviando para o Google Drive...";
 
