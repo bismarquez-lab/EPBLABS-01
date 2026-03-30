@@ -146,20 +146,24 @@
         </div>
 
         <div id="pag-aluno" class="pagina">
-            <h3 style="color: #00ff99; margin-top: 0;" id="titulo-turma-aluno">Minha Sala Virtual</h3>
+            <h3 style="color: #00ff99; margin-top: 0;">Minha Sala Virtual</h3>
             <p id="aluno-status" style="min-height: 20px; font-weight: bold; font-size: 13px; text-align: center;"></p>
 
             <div class="box">
-                <h4 style="color: #00ccff;">📚 Materiais da Turma</h4>
-                <ul class="lista-arq" id="lista-materiais-aluno"></ul>
+                <h4 style="color: #00ccff;">📚 Materiais</h4>
+                <select id="aluno-filtro-turma" onchange="renderMateriaisAluno()"><option value="todas">Todas as Turmas</option></select>
+                <ul class="lista-arq" id="lista-materiais-aluno" style="margin-top: 15px;"></ul>
             </div>
+            
             <div class="box" style="background: rgba(0, 255, 153, 0.05); border-color: rgba(0, 255, 153, 0.2);">
                 <h4 style="color: #00ff99;">📤 Entregar Trabalho</h4>
+                <select id="aluno-select-turma"><option value="">Selecione para qual Turma...</option></select>
                 <input type="file" id="aluno-file">
                 <button class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
             </div>
+            
             <div class="box">
-                <h4 style="color: #00ff99;">📂 Meus Envios</h4>
+                <h4 style="color: #00ff99;">📂 Meus Envios Recentes</h4>
                 <ul class="lista-arq" id="lista-envios-aluno"></ul>
             </div>
         </div>
@@ -190,6 +194,19 @@
                 DADOS_SISTEMA = json;
                 configurarPainel(json);
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
+        }
+
+        // --- FUNÇÃO PARA O ALUNO FILTRAR OS MATERIAIS ---
+        function renderMateriaisAluno() {
+            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
+            let filtro = document.getElementById('aluno-filtro-turma').value;
+            let mat = DADOS_SISTEMA.materiais;
+            
+            if (filtro !== 'todas') mat = mat.filter(m => m.turma === filtro);
+            
+            let htmlMat = '';
+            mat.forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome}</a></li>`);
+            document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#aaa;">Nenhum material disponível.</li>';
         }
 
         function configurarPainel(dados) {
@@ -227,7 +244,11 @@
 
                 let htmlAlunos = '';
                 Object.keys(dados.db.alunos).forEach(a => {
-                    htmlAlunos += `<li><span>👤 ${a} <span style="font-size:10px; color:#aaa;">(${dados.db.alunos[a]})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', 'admin-status')">🗑️</button></li>`;
+                    let turmasAluno = dados.db.alunos[a];
+                    if(typeof turmasAluno === 'string') turmasAluno = [turmasAluno]; // Proteção
+                    turmasAluno.forEach(t => {
+                        htmlAlunos += `<li><span>👤 ${a} <span style="font-size:10px; color:#aaa;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">🗑️</button></li>`;
+                    });
                 });
                 document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno matriculado.</li>';
 
@@ -238,7 +259,7 @@
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">👁️ Gestão</button>`;
                 
                 let selectT = document.getElementById('prof-seleciona-turma');
-                let selectTAdd = document.getElementById('prof-select-turma-add'); // Novo select de matrícula
+                let selectTAdd = document.getElementById('prof-select-turma-add');
                 
                 selectT.innerHTML = '<option value="">Para qual Turma?</option>';
                 selectTAdd.innerHTML = '<option value="">Selecione a sua Turma...</option>';
@@ -283,25 +304,43 @@
                     htmlAlunosProf = '<li style="color:#aaa;">Nenhum aluno nas suas turmas.</li>';
                 } else {
                     dados.alunosDoProf.forEach(a => {
-                        htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:10px; color:#aaa;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', 'prof-visao-status')">🗑️</button></li>`;
+                        htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:10px; color:#aaa;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">🗑️</button></li>`;
                     });
                 }
                 document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf;
 
             // -- MODO ALUNO --
             } else {
-                let turmaDoAluno = dados.db.alunos[emailLogado];
-                badge.innerText = turmaDoAluno ? `🎒 ALUNO - ${turmaDoAluno}` : "🎒 ALUNO SEM TURMA";
-                badge.style.background = "#00ff99"; badge.style.color = "#000";
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">🎓 Sala de Aula</button>`;
+                let turmas = dados.minhasTurmas || [];
                 
-                let htmlMat = '';
-                dados.materiais.forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a></li>`);
-                document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li>Nenhum material disponível.</li>';
+                if (turmas.length > 0) {
+                    badge.innerText = `🎒 ALUNO (${turmas.length} Turmas)`;
+                    badge.style.background = "#00ff99"; badge.style.color = "#000";
+                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">🎓 Sala de Aula</button>`;
+                    
+                    // Preenche os selects
+                    let optsFiltro = '<option value="todas">Todas as Turmas</option>';
+                    let optsUpload = '<option value="">Selecione para qual Turma...</option>';
+                    turmas.forEach(t => {
+                        optsFiltro += `<option value="${t}">${t}</option>`;
+                        optsUpload += `<option value="${t}">${t}</option>`;
+                    });
+                    document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro;
+                    document.getElementById('aluno-select-turma').innerHTML = optsUpload;
 
-                let htmlEnv = '';
-                dados.envios.forEach(m => htmlEnv += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`);
-                document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li>Nenhum envio feito.</li>';
+                    // Renderiza materiais (via função para permitir filtro)
+                    renderMateriaisAluno();
+
+                    let htmlEnv = '';
+                    dados.envios.forEach(m => htmlEnv += `<li><span>📄 <a href="${m.link}" target="_blank">[${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}')">X</button></li>`);
+                    document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li style="color:#aaa;">Nenhum envio feito.</li>';
+
+                } else {
+                    badge.innerText = "🎒 ALUNO SEM TURMA";
+                    badge.style.background = "#555"; badge.style.color = "#fff";
+                    document.getElementById('pag-aluno').innerHTML = "<h3 style='color: #00ff99;'>Nenhuma turma atribuída a você.</h3><p style='color:#ccc;'>Solicite a matrícula a um professor.</p>";
+                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">🎓 Sala Vazia</button>`;
+                }
             }
 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
@@ -336,7 +375,6 @@
             } catch(e) { if(msgElement) { msgElement.innerText = "❌ Erro."; msgElement.style.color = "red"; } }
         }
 
-        // --- Ações do Admin ---
         function adminAcao(acao) {
             let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText };
             if (acao === 'admin_add_prof') { payload.novoEmail = document.getElementById('admin-novo-prof').value; document.getElementById('admin-novo-prof').value = ''; }
@@ -351,7 +389,6 @@
             fetchBanco(payload, document.getElementById('admin-status'));
         }
 
-        // --- Ações do Professor ---
         function profAddAluno() {
             let emailAluno = document.getElementById('prof-novo-aluno').value;
             let turma = document.getElementById('prof-select-turma-add').value;
@@ -362,24 +399,25 @@
             document.getElementById('prof-novo-aluno').value = '';
         }
 
-        // Função universal de excluir aluno (Admin e Prof usam a mesma lógica na nuvem)
-        function excluirAluno(alvoEmail, idStatusElemento) {
-            if(!confirm(`Remover matrícula do aluno '${alvoEmail}'?`)) return;
-            let payload = { action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail };
+        // AGORA REQUER A TURMA ESPECÍFICA PARA NÃO APAGAR O ALUNO DE TODAS AS AULAS
+        function excluirAluno(alvoEmail, turmaAlvo, idStatusElemento) {
+            if(!confirm(`Remover aluno '${alvoEmail}' da turma '${turmaAlvo}'?`)) return;
+            let payload = { action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo };
             fetchBanco(payload, document.getElementById(idStatusElemento));
         }
 
-        // --- Arquivos ---
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
             let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
-            if (input.files.length === 0) return;
+            let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
+            
+            if (input.files.length === 0) { status.innerText = "⚠️ Escolha um arquivo!"; return; }
+            if (!selectTurma.value) { status.innerText = "⚠️ Selecione a Turma!"; return; }
             
             let reader = new FileReader();
             status.innerText = "Enviando para o Drive..."; status.style.color = "#ffcc00";
             reader.onload = async function(e) {
-                let payload = { action: `upload_${tipo}`, fileName: input.files[0].name, mimeType: input.files[0].type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText };
-                if (tipo === 'professor') payload.turmaAlvo = document.getElementById('prof-seleciona-turma').value;
+                let payload = { action: `upload_${tipo}`, fileName: input.files[0].name, mimeType: input.files[0].type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value };
                 await fetchBanco(payload, status);
                 input.value = ''; 
             };
