@@ -3,185 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teia Magnética Interativa</title>
+    <title>Login com Google</title>
     <style>
-        /* Removemos as margens e escondemos a barra de rolagem */
         body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            /* A cor de fundo inicial. Ela será sobrescrita pelo JavaScript */
-            background-color: #0b0c10; 
-        }
-
-        /* O Canvas ocupa a tela inteira */
-        canvas {
-            display: block;
-            width: 100vw;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100vh;
+            background-color: #f0f2f5;
+        }
+        #perfil-usuario {
+            display: none;
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        #perfil-usuario img {
+            border-radius: 50%;
+            width: 80px;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="meuCanvas"></canvas>
+    <h2>Entre na sua conta</h2>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <div id="g_id_onload"
+         data-client_id="SEU_CLIENT_ID_AQUI.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="lidarComRespostaDoGoogle"
+         data-auto_prompt="false">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="outline"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+
+    <div id="perfil-usuario">
+        <img id="foto" src="" alt="Foto de Perfil">
+        <h3 id="nome"></h3>
+        <p id="email"></p>
+    </div>
 
     <script>
-        const canvas = document.getElementById('meuCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Ajusta o tamanho para a tela atual
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let particlesArray = [];
-        // Paleta de cores vibrantes (Cyberpunk / Neon)
-        const cores = ['#ff0055', '#00ff99', '#00ccff', '#ffcc00', '#aa00ff'];
-
-        // Posição do Mouse/Toque
-        let mouse = {
-            x: null,
-            y: null,
-            radius: 120 // Área de repulsão do mouse
+        // Função para decodificar o token de segurança que o Google envia
+        function decodificarJwt(token) {
+            let base64Url = token.split('.')[1];
+            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
         }
 
-        // Variável para controlar a cor do fundo
-        let hueFundo = 0;
+        // Função que é chamada automaticamente quando o usuário faz login com sucesso
+        function lidarComRespostaDoGoogle(response) {
+            // Decodifica a resposta do Google para pegar os dados do usuário
+            const dadosUsuario = decodificarJwt(response.credential);
 
-        // --- CONTROLES DE INTERAÇÃO ---
-        window.addEventListener('mousemove', function(event) {
-            mouse.x = event.x;
-            mouse.y = event.y;
-        });
+            console.log("Login feito com sucesso!");
+            console.log(dadosUsuario);
 
-        // Suporte para celular (Touch)
-        window.addEventListener('touchmove', function(event) {
-            mouse.x = event.touches[0].clientX;
-            mouse.y = event.touches[0].clientY;
-        });
+            // Esconde o botão do Google
+            document.querySelector('.g_id_signin').style.display = 'none';
 
-        // Quando o mouse sai da tela, para de empurrar
-        window.addEventListener('mouseout', function() {
-            mouse.x = undefined;
-            mouse.y = undefined;
-        });
-
-        // Reajusta tudo se o usuário girar o celular ou redimensionar a janela
-        window.addEventListener('resize', function() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            init();
-        });
-
-        // --- CLASSE DA PARTÍCULA ---
-        class Particle {
-            constructor(x, y, direcaoX, direcaoY, tamanho, cor) {
-                this.x = x;
-                this.y = y;
-                this.direcaoX = direcaoX;
-                this.direcaoY = direcaoY;
-                this.tamanho = tamanho;
-                this.cor = cor;
-            }
-
-            // Desenha a bolinha na tela
-            desenhar() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.tamanho, 0, Math.PI * 2, false);
-                ctx.fillStyle = this.cor;
-                ctx.fill();
-            }
-
-            // Calcula a física de movimento e a interação com o mouse
-            atualizar() {
-                // Checa se a partícula bateu na borda da tela e inverte a direção
-                if (this.x > canvas.width || this.x < 0) this.direcaoX = -this.direcaoX;
-                if (this.y > canvas.height || this.y < 0) this.direcaoY = -this.direcaoY;
-
-                // Lógica do Ímã (Repulsão do Mouse)
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distancia = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distancia < mouse.radius) {
-                    const forcaX = dx / distancia;
-                    const forcaY = dy / distancia;
-                    const forcaMaxima = (mouse.radius - distancia) / mouse.radius;
-                    // Multiplicador (7) define a força do "empurrão"
-                    const direcaoForcaX = forcaX * forcaMaxima * 7;
-                    const direcaoForcaY = forcaY * forcaMaxima * 7;
-
-                    this.x -= direcaoForcaX;
-                    this.y -= direcaoForcaY;
-                } else {
-                    // Movimento natural de flutuação se o mouse estiver longe
-                    this.x += this.direcaoX;
-                    this.y += this.direcaoY;
-                }
-
-                this.desenhar();
-            }
-        }
-
-        // --- INICIALIZAÇÃO ---
-        function init() {
-            particlesArray = [];
-            // Calcula a quantidade de bolinhas baseada no tamanho da tela
-            let numeroDeParticulas = (canvas.height * canvas.width) / 8000;
+            // Preenche os dados do usuário na tela
+            document.getElementById('nome').innerText = "Olá, " + dadosUsuario.name;
+            document.getElementById('email').innerText = dadosUsuario.email;
+            document.getElementById('foto').src = dadosUsuario.picture;
             
-            for (let i = 0; i < numeroDeParticulas; i++) {
-                let tamanho = (Math.random() * 3) + 1;
-                let x = (Math.random() * ((innerWidth - tamanho * 2) - (tamanho * 2)) + tamanho * 2);
-                let y = (Math.random() * ((innerHeight - tamanho * 2) - (tamanho * 2)) + tamanho * 2);
-                let direcaoX = (Math.random() * 2) - 1;
-                let direcaoY = (Math.random() * 2) - 1;
-                let cor = cores[Math.floor(Math.random() * cores.length)];
-                
-                particlesArray.push(new Particle(x, y, direcaoX, direcaoY, tamanho, cor));
-            }
-        }
-
-        // --- CONEXÃO COM LINHAS ---
-        function conectar() {
-            let opacidade = 1;
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a; b < particlesArray.length; b++) {
-                    let distancia = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
-                                  + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
-                    
-                    if (distancia < 10000) {
-                        opacidade = 1 - (distancia / 10000);
-                        ctx.strokeStyle = particlesArray[a].cor.replace(')', `, ${opacidade})`).replace('rgb', 'rgba');
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacidade * 0.3})`; 
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        // --- LOOP DE ANIMAÇÃO ---
-        function animar() {
-            requestAnimationFrame(animar);
-            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            // Mostra o perfil na tela
+            document.getElementById('perfil-usuario').style.display = 'block';
             
-            // --- NOVA LÓGICA DE COR DO FUNDO ---
-            // Aumenta o valor da cor ligeiramente a cada frame (ajuste o 0.1 para mais rápido/devagar)
-            hueFundo += 0.1; 
-            // Aplica a cor no CSS do Body. Saturação 40% e Luminosidade 8% mantém o fundo bem escuro.
-            document.body.style.backgroundColor = `hsl(${hueFundo}, 40%, 8%)`;
-
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].atualizar();
-            }
-            conectar();
+            // Aqui você poderia salvar o e-mail no seu banco de dados ou liberar o jogo!
         }
-
-        init();
-        animar();
     </script>
+
 </body>
 </html>
