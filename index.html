@@ -15,20 +15,27 @@
             background: rgba(20, 20, 25, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px; 
             width: 400px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            transition: border-color 0.4s;
         }
         
-        /* Custom Scrollbar pro Painel */
         #painel-central::-webkit-scrollbar { width: 6px; }
         #painel-central::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* Estilos de Perfil */
+        /* Estilos de Perfil e Logout */
+        .cabecalho-perfil { position: relative; margin-bottom: 15px; }
+        #btn-sair { position: absolute; top: 0; right: 0; background: rgba(255,0,85,0.2); color: #ff0055; border: 1px solid #ff0055; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: 0.2s; font-weight: bold;}
+        #btn-sair:hover { background: #ff0055; color: white; }
+
         #foto-perfil { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 5px; border: 3px solid #555; transition: border-color 0.3s;}
         #nome-usuario { margin: 0; font-size: 22px; }
-        #badge-funcao { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;}
+        #badge-funcao { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; letter-spacing: 1px;}
         
         /* Cores Temáticas */
+        .tema-aluno { border-color: rgba(0, 255, 153, 0.3) !important; }
         .tema-aluno #foto-perfil { border-color: #00ff99; }
         .tema-aluno #badge-funcao { background: #00ff99; color: #0b0c10; }
+        
+        .tema-prof { border-color: rgba(255, 204, 0, 0.3) !important; }
         .tema-prof #foto-perfil { border-color: #ffcc00; }
         .tema-prof #badge-funcao { background: #ffcc00; color: #0b0c10; }
 
@@ -50,6 +57,11 @@
         .box-arquivos a { color: #fff; text-decoration: none; word-break: break-all; margin-right: 10px;}
         .box-arquivos a:hover { text-decoration: underline; color: #00ccff;}
         
+        /* Lista Específica da Visão Geral (Aninhada) */
+        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 10px !important; margin-bottom: 10px !important; border: 1px solid rgba(255,255,255,0.05) !important;}
+        .ul-interna { width: 100%; margin-top: 8px !important; padding-left: 5px !important; }
+        .ul-interna li { border: none; padding: 0; margin-bottom: 5px; }
+
         .btn-apagar { background: #ff0055; color: white; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; width: auto;}
         
         #secao-dashboard { display: none; }
@@ -79,10 +91,13 @@
         </div>
 
         <div id="secao-dashboard">
-            <img id="foto-perfil" src="" alt="Sua foto">
-            <h3 id="nome-usuario">Nome</h3>
-            <span id="badge-funcao">Carregando...</span>
-            <span id="email-oculto" style="display:none;"></span>
+            <div class="cabecalho-perfil">
+                <button id="btn-sair" onclick="fazerLogout()">Sair da Conta</button>
+                <img id="foto-perfil" src="" alt="Sua foto">
+                <h3 id="nome-usuario">Nome</h3>
+                <span id="badge-funcao">Carregando...</span>
+                <span id="email-oculto" style="display:none;"></span>
+            </div>
 
             <div id="view-professor" style="display: none;">
                 <div class="box-arquivos" style="background: rgba(255, 204, 0, 0.1);">
@@ -93,21 +108,26 @@
                 </div>
 
                 <div class="box-arquivos">
-                    <h4 style="color: #ffcc00;">📚 Materiais Ativos na Turma</h4>
+                    <h4 style="color: #ffcc00;">📚 Materiais Ativos</h4>
                     <ul id="lista-materiais-prof"></ul>
+                </div>
+
+                <div class="box-arquivos" style="border: 1px solid rgba(0, 204, 255, 0.3);">
+                    <h4 style="color: #00ccff;">👁️ Entregas dos Alunos</h4>
+                    <ul id="lista-visao-geral"></ul>
                 </div>
             </div>
 
             <div id="view-aluno" style="display: none;">
                 <div class="box-arquivos">
-                    <h4 style="color: #00ccff;">📚 Materiais do Professor</h4>
+                    <h4 style="color: #00ccff;">📚 Materiais da Turma</h4>
                     <ul id="lista-materiais-aluno"></ul>
                 </div>
 
                 <div class="box-arquivos" style="background: rgba(0, 255, 153, 0.1);">
-                    <h4 style="color: #00ff99;">📤 Enviar Minha Atividade</h4>
+                    <h4 style="color: #00ff99;">📤 Entregar Atividade</h4>
                     <input type="file" id="input-aluno">
-                    <button class="btn-aluno" id="btn-enviar-aluno" onclick="enviarArquivo('aluno')">Entregar Trabalho</button>
+                    <button class="btn-aluno" id="btn-enviar-aluno" onclick="enviarArquivo('aluno')">Enviar Trabalho</button>
                     <div id="status-aluno" style="font-size: 12px; margin-top: 5px;"></div>
                 </div>
 
@@ -125,14 +145,11 @@
         // CONFIGURAÇÕES
         // ==========================================
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
-        
-        // Coloque os e-mails dos professores aqui (separados por vírgula)
         const PROFESSORES = ["bismarquez@gmail.com"]; 
-        
-        let roleAtual = "aluno"; // Variável global para saber quem está logado
+        let roleAtual = "aluno"; 
 
         // ==========================================
-        // 1. LOGIN E ROTEAMENTO
+        // 1. LOGIN, LOGOUT E ROTEAMENTO
         // ==========================================
         function decodificarJwt(token) {
             let base64Url = token.split('.')[1];
@@ -148,18 +165,21 @@
             document.getElementById('email-oculto').innerText = email;
             document.getElementById('foto-perfil').src = dados.picture;
             
-            // Verifica se é professor
             const painel = document.getElementById('painel-central');
+            painel.classList.remove("tema-prof", "tema-aluno"); // Limpa temas antigos
+
             if (PROFESSORES.includes(email)) {
                 roleAtual = "professor";
                 painel.classList.add("tema-prof");
                 document.getElementById('badge-funcao').innerText = "PROFESSOR";
                 document.getElementById('view-professor').style.display = "block";
+                document.getElementById('view-aluno').style.display = "none";
             } else {
                 roleAtual = "aluno";
                 painel.classList.add("tema-aluno");
                 document.getElementById('badge-funcao').innerText = "ALUNO";
                 document.getElementById('view-aluno').style.display = "block";
+                document.getElementById('view-professor').style.display = "none";
             }
             
             document.getElementById('secao-login').style.display = 'none';
@@ -168,17 +188,35 @@
             atualizarListas(email);
         }
 
+        function fazerLogout() {
+            // Desativa o auto-login do Google temporariamente
+            google.accounts.id.disableAutoSelect();
+            
+            // Esconde o dashboard e mostra o login novamente
+            document.getElementById('secao-dashboard').style.display = 'none';
+            document.getElementById('secao-login').style.display = 'block';
+            
+            // Limpa o painel
+            document.getElementById('painel-central').classList.remove("tema-prof", "tema-aluno");
+        }
+
         // ==========================================
         // 2. BUSCAR ARQUIVOS DA NUVEM
         // ==========================================
         async function atualizarListas(email) {
+            // Mensagens de carregamento
+            document.getElementById('lista-materiais-prof').innerHTML = '<li>Carregando...</li>';
+            document.getElementById('lista-materiais-aluno').innerHTML = '<li>Carregando...</li>';
+            document.getElementById('lista-visao-geral').innerHTML = '<li>Carregando entregas...</li>';
+            document.getElementById('lista-meus-envios').innerHTML = '<li>Carregando...</li>';
+
             try {
                 const resposta = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(email)}`);
                 const resultado = await resposta.json();
 
                 if (resultado.status === "sucesso") {
                     
-                    // Renderiza lista de materiais (Prof e Aluno vêm o mesmo material, mas só Prof pode apagar)
+                    // Renderiza lista de materiais compartilhados
                     let htmlMateriaisProf = '';
                     let htmlMateriaisAluno = '';
                     
@@ -189,13 +227,32 @@
                         resultado.arquivosProfessor.forEach(arq => {
                             let docLink = `📄 <a href="${arq.link}" target="_blank">${arq.nome}</a>`;
                             htmlMateriaisProf += `<li>${docLink} <button class="btn-apagar" onclick="apagarArquivo('${arq.id}', 'professor')">Apagar</button></li>`;
-                            htmlMateriaisAluno += `<li>${docLink}</li>`; // Aluno só vê e clica, não apaga
+                            htmlMateriaisAluno += `<li>${docLink}</li>`; 
                         });
                     }
                     document.getElementById('lista-materiais-prof').innerHTML = htmlMateriaisProf;
                     document.getElementById('lista-materiais-aluno').innerHTML = htmlMateriaisAluno;
 
-                    // Renderiza lista pessoal do Aluno
+                    // Renderiza Visão Geral (Apenas para Professor)
+                    if (roleAtual === "professor" && resultado.visaoGeral) {
+                        let htmlVisao = '';
+                        if (resultado.visaoGeral.length === 0) {
+                            htmlVisao = '<li style="color:#aaa;">Nenhuma entrega ainda.</li>';
+                        } else {
+                            resultado.visaoGeral.forEach(aluno => {
+                                htmlVisao += `<li class="li-visao-geral">
+                                    <strong style="color: #00ff99; font-size: 13px;">👤 ${aluno.aluno}</strong>
+                                    <ul class="ul-interna">`;
+                                aluno.arquivos.forEach(arq => {
+                                    htmlVisao += `<li>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:10px;">(${arq.data})</span></li>`;
+                                });
+                                htmlVisao += `</ul></li>`;
+                            });
+                        }
+                        document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
+                    }
+
+                    // Renderiza Envios do Aluno (Apenas para Aluno)
                     if (roleAtual === "aluno") {
                         let htmlMeus = '';
                         if(resultado.arquivosAluno.length === 0){
