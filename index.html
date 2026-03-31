@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPB LAB</title>
+    <title>Portal da Instituição</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
@@ -109,8 +109,8 @@
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-login">
-        <h2>EPB LAB</h2>
-        <p style="color: #ccc;">Acesse com a sua conta de e-mail.</p>
+        <h2>Portal da Instituição</h2>
+        <p style="color: #ccc;">Acesse com a sua conta preferida.</p>
         
         <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 25px;">
             <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-width="200"></div>
@@ -173,6 +173,14 @@
                     <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
                     <div class="scroll-interno">
                         <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:10px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
+                    </div>
+                </div>
+
+                <div class="box" style="grid-column: 1 / -1; border-color: rgba(255, 0, 85, 0.3); background: rgba(0,0,0,0.4);">
+                    <h4 style="color: #ff0055;">🗂️ Gestão Global de Arquivos (Nuvem Completa)</h4>
+                    <select id="admin-filtro-arquivos" onchange="renderArquivosAdmin()"><option value="todas">Carregando Nuvem...</option></select>
+                    <div class="scroll-interno" style="max-height: 250px;">
+                        <ul class="lista-arq" id="lista-arquivos-admin"></ul>
                     </div>
                 </div>
             </div>
@@ -270,7 +278,7 @@
         let DADOS_SISTEMA = null; 
 
         // ==========================================
-        // LÓGICA DE LOGIN: MICROSOFT
+        // LÓGICA DE LOGIN: MICROSOFT E GOOGLE
         // ==========================================
         const msalConfig = {
             auth: {
@@ -282,43 +290,23 @@
 
         async function loginMicrosoft() {
             try {
-                // Abre o popup de login da Microsoft
                 const loginResponse = await msalInstance.loginPopup({ scopes: ["user.read"] });
-                
                 let nome = loginResponse.account.name || "Usuário";
                 let email = loginResponse.account.username;
-                
-                // A MS não dá foto direta, então geramos um avatar bonito com a inicial do nome
                 let fotoGenerica = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=random&color=fff&size=100`;
 
-                let dadosUnificados = {
-                    email: email,
-                    given_name: nome,
-                    picture: fotoGenerica
-                };
-                
-                // Manda pro mesmo portal do Google
-                iniciarPortal(dadosUnificados);
-
+                iniciarPortal({ email: email, given_name: nome, picture: fotoGenerica });
             } catch (error) {
-                console.error(error);
-                alert("Erro ao entrar com a Microsoft. Verifique se o seu navegador não está bloqueando pop-ups.");
+                console.error(error); alert("Erro ao entrar com a Microsoft.");
             }
         }
 
-        // ==========================================
-        // LÓGICA DE LOGIN: GOOGLE
-        // ==========================================
         function decodificarJwt(token) { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
 
         async function lidarComLoginGoogle(response) {
-            const dadosGoogle = decodificarJwt(response.credential);
-            iniciarPortal(dadosGoogle);
+            iniciarPortal(decodificarJwt(response.credential));
         }
 
-        // ==========================================
-        // INICIA O PAINEL (Serve para MS e Google)
-        // ==========================================
         async function iniciarPortal(dados) {
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
@@ -328,13 +316,12 @@
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('navbar').style.display = 'flex';
             document.getElementById('area-conteudo').style.display = 'block';
-
             document.getElementById('badge-funcao').innerText = "Carregando sistema...";
+
             try {
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
-                
                 configurarPainel(json, true); 
 
                 fetch(URL_DO_SCRIPT, {
@@ -342,15 +329,16 @@
                     body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }),
                     headers: {'Content-Type': 'text/plain'}
                 });
-
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
         }
 
+        // ==========================================
+        // FUNÇÕES DE RENDERIZAÇÃO
+        // ==========================================
         function renderMateriaisAluno() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
             let filtro = document.getElementById('aluno-filtro-turma').value;
             let mat = DADOS_SISTEMA.materiais;
-            
             if (filtro !== 'todas') mat = mat.filter(m => m.turma === filtro);
             
             let htmlMat = '';
@@ -358,22 +346,39 @@
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#aaa;">Nenhum material disponível.</li>';
         }
 
+        function renderArquivosAdmin() {
+            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin' || !DADOS_SISTEMA.visaoGeralAdmin) return;
+            let filtro = document.getElementById('admin-filtro-arquivos').value;
+            let html = '';
+            
+            DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
+                if (filtro !== 'todas' && t.turma !== filtro) return;
+                
+                html += `<li class="separador-turma" style="background: rgba(255,0,85,0.1); color: #ff0055; border-color: rgba(255,0,85,0.2);">🏫 ${t.turma} <span style="font-size:10px; color:#ccc;">(Prof: ${t.professor})</span></li>`;
+                
+                t.materiais.forEach(m => {
+                    html += `<li style="padding-left: 10px;"><span><strong style="color:#ffcc00;">[Material]</strong> 📄 <a href="${m.link}" target="_blank">${m.nome}</a> <span style="color:#aaa; font-size:11px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">🗑️</button></li>`;
+                });
+
+                t.entregas.forEach(e => {
+                    let nickAluno = e.aluno.split('@')[0];
+                    html += `<li style="padding-left: 10px;"><span><strong style="color:#00ff99;">[Entrega: ${nickAluno}]</strong> 📄 <a href="${e.link}" target="_blank">${e.nome}</a> <span style="color:#aaa; font-size:11px;">(${e.data})</span></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">🗑️</button></li>`;
+                });
+            });
+            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#aaa;">Nenhum arquivo encontrado.</li>';
+        }
+
         function configurarPainel(dados, isInitialLogin = false) {
             if (dados.config) {
                 let textoExtensoes = dados.config.extensoes.join(', ').toUpperCase();
                 let limiteMB = dados.config.limiteMB;
-                
-                document.querySelectorAll('.info-upload').forEach(el => {
-                    el.innerText = `Permitido: ${textoExtensoes} (Máx. ${limiteMB}MB)`;
-                });
-
+                document.querySelectorAll('.info-upload').forEach(el => el.innerText = `Permitido: ${textoExtensoes} (Máx. ${limiteMB}MB)`);
                 let aceitos = dados.config.extensoes.map(ext => '.' + ext).join(', ');
                 document.getElementById('prof-file').setAttribute('accept', aceitos);
                 document.getElementById('aluno-file').setAttribute('accept', aceitos);
             }
 
             let paginaAtivaId = 'pag-perfil'; 
-            
             if (isInitialLogin) {
                 if (dados.role === 'admin') paginaAtivaId = 'pag-admin';
                 else if (dados.role === 'professor') paginaAtivaId = 'pag-prof';
@@ -388,38 +393,35 @@
 
             menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">👤 Perfil</button>`;
 
+            // -- ADMIN --
             if (dados.role === "admin") {
                 badge.innerText = "👑 ADMINISTRADOR"; badge.style.background = "#aa00ff"; badge.style.color = "#fff";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">⚙️ Admin</button>`;
                 
-                let htmlProfs = '<option value="">Selecione o Professor...</option>';
                 let htmlProfsLista = '';
-                dados.db.professores.forEach(p => {
-                    htmlProfs += `<option value="${p}">${p}</option>`;
-                    htmlProfsLista += `<li><span>👤 ${p}</span> <button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">🗑️</button></li>`;
-                });
-                document.getElementById('admin-select-prof').innerHTML = htmlProfs;
-                document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li style="color:#aaa;">Nenhum professor cadastrado.</li>';
+                dados.db.professores.forEach(p => htmlProfsLista += `<li><span>👤 ${p}</span> <button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">🗑️</button></li>`);
+                document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li style="color:#aaa;">Nenhum professor.</li>';
 
-                let htmlTurmas = '<option value="">Selecione a Turma...</option>';
                 let htmlTurmasLista = '';
-                Object.keys(dados.db.turmas).forEach(t => {
-                    htmlTurmas += `<option value="${t}">${t}</option>`;
-                    htmlTurmasLista += `<li><span>🏫 ${t} <span style="font-size:10px; color:#aaa;">(Prof: ${dados.db.turmas[t]})</span></span> <button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">🗑️</button></li>`;
-                });
-                document.getElementById('admin-select-turma').innerHTML = htmlTurmas;
-                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li style="color:#aaa;">Nenhuma turma criada.</li>';
+                Object.keys(dados.db.turmas).forEach(t => htmlTurmasLista += `<li><span>🏫 ${t} <span style="font-size:10px; color:#aaa;">(Prof: ${dados.db.turmas[t]})</span></span> <button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">🗑️</button></li>`);
+                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li style="color:#aaa;">Nenhuma turma.</li>';
 
                 let htmlAlunos = '';
                 Object.keys(dados.db.alunos).forEach(a => {
-                    let turmasAluno = dados.db.alunos[a];
-                    if(typeof turmasAluno === 'string') turmasAluno = [turmasAluno]; 
-                    turmasAluno.forEach(t => {
-                        htmlAlunos += `<li><span>👤 ${a} <span style="font-size:10px; color:#aaa;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">🗑️</button></li>`;
-                    });
+                    let turmasAluno = typeof dados.db.alunos[a] === 'string' ? [dados.db.alunos[a]] : dados.db.alunos[a];
+                    turmasAluno.forEach(t => htmlAlunos += `<li><span>👤 ${a} <span style="font-size:10px; color:#aaa;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">🗑️</button></li>`);
                 });
-                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno matriculado.</li>';
+                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno.</li>';
 
+                // NOVO: Povoar filtro de Arquivos Globais
+                let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
+                if(dados.visaoGeralAdmin) {
+                    dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
+                }
+                document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos;
+                renderArquivosAdmin(); // Renderiza a lista global
+
+            // -- PROFESSOR --
             } else if (dados.role === "professor") {
                 badge.innerText = "👨‍🏫 PROFESSOR"; badge.style.background = "#ffcc00"; badge.style.color = "#000";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">📚 Minhas Turmas</button>`;
@@ -427,7 +429,6 @@
                 
                 let selectT = document.getElementById('prof-seleciona-turma');
                 let selectTAdd = document.getElementById('prof-select-turma-add');
-                
                 selectT.innerHTML = '<option value="">Para qual Turma?</option>';
                 selectTAdd.innerHTML = '<option value="">Selecione a sua Turma...</option>';
 
@@ -439,16 +440,11 @@
                 });
 
                 let matPorTurma = {};
-                dados.materiais.forEach(m => {
-                    if(!matPorTurma[m.turma]) matPorTurma[m.turma] = [];
-                    matPorTurma[m.turma].push(m);
-                });
+                dados.materiais.forEach(m => { if(!matPorTurma[m.turma]) matPorTurma[m.turma] = []; matPorTurma[m.turma].push(m); });
                 let htmlMat = '';
                 for(let t in matPorTurma) {
                     htmlMat += `<li class="separador-turma">🏫 ${t}</li>`;
-                    matPorTurma[t].forEach(m => {
-                        htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">X</button></li>`;
-                    });
+                    matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">X</button></li>`);
                 }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
@@ -457,30 +453,22 @@
                     htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida.</li>';
                 } else {
                     dados.visaoGeral.forEach(aluno => {
-                        htmlVisao += `<li class="li-visao-geral">
-                            <strong style="color: #00ccff; font-size: 15px;">👤 ${aluno.aluno} <span style="font-size:11px; color:#aaa;">(${aluno.turma})</span></strong>
-                            <ul class="ul-interna">`;
-                        aluno.arquivos.forEach(arq => { 
-                            htmlVisao += `<li><span>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">🗑️</button></li>`; 
-                        });
+                        htmlVisao += `<li class="li-visao-geral"><strong style="color: #00ccff; font-size: 15px;">👤 ${aluno.aluno} <span style="font-size:11px; color:#aaa;">(${aluno.turma})</span></strong><ul class="ul-interna">`;
+                        aluno.arquivos.forEach(arq => htmlVisao += `<li><span>📄 <a href="${arq.link}" target="_blank">${arq.nome}</a> <span style="color:#aaa; font-size:11px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">🗑️</button></li>`);
                         htmlVisao += `</ul></li>`;
                     });
                 }
                 document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
 
                 let htmlAlunosProf = '';
-                if (!dados.alunosDoProf || dados.alunosDoProf.length === 0) {
-                    htmlAlunosProf = '<li style="color:#aaa;">Nenhum aluno nas suas turmas.</li>';
-                } else {
-                    dados.alunosDoProf.forEach(a => {
-                        htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:10px; color:#aaa;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">🗑️</button></li>`;
-                    });
+                if (dados.alunosDoProf) {
+                    dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:10px; color:#aaa;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">🗑️</button></li>`);
                 }
-                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf;
+                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li style="color:#aaa;">Nenhum aluno.</li>';
 
+            // -- ALUNO --
             } else {
                 let turmas = dados.minhasTurmas || [];
-                
                 if (turmas.length > 0) {
                     badge.innerText = `🎒 ALUNO (${turmas.length} Turmas)`;
                     badge.style.background = "#00ff99"; badge.style.color = "#000";
@@ -488,10 +476,7 @@
                     
                     let optsFiltro = '<option value="todas">Todas as Turmas</option>';
                     let optsUpload = '<option value="">Selecione para qual Turma...</option>';
-                    turmas.forEach(t => {
-                        optsFiltro += `<option value="${t}">${t}</option>`;
-                        optsUpload += `<option value="${t}">${t}</option>`;
-                    });
+                    turmas.forEach(t => { optsFiltro += `<option value="${t}">${t}</option>`; optsUpload += `<option value="${t}">${t}</option>`; });
                     document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro;
                     document.getElementById('aluno-select-turma').innerHTML = optsUpload;
 
@@ -500,22 +485,21 @@
                     let htmlEnv = '';
                     dados.envios.forEach(m => htmlEnv += `<li><span>📄 <a href="${m.link}" target="_blank">[${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'aluno-status')">X</button></li>`);
                     document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li style="color:#aaa;">Nenhum envio feito.</li>';
-
                 } else {
-                    badge.innerText = "🎒 ALUNO SEM TURMA";
-                    badge.style.background = "#555"; badge.style.color = "#fff";
-                    document.getElementById('pag-aluno').innerHTML = "<h3 style='color: #00ff99;'>Nenhuma turma atribuída a você.</h3><p style='color:#ccc;'>Solicite a matrícula a um professor.</p>";
+                    badge.innerText = "🎒 ALUNO SEM TURMA"; badge.style.background = "#555"; badge.style.color = "#fff";
+                    document.getElementById('pag-aluno').innerHTML = "<h3 style='color: #00ff99;'>Nenhuma turma atribuída a você.</h3><p style='color:#ccc;'>Solicite matrícula a um professor.</p>";
                     menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">🎓 Sala Vazia</button>`;
                 }
             }
 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.getElementById(paginaAtivaId).style.display = 'flex';
-            menu.querySelectorAll('.nav-btn').forEach(btn => {
-                if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active');
-            });
+            menu.querySelectorAll('.nav-btn').forEach(btn => { if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active'); });
         }
 
+        // ==========================================
+        // FUNÇÕES DE AÇÃO
+        // ==========================================
         function abrirPagina(id, btn) {
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -524,26 +508,20 @@
         }
 
         function fazerLogout() { 
-            // Limpa o login do Google
             google.accounts.id.disableAutoSelect(); 
-            // Limpa o cache da Microsoft e recarrega a página
-            sessionStorage.clear();
-            localStorage.clear();
-            location.reload(); 
+            sessionStorage.clear(); localStorage.clear(); location.reload(); 
         }
 
         async function fetchBanco(payload, msgElement) {
-            if(msgElement) { msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00"; }
+            if(msgElement) { msgElement.innerText = "Processando..."; msgElement.style.color = "#ffcc00"; }
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
                 if(msgElement) { msgElement.innerText = "✅ Sucesso!"; msgElement.style.color = "#00ff99"; }
-                
                 let emailLogado = document.getElementById('email-oculto').innerText;
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
                 configurarPainel(json);
-                
                 if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3000);
             } catch(e) { if(msgElement) { msgElement.innerText = "❌ Erro."; msgElement.style.color = "red"; } }
         }
@@ -557,32 +535,28 @@
         }
 
         function adminExcluir(acao, alvo) {
-            if(!confirm(`⚠️ Tem certeza que deseja excluir '${alvo}' do sistema?`)) return;
-            let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo };
-            fetchBanco(payload, document.getElementById('admin-status'));
+            if(!confirm(`⚠️ Tem certeza que deseja excluir '${alvo}'?`)) return;
+            fetchBanco({ action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo }, document.getElementById('admin-status'));
         }
 
         function profAddTurma() {
             let nomeTurma = document.getElementById('prof-nova-turma').value;
-            if(!nomeTurma) return alert("Digite o nome da turma que deseja criar!");
-            let payload = { action: 'prof_add_turma', userEmail: document.getElementById('email-oculto').innerText, nomeTurma: nomeTurma };
-            fetchBanco(payload, document.getElementById('prof-visao-status'));
+            if(!nomeTurma) return alert("Digite o nome da turma!");
+            fetchBanco({ action: 'prof_add_turma', userEmail: document.getElementById('email-oculto').innerText, nomeTurma: nomeTurma }, document.getElementById('prof-visao-status'));
             document.getElementById('prof-nova-turma').value = '';
         }
 
         function profAddAluno() {
             let emailAluno = document.getElementById('prof-novo-aluno').value;
             let turma = document.getElementById('prof-select-turma-add').value;
-            if(!emailAluno || !turma) return alert("Preencha o email e selecione a turma!");
-            let payload = { action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma };
-            fetchBanco(payload, document.getElementById('prof-visao-status'));
+            if(!emailAluno || !turma) return alert("Preencha o email e a turma!");
+            fetchBanco({ action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma }, document.getElementById('prof-visao-status'));
             document.getElementById('prof-novo-aluno').value = '';
         }
 
         function excluirAluno(alvoEmail, turmaAlvo, idStatusElemento) {
             if(!confirm(`Remover aluno '${alvoEmail}' da turma '${turmaAlvo}'?`)) return;
-            let payload = { action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo };
-            fetchBanco(payload, document.getElementById(idStatusElemento));
+            fetchBanco({ action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo }, document.getElementById(idStatusElemento));
         }
 
         function upload(tipo) {
@@ -595,41 +569,25 @@
             if (!selectTurma.value) { status.innerText = "⚠️ Selecione a Turma!"; return; }
             
             let arquivo = input.files[0];
-            
-            let limiteMB = DADOS_SISTEMA.config.limiteMB; 
-            let extensoesPermitidas = DADOS_SISTEMA.config.extensoes;
-            let limiteBytes = limiteMB * 1024 * 1024;
-            
+            let limiteBytes = DADOS_SISTEMA.config.limiteMB * 1024 * 1024;
             let extensao = arquivo.name.split('.').pop().toLowerCase();
 
-            if (arquivo.size > limiteBytes) {
-                status.innerText = `⚠️ O arquivo é muito pesado! O limite é ${limiteMB}MB.`;
-                status.style.color = "#ff0055";
-                input.value = ''; return;
-            }
-            if (!extensoesPermitidas.includes(extensao)) {
-                status.innerText = `⚠️ Formato inválido! Use: ${extensoesPermitidas.join(', ').toUpperCase()}`;
-                status.style.color = "#ff0055";
-                input.value = ''; return;
-            }
+            if (arquivo.size > limiteBytes) { status.innerText = "⚠️ Arquivo muito pesado!"; status.style.color = "#ff0055"; input.value = ''; return; }
+            if (!DADOS_SISTEMA.config.extensoes.includes(extensao)) { status.innerText = "⚠️ Formato inválido!"; status.style.color = "#ff0055"; input.value = ''; return; }
 
             let reader = new FileReader();
-            status.innerText = "Enviando para o Drive..."; status.style.color = "#ffcc00";
-            btn.disabled = true; 
+            status.innerText = "Enviando para o Drive..."; status.style.color = "#ffcc00"; btn.disabled = true; 
 
             reader.onload = async function(e) {
-                let payload = { action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value };
-                await fetchBanco(payload, status);
-                input.value = ''; 
-                btn.disabled = false; 
+                await fetchBanco({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value }, status);
+                input.value = ''; btn.disabled = false; 
             };
             reader.readAsDataURL(arquivo);
         }
 
         async function apagar(id, idStatusElemento) {
-            if(!confirm("Apagar este arquivo definitivamente da nuvem?")) return;
-            let payload = { action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText };
-            await fetchBanco(payload, document.getElementById(idStatusElemento));
+            if(!confirm("Apagar este arquivo da nuvem?")) return;
+            await fetchBanco({ action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById(idStatusElemento));
         }
 
         // --- Canvas Background ---
@@ -650,15 +608,8 @@
         for (let i = 0; i < 90; i++) particlesArray.push(new Particle());
         function animar() {
             requestAnimationFrame(animar); ctx.clearRect(0, 0, innerWidth, innerHeight); hueFundo += 0.05; document.body.style.backgroundColor = `hsl(${hueFundo}, 40%, 8%)`;
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].atualizar();
-                for (let j = i; j < particlesArray.length; j++) {
-                    let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2);
-                    if (d < 15000) { ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - d/15000)*0.2})`; ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); }
-                }
-            }
-        }
-        animar();
+            for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].atualizar(); for (let j = i; j < particlesArray.length; j++) { let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2); if (d < 15000) { ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - d/15000)*0.2})`; ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); } } }
+        } animar();
     </script>
 </body>
 </html>
