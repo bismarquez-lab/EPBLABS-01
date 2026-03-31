@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPB LABS</title>
+    <title>Portal da Instituição</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    
     <style>
         /* --- FUNDO E NAVEGAÇÃO --- */
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0c10; color: white;}
@@ -21,6 +23,15 @@
 
         #tela-login { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: rgba(20, 20, 25, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 40px; width: 350px; text-align: center; }
         
+        /* --- BOTÃO MICROSOFT CUSTOMIZADO --- */
+        .btn-microsoft {
+            background-color: #2F2F2F; color: white; border: 1px solid #8c8c8c; border-radius: 4px; 
+            padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; 
+            justify-content: center; gap: 10px; font-family: 'Segoe UI', sans-serif; font-weight: 500;
+            transition: 0.2s; height: 40px; box-sizing: border-box; font-size: 14px;
+        }
+        .btn-microsoft:hover { background-color: #3F3F3F; }
+
         /* --- LAYOUT TELA CHEIA (SEM SCROLL GERAL) --- */
         #area-conteudo { 
             position: absolute; top: 75px; left: 50%; transform: translateX(-50%); z-index: 10; 
@@ -86,7 +97,7 @@
         .info-upload { font-size: 11px; color: #aaa; text-align: center; margin-bottom: 8px; display: block;}
 
         .perfil-container { text-align: center; margin-top: 5vh; }
-        #foto-perfil { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px; border: 3px solid #555; }
+        #foto-perfil { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px; border: 3px solid #555; background: white;}
         #nome-usuario { margin: 0; font-size: 26px; } #email-usuario { color: #aaa; font-size: 14px;}
         #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 15px; }
     </style>
@@ -95,13 +106,22 @@
 
     <canvas id="meuCanvas"></canvas>
 
-    <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLogin" data-auto_prompt="false"></div>
+    <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-login">
-        <h2>EPB LABS</h2>
-        <p style="color: #ccc;">Acesse com sua conta Google.</p>
-        <div style="display: flex; justify-content: center; margin-top: 20px;">
-            <div class="g_id_signin" data-type="standard" data-theme="filled_black"></div>
+        <h2>Portal da Instituição</h2>
+        <p style="color: #ccc;">Acesse com a sua conta preferida.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 25px;">
+            <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-width="200"></div>
+            
+            <button class="btn-microsoft" onclick="loginMicrosoft()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 23 23">
+                    <path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/>
+                    <path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/>
+                </svg>
+                Entrar com Microsoft
+            </button>
         </div>
     </div>
 
@@ -129,7 +149,7 @@
             <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="box">
                     <h4 style="color: #aa00ff;">👨‍🏫 1. Gerenciar Professores</h4>
-                    <input type="email" id="admin-novo-prof" placeholder="Email do Google do Professor">
+                    <input type="email" id="admin-novo-prof" placeholder="Email do Google/MS do Professor">
                     <button class="action-btn" style="background: #aa00ff; color: white;" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
                     <div class="scroll-interno">
                         <ul class="lista-arq" id="lista-admin-profs" style="margin-top:10px; background:rgba(0,0,0,0.5); padding:10px; border-radius:6px;"></ul>
@@ -148,7 +168,7 @@
 
                 <div class="box">
                     <h4 style="color: #00ff99;">🎒 3. Gerenciar Alunos</h4>
-                    <input type="email" id="admin-novo-aluno" placeholder="Email do Google do Aluno">
+                    <input type="email" id="admin-novo-aluno" placeholder="Email do Google/MS do Aluno">
                     <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
                     <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
                     <div class="scroll-interno">
@@ -249,10 +269,57 @@
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         let DADOS_SISTEMA = null; 
 
+        // ==========================================
+        // LÓGICA DE LOGIN: MICROSOFT
+        // ==========================================
+        const msalConfig = {
+            auth: {
+                clientId: "83802911-104c-43af-ab13-62ff6df1e42f",
+                authority: "https://login.microsoftonline.com/common"
+            }
+        };
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        async function loginMicrosoft() {
+            try {
+                // Abre o popup de login da Microsoft
+                const loginResponse = await msalInstance.loginPopup({ scopes: ["user.read"] });
+                
+                let nome = loginResponse.account.name || "Usuário";
+                let email = loginResponse.account.username;
+                
+                // A MS não dá foto direta, então geramos um avatar bonito com a inicial do nome
+                let fotoGenerica = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=random&color=fff&size=100`;
+
+                let dadosUnificados = {
+                    email: email,
+                    given_name: nome,
+                    picture: fotoGenerica
+                };
+                
+                // Manda pro mesmo portal do Google
+                iniciarPortal(dadosUnificados);
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao entrar com a Microsoft. Verifique se o seu navegador não está bloqueando pop-ups.");
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DE LOGIN: GOOGLE
+        // ==========================================
         function decodificarJwt(token) { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
 
-        async function lidarComLogin(response) {
-            const dados = decodificarJwt(response.credential);
+        async function lidarComLoginGoogle(response) {
+            const dadosGoogle = decodificarJwt(response.credential);
+            iniciarPortal(dadosGoogle);
+        }
+
+        // ==========================================
+        // INICIA O PAINEL (Serve para MS e Google)
+        // ==========================================
+        async function iniciarPortal(dados) {
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
             document.getElementById('email-usuario').innerText = dados.email;
@@ -270,9 +337,6 @@
                 
                 configurarPainel(json, true); 
 
-                // ==========================================
-                // REGISTRO SILENCIOSO DE LOGIN NO FUNDO
-                // ==========================================
                 fetch(URL_DO_SCRIPT, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }),
@@ -324,7 +388,6 @@
 
             menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">👤 Perfil</button>`;
 
-            // -- MODO ADMIN --
             if (dados.role === "admin") {
                 badge.innerText = "👑 ADMINISTRADOR"; badge.style.background = "#aa00ff"; badge.style.color = "#fff";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">⚙️ Admin</button>`;
@@ -357,7 +420,6 @@
                 });
                 document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno matriculado.</li>';
 
-            // -- MODO PROFESSOR --
             } else if (dados.role === "professor") {
                 badge.innerText = "👨‍🏫 PROFESSOR"; badge.style.background = "#ffcc00"; badge.style.color = "#000";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">📚 Minhas Turmas</button>`;
@@ -416,7 +478,6 @@
                 }
                 document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf;
 
-            // -- MODO ALUNO --
             } else {
                 let turmas = dados.minhasTurmas || [];
                 
@@ -462,7 +523,14 @@
             btn.classList.add('active');
         }
 
-        function fazerLogout() { google.accounts.id.disableAutoSelect(); location.reload(); }
+        function fazerLogout() { 
+            // Limpa o login do Google
+            google.accounts.id.disableAutoSelect(); 
+            // Limpa o cache da Microsoft e recarrega a página
+            sessionStorage.clear();
+            localStorage.clear();
+            location.reload(); 
+        }
 
         async function fetchBanco(payload, msgElement) {
             if(msgElement) { msgElement.innerText = "Processando... Aguarde."; msgElement.style.color = "#ffcc00"; }
