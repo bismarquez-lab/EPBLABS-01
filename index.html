@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal da Instituição</title>
+    <title>EPBLAB</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
@@ -109,8 +109,8 @@
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-login">
-        <h2>Portal da Instituição</h2>
-        <p style="color: #ccc;">Acesse com a sua conta preferida.</p>
+        <h2>EPB LAB</h2>
+        <p style="color: #ccc;">Acesse com a sua conta de e-mail.</p>
         
         <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 25px;">
             <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-width="200"></div>
@@ -342,7 +342,13 @@
             if (filtro !== 'todas') mat = mat.filter(m => m.turma === filtro);
             
             let htmlMat = '';
-            mat.forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome}</a></li>`);
+            mat.forEach(m => {
+                // NOVO: Exibe o nome do professor que enviou na visão do aluno
+                let profEmail = DADOS_SISTEMA.db.turmas[m.turma];
+                let nickProf = profEmail ? profEmail.split('@')[0] : 'Prof';
+                
+                htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome} <span style="font-size: 11px; color: #ffcc00;">(por ${nickProf})</span></a></li>`;
+            });
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#aaa;">Nenhum material disponível.</li>';
         }
 
@@ -356,8 +362,11 @@
                 
                 html += `<li class="separador-turma" style="background: rgba(255,0,85,0.1); color: #ff0055; border-color: rgba(255,0,85,0.2);">🏫 ${t.turma} <span style="font-size:10px; color:#ccc;">(Prof: ${t.professor})</span></li>`;
                 
+                // NOVO: Pega o apelido do professor (tudo antes do @)
+                let nickProf = t.professor ? t.professor.split('@')[0] : 'Prof';
+
                 t.materiais.forEach(m => {
-                    html += `<li style="padding-left: 10px;"><span><strong style="color:#ffcc00;">[Material]</strong> 📄 <a href="${m.link}" target="_blank">${m.nome}</a> <span style="color:#aaa; font-size:11px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">🗑️</button></li>`;
+                    html += `<li style="padding-left: 10px;"><span><strong style="color:#ffcc00;">[Material: ${nickProf}]</strong> 📄 <a href="${m.link}" target="_blank">${m.nome}</a> <span style="color:#aaa; font-size:11px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">🗑️</button></li>`;
                 });
 
                 t.entregas.forEach(e => {
@@ -413,13 +422,12 @@
                 });
                 document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno.</li>';
 
-                // NOVO: Povoar filtro de Arquivos Globais
                 let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
                 if(dados.visaoGeralAdmin) {
                     dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
                 }
                 document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos;
-                renderArquivosAdmin(); // Renderiza a lista global
+                renderArquivosAdmin(); 
 
             // -- PROFESSOR --
             } else if (dados.role === "professor") {
