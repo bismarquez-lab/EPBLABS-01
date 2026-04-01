@@ -11,119 +11,106 @@
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     
     <style>
-        /* --- FUNDO E NAVEGAÇÃO MINIMALISTA --- */
-        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #333;}
+        /* --- FUNDO E TIPOGRAFIA GOOGLE MATERIAL 3 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
-        #navbar { position: absolute; top: 0; left: 0; width: 100%; height: 65px; z-index: 20; background: rgba(255, 255, 255, 0.95); border-bottom: 1px solid #e0e0e0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); display: none; justify-content: space-between; align-items: center; padding: 0 30px; box-sizing: border-box; backdrop-filter: blur(5px);}
-        .nav-links { display: flex; gap: 15px; }
-        .nav-btn { background: transparent; color: #666; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 14px;}
-        .nav-btn:hover { background: #f0f0f0; color: #333; }
-        .nav-btn.active { background: #e3effd; color: #0056b3; }
-        .btn-sair-nav { background: #fff1f3; color: #d32f2f; border: 1px solid #ffcdd2; padding: 8px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px;}
-        .btn-sair-nav:hover { background: #ffebee; }
+        /* --- NAVBAR --- */
+        #navbar { position: absolute; top: 0; left: 0; width: 100%; height: 64px; z-index: 20; background: #ffffff; border-bottom: 1px solid #e3e3e3; display: none; justify-content: space-between; align-items: center; padding: 0 32px; box-sizing: border-box;}
+        .nav-links { display: flex; gap: 8px; }
+        .nav-btn { background: transparent; color: #444746; border: none; padding: 10px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-size: 14px;}
+        .nav-btn:hover { background: #f1f3f4; color: #1f1f1f; }
+        .nav-btn.active { background: #d3e3fd; color: #041e49; font-weight: 500; }
+        .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px;}
+        .btn-sair-nav:hover { background: #f1f3f4; color: #1f1f1f; }
 
-        /* --- TELA DE LOGIN CLEAN --- */
-        #tela-login { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: #ffffff; border: 1px solid #eaeaea; border-radius: 20px; padding: 50px 40px; width: 360px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
-        #tela-login h2 { color: #222; margin-top: 0; font-size: 24px;}
-        #tela-login p { color: #777; margin-bottom: 30px; font-size: 15px;}
+        /* --- TELA DE LOGIN --- */
+        #tela-login { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 48px 40px; width: 380px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        #tela-login h2 { color: #1f1f1f; margin-top: 0; font-size: 28px; font-weight: 400;}
+        #tela-login p { color: #444746; margin-bottom: 32px; font-size: 16px;}
         
-        /* --- BOTÃO MICROSOFT CUSTOMIZADO --- */
         .btn-microsoft {
-            background-color: #ffffff; color: #5e5e5e; border: 1px solid #c8c8c8; border-radius: 4px; 
+            background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; 
             padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; gap: 10px; font-family: 'Segoe UI', sans-serif; font-weight: 600;
+            justify-content: center; gap: 10px; font-family: 'Google Sans', 'Segoe UI', sans-serif; font-weight: 500;
             transition: background-color 0.2s; height: 40px; box-sizing: border-box; font-size: 14px;
         }
-        .btn-microsoft:hover { background-color: #f4f4f4; color: #333;}
+        .btn-microsoft:hover { background-color: #f1f3f4; color: #1f1f1f;}
 
         /* --- LAYOUT TELA CHEIA --- */
         #area-conteudo { 
-            position: absolute; top: 85px; left: 50%; transform: translateX(-50%); z-index: 10; 
-            width: 96%; max-width: 1300px; 
-            height: calc(100vh - 105px); display: none; 
+            position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; 
+            width: 96%; max-width: 1400px; 
+            height: calc(100vh - 110px); display: none; 
         }
         
         .pagina { 
-            background: #ffffff; border: 1px solid #e0e0e0; border-radius: 20px; padding: 25px 30px; 
+            background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; 
             display: none; height: 100%; box-sizing: border-box; 
             overflow: hidden; 
             flex-direction: column; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
-        .pagina > h3 { margin-top: 0; margin-bottom: 5px; flex-shrink: 0; color: #222; font-size: 22px;}
-        .pagina > p { margin-top: 0; margin-bottom: 20px; flex-shrink: 0; color: #666; font-size: 14px;}
+        .pagina > h3 { margin-top: 0; margin-bottom: 8px; flex-shrink: 0; color: #1f1f1f; font-size: 24px; font-weight: 400;}
+        .pagina > p { margin-top: 0; margin-bottom: 24px; flex-shrink: 0; color: #444746; font-size: 14px;}
 
         /* --- CSS GRID DASHBOARD --- */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 20px;
-            flex-grow: 1; 
-            overflow: hidden; 
-        }
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; overflow: hidden; }
 
-        /* --- CARDS BRANCOS SUAVES --- */
+        /* --- CARDS MINIMALISTAS --- */
         .box { 
-            background: #ffffff; padding: 20px; border-radius: 12px; margin: 0; 
-            border: 1px solid #f0f0f0; 
+            background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; 
+            border: 1px solid #e3e3e3; 
             display: flex; flex-direction: column; 
             overflow: hidden; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: box-shadow 0.2s ease;
         }
-        .box:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
-        .box h4 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; color: #444; flex-shrink: 0; font-weight: 600;}
+        .box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .box h4 { margin: 0 0 16px 0; font-size: 16px; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; color: #1f1f1f; flex-shrink: 0; font-weight: 500;}
         
         /* --- ROLAGEM INTERNA --- */
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
-        .scroll-interno::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 4px; }
-        .scroll-interno::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
+        .scroll-interno::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
 
         /* --- FORMULÁRIOS --- */
-        input, select { width: 100%; padding: 10px 12px; margin-bottom: 12px; background: #f9f9fc; border: 1px solid #e4e4e4; color: #333; border-radius: 8px; box-sizing: border-box; font-size: 14px; transition: border 0.3s;}
-        input:focus, select:focus { outline: none; border-color: #0056b3; background: #fff;}
+        input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
+        input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;} /* Ajuste de padding para não dar salto visual */
         
-        button.action-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: all 0.2s ease; background: #0056b3;}
-        button.action-btn:hover { background: #004494; transform: translateY(-1px);}
-        button.action-btn:disabled { background: #ccc; cursor: not-allowed; transform: none;}
+        /* Botão Primário Estilo Google */
+        button.action-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: all 0.2s ease; background: #0b57d0; font-family: 'Google Sans', sans-serif;}
+        button.action-btn:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);}
+        button.action-btn:disabled { background: #e3e3e3; color: #1f1f1f; opacity: 0.38; cursor: not-allowed; box-shadow: none;}
         
         /* --- LISTAS --- */
-        .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; }
-        .lista-arq li { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #eaeaea; display: flex; justify-content: space-between; align-items: center;}
-        .lista-arq a { color: #0056b3; text-decoration: none; word-break: break-all; margin-right: 15px; font-weight: 500;} 
-        .lista-arq a:hover { color: #003d82; text-decoration: underline;}
+        .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444746; }
+        .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
+        .lista-arq a { color: #0b57d0; text-decoration: none; word-break: break-all; margin-right: 15px; font-weight: 500;} 
+        .lista-arq a:hover { text-decoration: underline;}
         
-        .btn-apagar { background: #fff1f3; color: #d32f2f; border: 1px solid #ffcdd2; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; flex-shrink: 0; transition: 0.2s; font-weight: bold;}
-        .btn-apagar:hover { background: #d32f2f; color: white; border-color: #d32f2f;}
+        .btn-apagar { background: transparent; color: #d32f2f; border: none; border-radius: 4px; padding: 6px 8px; font-size: 13px; cursor: pointer; flex-shrink: 0; font-weight: 500;}
+        .btn-apagar:hover { background: #fce8e6; }
 
-        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: #fcfcfc; border-radius: 8px; padding: 15px !important; margin-bottom: 12px !important; border: 1px solid #f0f0f0 !important;}
-        .ul-interna { width: 100%; margin-top: 10px !important; padding-left: 12px !important; }
-        .ul-interna li { border: none; padding: 0; margin-bottom: 6px; }
+        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: #f8f9fa; border-radius: 12px; padding: 16px !important; margin-bottom: 16px !important; border: 1px solid #e3e3e3 !important;}
+        .ul-interna { width: 100%; margin-top: 12px !important; padding-left: 8px !important; }
+        .ul-interna li { border: none; padding: 0; margin-bottom: 8px; }
 
-        .separador-turma { background: #f0f4f8; padding: 8px 12px; border-radius: 6px; font-weight: 700; color: #333; margin-top: 15px; display: block !important; text-align: left; font-size: 13px; border-left: 4px solid #0056b3;}
+        .separador-turma { background: #f0f4f9; padding: 10px 16px; border-radius: 8px; font-weight: 500; color: #1f1f1f; margin-top: 20px; display: block !important; text-align: left; font-size: 14px; border: 1px solid #e3e3e3;}
         
-        .info-upload { font-size: 12px; color: #888; text-align: center; margin-bottom: 12px; display: block;}
+        .info-upload { font-size: 12px; color: #444746; text-align: center; margin-bottom: 16px; display: block;}
 
-        .perfil-container { text-align: center; margin-top: 10vh; }
-        #foto-perfil { width: 120px; height: 120px; border-radius: 50%; margin-bottom: 15px; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background: white;}
-        #nome-usuario { margin: 0; font-size: 28px; color: #222; font-weight: 700;} 
-        #email-usuario { color: #777; font-size: 15px; margin-top: 5px;}
-        #badge-funcao { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-top: 20px; letter-spacing: 0.5px;}
+        .perfil-container { text-align: center; margin-top: 8vh; }
+        #foto-perfil { width: 120px; height: 120px; border-radius: 50%; margin-bottom: 24px; border: 1px solid #e3e3e3; background: white;}
+        #nome-usuario { margin: 0; font-size: 32px; color: #1f1f1f; font-weight: 400;} 
+        #email-usuario { color: #444746; font-size: 16px; margin-top: 8px;}
+        #badge-funcao { display: inline-block; padding: 8px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; margin-top: 24px; background: #f0f4f9; color: #444746; border: 1px solid #e3e3e3;}
 
-        /* --- CORES ESPECÍFICAS DOS BOTÕES/LABELS --- */
-        .btn-admin { background: #6200ea !important; } .btn-admin:hover { background: #4a00b0 !important; }
-        .bg-admin { background: rgba(98, 0, 234, 0.03) !important; border-color: rgba(98, 0, 234, 0.1) !important;}
-        
-        .btn-prof { background: #ff9800 !important; color: #fff !important; } .btn-prof:hover { background: #e68a00 !important; }
-        .bg-prof { background: rgba(255, 152, 0, 0.03) !important; border-color: rgba(255, 152, 0, 0.15) !important;}
-        
-        .btn-aluno { background: #00c853 !important; color: #fff !important;} .btn-aluno:hover { background: #00b34a !important; }
-        .bg-aluno { background: rgba(0, 200, 83, 0.03) !important; border-color: rgba(0, 200, 83, 0.15) !important;}
-        
-        .bg-global { background: rgba(213, 0, 0, 0.03) !important; border-color: rgba(213, 0, 0, 0.1) !important;}
+        /* Tags visuais neutras para o modo global */
+        .tag-material { color: #0b57d0; font-weight: 500; }
+        .tag-entrega { color: #1f1f1f; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -136,7 +123,7 @@
         <h2>EPB LAB</h2>
         <p>Acesse com a sua conta de e-mail.</p>
         
-        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 25px;">
+        <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 32px;">
             <div class="g_id_signin" data-type="standard" data-theme="outline" data-width="200" data-shape="rectangular"></div>
             
             <button class="btn-microsoft" onclick="loginMicrosoft()">
@@ -150,7 +137,7 @@
     </div>
 
     <nav id="navbar">
-        <div style="font-weight: 800; font-size: 18px; color: #0056b3; display: flex; align-items: center; gap: 10px;">
+        <div style="font-weight: 500; font-size: 20px; color: #1f1f1f; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px;">
             🎓 <span id="nav-brand">Etec Parque Belém</span>
         </div>
         <div id="menu-dinamico" class="nav-links"></div>
@@ -170,43 +157,43 @@
         </div>
 
         <div id="pag-admin" class="pagina">
-            <h3 style="color: #6200ea;">⚙️ Configurações do Sistema</h3>
-            <p id="admin-status" style="text-align: center; font-weight: 600; min-height: 15px; font-size: 13px; color: #6200ea;"></p>
+            <h3>Configurações do Sistema</h3>
+            <p id="admin-status" style="text-align: center; font-weight: 500; min-height: 15px; font-size: 13px; color: #0b57d0;"></p>
             
             <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="box bg-admin">
-                    <h4 style="color: #6200ea;">👨‍🏫 Gerenciar Professores</h4>
+                <div class="box">
+                    <h4>Gerenciar Professores</h4>
                     <input type="email" id="admin-novo-prof" placeholder="Email do Professor">
-                    <button class="action-btn btn-admin" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
+                    <button class="action-btn" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
                     <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-admin-profs" style="margin-top:10px; background:#fff; padding:10px; border-radius:8px; border: 1px solid #f0f0f0;"></ul>
+                        <ul class="lista-arq" id="lista-admin-profs" style="margin-top:16px;"></ul>
                     </div>
                 </div>
                 
-                <div class="box bg-admin">
-                    <h4 style="color: #6200ea;">🏫 Gerenciar Turmas</h4>
+                <div class="box">
+                    <h4>Gerenciar Turmas</h4>
                     <input type="text" id="admin-nome-turma" placeholder="Ex: 9º Ano A">
                     <select id="admin-select-prof"><option value="">Professor Responsável...</option></select>
-                    <button class="action-btn btn-admin" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
+                    <button class="action-btn" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
                     <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-admin-turmas" style="margin-top:10px; background:#fff; padding:10px; border-radius:8px; border: 1px solid #f0f0f0;"></ul>
+                        <ul class="lista-arq" id="lista-admin-turmas" style="margin-top:16px;"></ul>
                     </div>
                 </div>
 
-                <div class="box bg-admin">
-                    <h4 style="color: #6200ea;">🎒 Gerenciar Alunos</h4>
+                <div class="box">
+                    <h4>Gerenciar Alunos</h4>
                     <input type="email" id="admin-novo-aluno" placeholder="Email do Aluno">
                     <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
-                    <button class="action-btn btn-admin" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
+                    <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
                     <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:10px; background:#fff; padding:10px; border-radius:8px; border: 1px solid #f0f0f0;"></ul>
+                        <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:16px;"></ul>
                     </div>
                 </div>
 
-                <div class="box bg-global" style="grid-column: 1 / -1;">
-                    <h4 style="color: #d50000; border-bottom-color: rgba(213,0,0,0.1);">🗂️ Gestão Global de Arquivos (Nuvem Completa)</h4>
-                    <select id="admin-filtro-arquivos" onchange="renderArquivosAdmin()"><option value="todas">Carregando Nuvem...</option></select>
-                    <div class="scroll-interno" style="max-height: 250px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #f0f0f0;">
+                <div class="box" style="grid-column: 1 / -1; background: #f8f9fa;">
+                    <h4>Gestão Global de Arquivos (Drive)</h4>
+                    <select id="admin-filtro-arquivos" style="background: #fff;" onchange="renderArquivosAdmin()"><option value="todas">Carregando Nuvem...</option></select>
+                    <div class="scroll-interno" style="max-height: 250px; background: #fff; padding: 16px; border-radius: 12px; border: 1px solid #e3e3e3;">
                         <ul class="lista-arq" id="lista-arquivos-admin"></ul>
                     </div>
                 </div>
@@ -214,19 +201,19 @@
         </div>
 
         <div id="pag-prof" class="pagina">
-            <h3 style="color: #e65100;">Painel de Aulas</h3>
-            <p id="prof-status" style="min-height: 15px; font-weight: 600; font-size: 13px; text-align: center; color: #e65100;"></p>
+            <h3>Painel de Aulas</h3>
+            <p id="prof-status" style="min-height: 15px; font-weight: 500; font-size: 13px; text-align: center; color: #0b57d0;"></p>
 
             <div class="grid-layout" style="grid-template-columns: 1fr 2fr;">
-                <div class="box bg-prof">
-                    <h4 style="color: #e65100; border-bottom-color: rgba(255,152,0,0.2);">📤 Compartilhar Material</h4>
-                    <select id="prof-seleciona-turma"><option value="">Para qual Turma?</option></select>
-                    <input type="file" id="prof-file">
+                <div class="box" style="background: #f8f9fa;">
+                    <h4>Compartilhar Material</h4>
+                    <select id="prof-seleciona-turma" style="background: #fff;"><option value="">Para qual Turma?</option></select>
+                    <input type="file" id="prof-file" style="background: #fff;">
                     <span class="info-upload">Carregando regras...</span>
-                    <button id="btn-prof-upload" class="action-btn btn-prof" onclick="upload('professor')">Enviar Material</button>
+                    <button id="btn-prof-upload" class="action-btn" onclick="upload('professor')">Enviar Material</button>
                 </div>
                 <div class="box">
-                    <h4 style="color: #e65100;">📚 Materiais Ativos (Por Turma)</h4>
+                    <h4>Materiais Ativos (Por Turma)</h4>
                     <div class="scroll-interno">
                         <ul class="lista-arq" id="lista-materiais-prof"></ul>
                     </div>
@@ -235,32 +222,32 @@
         </div>
 
         <div id="pag-visao-prof" class="pagina">
-            <h3 style="color: #0056b3;">Gestão da Turma</h3>
-            <p id="prof-visao-status" style="min-height: 15px; font-weight: 600; font-size: 13px; text-align: center; color: #0056b3;"></p>
+            <h3>Gestão da Turma</h3>
+            <p id="prof-visao-status" style="min-height: 15px; font-weight: 500; font-size: 13px; text-align: center; color: #0b57d0;"></p>
 
             <div class="grid-layout" style="grid-template-columns: repeat(4, 1fr);">
-                <div class="box bg-prof">
-                    <h4 style="color: #e65100; border-bottom-color: rgba(255,152,0,0.2);">🏫 Criar Nova Turma</h4>
-                    <input type="text" id="prof-nova-turma" placeholder="Ex: Matemática - 1º Ano">
-                    <button class="action-btn btn-prof" onclick="profAddTurma()">Criar Turma</button>
+                <div class="box" style="background: #f8f9fa;">
+                    <h4>Criar Nova Turma</h4>
+                    <input type="text" id="prof-nova-turma" placeholder="Ex: Matemática - 1º Ano" style="background: #fff;">
+                    <button class="action-btn" onclick="profAddTurma()">Criar Turma</button>
                 </div>
 
-                <div class="box bg-aluno">
-                    <h4 style="color: #009624; border-bottom-color: rgba(0,200,83,0.2);">➕ Matricular Aluno</h4>
-                    <input type="email" id="prof-novo-aluno" placeholder="Email do Aluno">
-                    <select id="prof-select-turma-add"><option value="">Selecione a Turma...</option></select>
-                    <button class="action-btn btn-aluno" onclick="profAddAluno()">Adicionar Aluno</button>
+                <div class="box" style="background: #f8f9fa;">
+                    <h4>Matricular Aluno</h4>
+                    <input type="email" id="prof-novo-aluno" placeholder="Email do Aluno" style="background: #fff;">
+                    <select id="prof-select-turma-add" style="background: #fff;"><option value="">Selecione a Turma...</option></select>
+                    <button class="action-btn" onclick="profAddAluno()">Adicionar Aluno</button>
                 </div>
 
                 <div class="box">
-                    <h4 style="color: #444;">🎒 Alunos Matriculados</h4>
+                    <h4>Alunos Matriculados</h4>
                     <div class="scroll-interno">
                         <ul class="lista-arq" id="lista-prof-alunos"></ul>
                     </div>
                 </div>
 
                 <div class="box">
-                    <h4 style="color: #0056b3;">👁️ Entregas Recebidas</h4>
+                    <h4>Entregas Recebidas</h4>
                     <div class="scroll-interno">
                         <ul class="lista-arq" id="lista-visao-geral"></ul>
                     </div>
@@ -269,28 +256,28 @@
         </div>
 
         <div id="pag-aluno" class="pagina">
-            <h3 style="color: #009624;" id="titulo-turma-aluno">Minha Sala Virtual</h3>
-            <p id="aluno-status" style="min-height: 15px; font-weight: 600; font-size: 13px; text-align: center; color: #009624;"></p>
+            <h3 id="titulo-turma-aluno">Minha Sala Virtual</h3>
+            <p id="aluno-status" style="min-height: 15px; font-weight: 500; font-size: 13px; text-align: center; color: #0b57d0;"></p>
 
             <div class="grid-layout" style="grid-template-columns: 1fr 1fr 1fr;">
-                <div class="box bg-aluno">
-                    <h4 style="color: #009624; border-bottom-color: rgba(0,200,83,0.2);">📤 Entregar Trabalho</h4>
-                    <select id="aluno-select-turma"><option value="">Para qual Turma...</option></select>
-                    <input type="file" id="aluno-file">
+                <div class="box" style="background: #f8f9fa;">
+                    <h4>Entregar Trabalho</h4>
+                    <select id="aluno-select-turma" style="background: #fff;"><option value="">Para qual Turma?</option></select>
+                    <input type="file" id="aluno-file" style="background: #fff;">
                     <span class="info-upload">Carregando regras...</span>
-                    <button id="btn-aluno-upload" class="action-btn btn-aluno" onclick="upload('aluno')">Enviar Arquivo</button>
+                    <button id="btn-aluno-upload" class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
                 </div>
 
                 <div class="box">
-                    <h4 style="color: #0056b3;">📚 Materiais da Aula</h4>
-                    <select id="aluno-filtro-turma" onchange="renderMateriaisAluno()"><option value="todas">Todas as Turmas</option></select>
-                    <div class="scroll-interno" style="margin-top: 10px;">
+                    <h4>Materiais da Aula</h4>
+                    <select id="aluno-filtro-turma"><option value="todas">Todas as Turmas</option></select>
+                    <div class="scroll-interno" style="margin-top: 16px;">
                         <ul class="lista-arq" id="lista-materiais-aluno"></ul>
                     </div>
                 </div>
                 
                 <div class="box">
-                    <h4 style="color: #009624;">📂 Meus Envios</h4>
+                    <h4>Meus Envios</h4>
                     <div class="scroll-interno">
                         <ul class="lista-arq" id="lista-envios-aluno"></ul>
                     </div>
@@ -317,7 +304,7 @@
                 const loginResponse = await msalInstance.loginPopup({ scopes: ["user.read"] });
                 let nome = loginResponse.account.name || "Usuário";
                 let email = loginResponse.account.username;
-                let fotoGenerica = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=f4f7f6&color=333&size=120`;
+                let fotoGenerica = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=e3e3e3&color=1f1f1f&size=120`;
 
                 iniciarPortal({ email: email, given_name: nome, picture: fotoGenerica });
             } catch (error) {
@@ -340,9 +327,7 @@
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('navbar').style.display = 'flex';
             document.getElementById('area-conteudo').style.display = 'block';
-            document.getElementById('badge-funcao').innerText = "Conectando ao servidor...";
-            document.getElementById('badge-funcao').style.background = "#f0f0f0";
-            document.getElementById('badge-funcao').style.color = "#666";
+            document.getElementById('badge-funcao').innerText = "Carregando ambiente...";
 
             try {
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
@@ -368,9 +353,9 @@
             mat.forEach(m => {
                 let profEmail = DADOS_SISTEMA.db.turmas[m.turma];
                 let nickProf = profEmail ? profEmail.split('@')[0] : 'Prof';
-                htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome} <span style="font-size: 12px; color: #888; font-weight: normal;">(por ${nickProf})</span></a></li>`;
+                htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome} <span style="font-size: 12px; color: #747775; font-weight: normal;">(por ${nickProf})</span></a></li>`;
             });
-            document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#aaa;">Nenhum material disponível.</li>';
+            document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
         }
 
         function renderArquivosAdmin() {
@@ -381,20 +366,20 @@
             DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
                 if (filtro !== 'todas' && t.turma !== filtro) return;
                 
-                html += `<li class="separador-turma" style="border-left-color: #d50000; background: #fff5f5; color: #d50000;">🏫 ${t.turma} <span style="font-size:11px; color:#888; font-weight: normal;">(Prof: ${t.professor})</span></li>`;
+                html += `<li class="separador-turma">🏫 ${t.turma} <span style="font-size:12px; color:#747775; font-weight: normal;">(Prof: ${t.professor})</span></li>`;
                 
                 let nickProf = t.professor ? t.professor.split('@')[0] : 'Prof';
 
                 t.materiais.forEach(m => {
-                    html += `<li style="padding-left: 15px;"><span><strong style="color:#e65100;">[Material: ${nickProf}]</strong> <a href="${m.link}" target="_blank">📄 ${m.nome}</a> <span style="color:#aaa; font-size:12px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Excluir</button></li>`;
+                    html += `<li style="padding-left: 16px;"><span><span class="tag-material">[Material: ${nickProf}]</span> <a href="${m.link}" target="_blank">📄 ${m.nome}</a> <span style="color:#747775; font-size:12px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Excluir</button></li>`;
                 });
 
                 t.entregas.forEach(e => {
                     let nickAluno = e.aluno.split('@')[0];
-                    html += `<li style="padding-left: 15px;"><span><strong style="color:#009624;">[Entrega: ${nickAluno}]</strong> <a href="${e.link}" target="_blank">📄 ${e.nome}</a> <span style="color:#aaa; font-size:12px;">(${e.data})</span></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">Excluir</button></li>`;
+                    html += `<li style="padding-left: 16px;"><span><span class="tag-entrega">[Entrega: ${nickAluno}]</span> <a href="${e.link}" target="_blank">📄 ${e.nome}</a> <span style="color:#747775; font-size:12px;">(${e.data})</span></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">Excluir</button></li>`;
                 });
             });
-            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#aaa;">Nenhum arquivo encontrado.</li>';
+            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#747775;">Nenhum arquivo encontrado.</li>';
         }
 
         function configurarPainel(dados, isInitialLogin = false) {
@@ -420,27 +405,27 @@
             let badge = document.getElementById('badge-funcao');
             let emailLogado = document.getElementById('email-oculto').innerText;
 
-            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Meu Perfil</button>`;
+            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Visão Geral</button>`;
 
             // -- ADMIN --
             if (dados.role === "admin") {
-                badge.innerText = "ADMINISTRADOR"; badge.style.background = "#ede7f6"; badge.style.color = "#6200ea";
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel Admin</button>`;
+                badge.innerText = "Modo Administrador";
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel de Controle</button>`;
                 
                 let htmlProfsLista = '';
                 dados.db.professores.forEach(p => htmlProfsLista += `<li><span>👤 ${p}</span> <button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Remover</button></li>`);
-                document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li style="color:#aaa;">Nenhum professor.</li>';
+                document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li style="color:#747775;">Nenhum professor.</li>';
 
                 let htmlTurmasLista = '';
-                Object.keys(dados.db.turmas).forEach(t => htmlTurmasLista += `<li><span>🏫 ${t} <span style="font-size:11px; color:#888;">(Prof: ${dados.db.turmas[t]})</span></span> <button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Remover</button></li>`);
-                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li style="color:#aaa;">Nenhuma turma.</li>';
+                Object.keys(dados.db.turmas).forEach(t => htmlTurmasLista += `<li><span>🏫 ${t} <span style="font-size:12px; color:#747775;">(Prof: ${dados.db.turmas[t]})</span></span> <button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Remover</button></li>`);
+                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li style="color:#747775;">Nenhuma turma.</li>';
 
                 let htmlAlunos = '';
                 Object.keys(dados.db.alunos).forEach(a => {
                     let turmasAluno = typeof dados.db.alunos[a] === 'string' ? [dados.db.alunos[a]] : dados.db.alunos[a];
-                    turmasAluno.forEach(t => htmlAlunos += `<li><span>👤 ${a} <span style="font-size:11px; color:#888;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">Remover</button></li>`);
+                    turmasAluno.forEach(t => htmlAlunos += `<li><span>👤 ${a} <span style="font-size:12px; color:#747775;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">Remover</button></li>`);
                 });
-                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#aaa;">Nenhum aluno.</li>';
+                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#747775;">Nenhum aluno.</li>';
 
                 let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
                 if(dados.visaoGeralAdmin) {
@@ -451,9 +436,9 @@
 
             // -- PROFESSOR --
             } else if (dados.role === "professor") {
-                badge.innerText = "PROFESSOR"; badge.style.background = "#fff3e0"; badge.style.color = "#e65100";
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Minhas Aulas</button>`;
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão de Turmas</button>`;
+                badge.innerText = "Modo Professor";
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Compartilhar Aulas</button>`;
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gerenciar Turmas</button>`;
                 
                 let selectT = document.getElementById('prof-seleciona-turma');
                 let selectTAdd = document.getElementById('prof-select-turma-add');
@@ -471,18 +456,18 @@
                 dados.materiais.forEach(m => { if(!matPorTurma[m.turma]) matPorTurma[m.turma] = []; matPorTurma[m.turma].push(m); });
                 let htmlMat = '';
                 for(let t in matPorTurma) {
-                    htmlMat += `<li class="separador-turma" style="border-left-color:#e65100;">🏫 ${t}</li>`;
-                    matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">Apagar</button></li>`);
+                    htmlMat += `<li class="separador-turma">🏫 ${t}</li>`;
+                    matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">Remover</button></li>`);
                 }
-                document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li style="color:#aaa;">Nenhum material compartilhado.</li>';
+                document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material.</li>';
 
                 let htmlVisao = '';
                 if (!dados.visaoGeral || dados.visaoGeral.length === 0) {
-                    htmlVisao = '<li style="color:#aaa;">Nenhuma entrega recebida.</li>';
+                    htmlVisao = '<li style="color:#747775;">Nenhuma entrega recebida.</li>';
                 } else {
                     dados.visaoGeral.forEach(aluno => {
-                        htmlVisao += `<li class="li-visao-geral"><strong style="color: #0056b3; font-size: 15px;">👤 ${aluno.aluno} <span style="font-size:12px; color:#888; font-weight:normal;">(${aluno.turma})</span></strong><ul class="ul-interna">`;
-                        aluno.arquivos.forEach(arq => htmlVisao += `<li><span><a href="${arq.link}" target="_blank">📄 ${arq.nome}</a> <span style="color:#aaa; font-size:12px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">Excluir</button></li>`);
+                        htmlVisao += `<li class="li-visao-geral"><strong style="color: #1f1f1f; font-size: 15px; font-weight: 500;">👤 ${aluno.aluno} <span style="font-size:13px; color:#747775; font-weight:normal;">(${aluno.turma})</span></strong><ul class="ul-interna">`;
+                        aluno.arquivos.forEach(arq => htmlVisao += `<li><span><a href="${arq.link}" target="_blank">📄 ${arq.nome}</a> <span style="color:#747775; font-size:12px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">Apagar</button></li>`);
                         htmlVisao += `</ul></li>`;
                     });
                 }
@@ -490,19 +475,19 @@
 
                 let htmlAlunosProf = '';
                 if (dados.alunosDoProf) {
-                    dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:11px; color:#888;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Remover</button></li>`);
+                    dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:12px; color:#747775;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Desmatricular</button></li>`);
                 }
-                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li style="color:#aaa;">Nenhum aluno.</li>';
+                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li style="color:#747775;">Nenhum aluno.</li>';
 
             // -- ALUNO --
             } else {
                 let turmas = dados.minhasTurmas || [];
                 if (turmas.length > 0) {
-                    badge.innerText = `ALUNO (${turmas.length} Turmas)`; badge.style.background = "#e8f5e9"; badge.style.color = "#2e7d32";
-                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Sala de Aula</button>`;
+                    badge.innerText = `Área do Aluno (${turmas.length} Turmas)`;
+                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minhas Entregas</button>`;
                     
                     let optsFiltro = '<option value="todas">Todas as Turmas</option>';
-                    let optsUpload = '<option value="">Selecione para qual Turma...</option>';
+                    let optsUpload = '<option value="">Selecione a Turma...</option>';
                     turmas.forEach(t => { optsFiltro += `<option value="${t}">${t}</option>`; optsUpload += `<option value="${t}">${t}</option>`; });
                     document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro;
                     document.getElementById('aluno-select-turma').innerHTML = optsUpload;
@@ -510,23 +495,24 @@
                     renderMateriaisAluno();
 
                     let htmlEnv = '';
-                    dados.envios.forEach(m => htmlEnv += `<li><span><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'aluno-status')">Cancelar Envio</button></li>`);
-                    document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li style="color:#aaa;">Nenhum envio feito.</li>';
+                    dados.envios.forEach(m => htmlEnv += `<li><span><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'aluno-status')">Desfazer Envio</button></li>`);
+                    document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li style="color:#747775;">Nenhum envio realizado.</li>';
                 } else {
-                    badge.innerText = "ALUNO SEM TURMA"; badge.style.background = "#f5f5f5"; badge.style.color = "#757575";
-                    document.getElementById('pag-aluno').innerHTML = "<h3 style='color: #444;'>Nenhuma turma atribuída a você.</h3><p style='color:#888;'>Solicite matrícula a um professor ou administrador.</p>";
-                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Sala Vazia</button>`;
+                    badge.innerText = "Matrícula Pendente"; 
+                    document.getElementById('pag-aluno').innerHTML = "<h3 style='color: #1f1f1f; font-weight: 400;'>Nenhuma turma atribuída a você.</h3><p style='color:#747775;'>Aguarde a matrícula por um professor ou administrador.</p>";
+                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Painel Vazio</button>`;
                 }
             }
 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.getElementById(paginaAtivaId).style.display = 'flex';
+            
+            // Adiciona listener para renderizar materiais de aluno ao trocar select (foi reatribuido no innerHTML)
+            document.getElementById('aluno-filtro-turma')?.addEventListener('change', renderMateriaisAluno);
+            
             menu.querySelectorAll('.nav-btn').forEach(btn => { if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active'); });
         }
 
-        // ==========================================
-        // FUNÇÕES DE AÇÃO
-        // ==========================================
         function abrirPagina(id, btn) {
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -540,17 +526,17 @@
         }
 
         async function fetchBanco(payload, msgElement) {
-            if(msgElement) { msgElement.innerText = "Processando requisição..."; msgElement.style.color = "#0056b3"; }
+            if(msgElement) { msgElement.innerText = "Salvando alterações..."; msgElement.style.color = "#0b57d0"; }
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
-                if(msgElement) { msgElement.innerText = "Ação concluída com sucesso!"; msgElement.style.color = "#009624"; }
+                if(msgElement) { msgElement.innerText = "Pronto."; msgElement.style.color = "#146c2e"; }
                 let emailLogado = document.getElementById('email-oculto').innerText;
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
                 configurarPainel(json);
-                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3500);
-            } catch(e) { if(msgElement) { msgElement.innerText = "Erro ao processar. Tente novamente."; msgElement.style.color = "#d32f2f"; } }
+                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3000);
+            } catch(e) { if(msgElement) { msgElement.innerText = "Erro de conexão."; msgElement.style.color = "#b3261e"; } }
         }
 
         function adminAcao(acao) {
@@ -562,13 +548,13 @@
         }
 
         function adminExcluir(acao, alvo) {
-            if(!confirm(`Tem certeza que deseja remover '${alvo}'?`)) return;
+            if(!confirm(`Remover permanentemente '${alvo}'?`)) return;
             fetchBanco({ action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo }, document.getElementById('admin-status'));
         }
 
         function profAddTurma() {
             let nomeTurma = document.getElementById('prof-nova-turma').value;
-            if(!nomeTurma) return alert("Digite o nome da turma!");
+            if(!nomeTurma) return alert("Digite o nome da turma.");
             fetchBanco({ action: 'prof_add_turma', userEmail: document.getElementById('email-oculto').innerText, nomeTurma: nomeTurma }, document.getElementById('prof-visao-status'));
             document.getElementById('prof-nova-turma').value = '';
         }
@@ -576,13 +562,13 @@
         function profAddAluno() {
             let emailAluno = document.getElementById('prof-novo-aluno').value;
             let turma = document.getElementById('prof-select-turma-add').value;
-            if(!emailAluno || !turma) return alert("Preencha o email e a turma!");
+            if(!emailAluno || !turma) return alert("Preencha todos os campos.");
             fetchBanco({ action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma }, document.getElementById('prof-visao-status'));
             document.getElementById('prof-novo-aluno').value = '';
         }
 
         function excluirAluno(alvoEmail, turmaAlvo, idStatusElemento) {
-            if(!confirm(`Remover aluno '${alvoEmail}' da turma '${turmaAlvo}'?`)) return;
+            if(!confirm(`Remover '${alvoEmail}' da turma '${turmaAlvo}'?`)) return;
             fetchBanco({ action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo }, document.getElementById(idStatusElemento));
         }
 
@@ -592,18 +578,18 @@
             let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
             let btn = document.getElementById(tipo === 'professor' ? 'btn-prof-upload' : 'btn-aluno-upload');
             
-            if (input.files.length === 0) { status.innerText = "Escolha um arquivo primeiro!"; return; }
-            if (!selectTurma.value) { status.innerText = "Selecione a Turma!"; return; }
+            if (input.files.length === 0) { status.innerText = "Escolha um arquivo."; return; }
+            if (!selectTurma.value) { status.innerText = "Selecione a Turma."; return; }
             
             let arquivo = input.files[0];
             let limiteBytes = DADOS_SISTEMA.config.limiteMB * 1024 * 1024;
             let extensao = arquivo.name.split('.').pop().toLowerCase();
 
-            if (arquivo.size > limiteBytes) { status.innerText = "Arquivo muito pesado para envio."; status.style.color = "#d32f2f"; input.value = ''; return; }
-            if (!DADOS_SISTEMA.config.extensoes.includes(extensao)) { status.innerText = "Formato de arquivo não permitido."; status.style.color = "#d32f2f"; input.value = ''; return; }
+            if (arquivo.size > limiteBytes) { status.innerText = "Arquivo excede o tamanho limite."; status.style.color = "#b3261e"; input.value = ''; return; }
+            if (!DADOS_SISTEMA.config.extensoes.includes(extensao)) { status.innerText = "Formato não suportado."; status.style.color = "#b3261e"; input.value = ''; return; }
 
             let reader = new FileReader();
-            status.innerText = "Fazendo upload seguro..."; status.style.color = "#0056b3"; btn.disabled = true; 
+            status.innerText = "Fazendo upload seguro..."; status.style.color = "#0b57d0"; btn.disabled = true; 
 
             reader.onload = async function(e) {
                 await fetchBanco({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value }, status);
@@ -613,29 +599,29 @@
         }
 
         async function apagar(id, idStatusElemento) {
-            if(!confirm("Atenção: Tem certeza que deseja apagar este arquivo permanentemente?")) return;
+            if(!confirm("Ação irreversível. Deseja mesmo apagar o arquivo da nuvem?")) return;
             await fetchBanco({ action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById(idStatusElemento));
         }
 
-        // --- Canvas Background (Partículas Suaves para Tema Claro) ---
+        // --- Canvas Background (Partículas Ultra-Sutis) ---
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particlesArray = []; 
-        const cores = ['#c2e0ff', '#d1c4e9', '#e0e7ff', '#e8eaf6']; 
+        const cores = ['#e3e3e3', '#dadce0', '#e8eaed', '#f1f3f4']; 
         let mouse = { x: null, y: null, radius: 150 };
         window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 
         class Particle {
-            constructor() { this.x = Math.random() * innerWidth; this.y = Math.random() * innerHeight; this.dx = (Math.random()*1)-0.5; this.dy = (Math.random()*1)-0.5; this.tam = Math.random()*2.5+1; this.cor = cores[Math.floor(Math.random()*cores.length)]; }
+            constructor() { this.x = Math.random() * innerWidth; this.y = Math.random() * innerHeight; this.dx = (Math.random()*0.8)-0.4; this.dy = (Math.random()*0.8)-0.4; this.tam = Math.random()*2+1; this.cor = cores[Math.floor(Math.random()*cores.length)]; }
             atualizar() {
                 if (this.x > canvas.width || this.x < 0) this.dx = -this.dx; if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
                 let dx = mouse.x - this.x; let dy = mouse.y - this.y; let dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < mouse.radius) { this.x -= (dx / dist) * 1.5; this.y -= (dy / dist) * 1.5; } else { this.x += this.dx; this.y += this.dy; }
+                if (dist < mouse.radius) { this.x -= (dx / dist) * 1.2; this.y -= (dy / dist) * 1.2; } else { this.x += this.dx; this.y += this.dy; }
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.tam, 0, Math.PI * 2); ctx.fillStyle = this.cor; ctx.fill();
             }
         }
-        for (let i = 0; i < 70; i++) particlesArray.push(new Particle()); 
+        for (let i = 0; i < 50; i++) particlesArray.push(new Particle()); 
         function animar() {
             requestAnimationFrame(animar); 
             ctx.clearRect(0, 0, innerWidth, innerHeight); 
@@ -643,8 +629,8 @@
                 particlesArray[i].atualizar(); 
                 for (let j = i; j < particlesArray.length; j++) { 
                     let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2); 
-                    if (d < 20000) { 
-                        ctx.strokeStyle = `rgba(0, 86, 179, ${(1 - d/20000)*0.05})`; 
+                    if (d < 25000) { 
+                        ctx.strokeStyle = `rgba(116, 119, 117, ${(1 - d/25000)*0.08})`; 
                         ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); 
                     } 
                 } 
