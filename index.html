@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal da Instituição</title>
+    <title>EPBLAB</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
@@ -130,10 +130,10 @@
 
     <canvas id="meuCanvas"></canvas>
 
-    <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
+    <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-login">
-        <h2>Portal da Instituição</h2>
+        <h2>EPB LAB</h2>
         <p>Acesse com a sua conta corporativa ou pessoal.</p>
         
         <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 25px;">
@@ -275,7 +275,7 @@
             <div class="grid-layout" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="box bg-aluno">
                     <h4 style="color: #009624; border-bottom-color: rgba(0,200,83,0.2);">📤 Entregar Trabalho</h4>
-                    <select id="aluno-select-turma"><option value="">Para qual Turma?</option></select>
+                    <select id="aluno-select-turma"><option value="">Para qual Turma...</option></select>
                     <input type="file" id="aluno-file">
                     <span class="info-upload">Carregando regras...</span>
                     <button id="btn-aluno-upload" class="action-btn btn-aluno" onclick="upload('aluno')">Enviar Arquivo</button>
@@ -621,7 +621,7 @@
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particlesArray = []; 
-        const cores = ['#c2e0ff', '#d1c4e9', '#e0e7ff', '#e8eaf6']; // Tons pastéis bem suaves
+        const cores = ['#c2e0ff', '#d1c4e9', '#e0e7ff', '#e8eaf6']; 
         let mouse = { x: null, y: null, radius: 150 };
         window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
@@ -635,7 +635,7 @@
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.tam, 0, Math.PI * 2); ctx.fillStyle = this.cor; ctx.fill();
             }
         }
-        for (let i = 0; i < 70; i++) particlesArray.push(new Particle()); // Menos partículas para ficar mais clean
+        for (let i = 0; i < 70; i++) particlesArray.push(new Particle()); 
         function animar() {
             requestAnimationFrame(animar); 
             ctx.clearRect(0, 0, innerWidth, innerHeight); 
@@ -644,7 +644,7 @@
                 for (let j = i; j < particlesArray.length; j++) { 
                     let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2); 
                     if (d < 20000) { 
-                        ctx.strokeStyle = `rgba(0, 86, 179, ${(1 - d/20000)*0.05})`; // Linhas azuis quase transparentes
+                        ctx.strokeStyle = `rgba(0, 86, 179, ${(1 - d/20000)*0.05})`; 
                         ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); 
                     } 
                 } 
