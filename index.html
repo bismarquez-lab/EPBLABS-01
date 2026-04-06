@@ -11,9 +11,10 @@
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     
     <style>
-        /* --- ESTILO MATERIAL 3 --- */
-        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
-        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
+        /* --- TIPOGRAFIA INTER E LAYOUT SPA MD3 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
         /* --- NAVBAR --- */
@@ -24,7 +25,7 @@
         .nav-btn.active { background: #d3e3fd; color: #041e49; }
         .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px;}
 
-        /* --- TELA INICIAL REFINADA --- */
+        /* --- TELA INICIAL --- */
         #tela-inicio {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
             display: flex; justify-content: center; align-items: center; gap: 24px;
@@ -35,47 +36,49 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.05); flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
         }
         .icone-login { font-size: 32px; background: #f0f4f9; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 16px;}
+        .box-login h2 { margin: 0 0 8px 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px;}
         .box-calendario-publico { 
             background: #ffffff; border-radius: 28px; padding: 24px; width: 100%; max-width: 850px; 
             height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
         }
-        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 0 12px; width: 190px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 40px; font-size: 13px; }
+        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 0 12px; width: 190px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 40px; font-size: 13px; font-family: 'Inter', sans-serif;}
 
-        /* --- CONTEÚDO INTERNO --- */
+        /* --- CONTEÚDO INTERNO (DASHBOARD) --- */
         #area-conteudo { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 24px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; }
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; flex-grow: 1; overflow: hidden; }
         .box { background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; }
-        .box h4 { margin: 0 0 12px 0; font-size: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; color: #1f1f1f; font-weight: 500;}
+        .box h4 { margin: 0 0 12px 0; font-size: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; color: #1f1f1f; font-weight: 600;}
+        
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 4px; }
-        .scroll-interno::-webkit-scrollbar { width: 4px; } 
+        .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
 
-        input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px;}
-        button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0;}
+        input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Inter', sans-serif;}
+        button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif;}
         button.action-btn:hover { background: #0842a0;}
         
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
-        .lista-arq li { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
+        .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
         
         .perfil-container { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; border-bottom: 1px solid #e3e3e3; padding-bottom: 16px;}
         #foto-perfil { width: 64px; height: 64px; border-radius: 50%; background: #eee;}
-        #nome-usuario { margin: 0; font-size: 20px; font-weight: 400;} 
-        #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; background: #f0f4f9; border: 1px solid #e3e3e3; margin-top: 4px;}
+        #nome-usuario { margin: 0; font-size: 20px; font-weight: 500;} 
+        #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; background: #f0f4f9; border: 1px solid #e3e3e3; margin-top: 4px;}
 
         /* --- ESTILO DOS LABS COMPACTO --- */
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 12px; margin-bottom: 8px;}
-        .card-lab strong { color: #1f1f1f; font-size: 14px; display: block; margin-bottom: 4px; font-weight: 500;}
+        .card-lab strong { color: #1f1f1f; font-size: 14px; display: block; margin-bottom: 4px; font-weight: 600;}
         .reserva-item { 
             background: #f8f9fa; padding: 6px 8px; border-radius: 8px; margin-top: 6px; 
             display: flex; justify-content: space-between; align-items: center; 
             border: 1px solid #e3e3e3; border-left: 3px solid #0b57d0; 
         }
         .reserva-texto-container { flex-grow: 1; min-width: 0; }
-        .texto-aula { font-size: 10.5px; letter-spacing: -0.2px; color: #1f1f1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; display: block;}
-        .texto-turma { font-size: 10px; color: #747775; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;}
-        .btn-apagar { background: transparent; color: #d32f2f; border: none; font-size: 12px; cursor: pointer; font-weight: 500;}
-        .btn-apagar:hover { background: #fce8e6; border-radius: 4px; }
+        .texto-aula { font-size: 11px; letter-spacing: -0.2px; color: #1f1f1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; display: block;}
+        .texto-turma { font-size: 11px; color: #747775; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;}
+        .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 12px; cursor: pointer; font-weight: 500; padding: 4px 8px;}
+        .btn-apagar:hover { background: #fce8e6; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -86,7 +89,7 @@
     <div id="tela-inicio">
         <div class="box-login">
             <div class="icone-login">🎓</div>
-            <h2 style="letter-spacing: -1px;">EPB LAB</h2>
+            <h2>EPB LAB</h2>
             <p>Portal de Laboratórios Etec</p>
             <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular"></div>
@@ -95,24 +98,24 @@
                     Microsoft Login
                 </button>
             </div>
-            <p id="status-login" style="margin-top: 16px; font-size: 12px; color: #0b57d0;"></p>
+            <p id="status-login" style="margin-top: 16px; font-size: 12px; color: #0b57d0; font-weight: 500;"></p>
         </div>
 
         <div class="box-calendario-publico">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 500;">Grade de Laboratórios</h3>
-                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 4px 12px; font-size: 13px; border-radius: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Grade de Laboratórios</h3>
+                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 6px 12px; font-size: 13px; border-radius: 20px;">
             </div>
             <div class="scroll-interno" id="grade-laboratorios-publica" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-                <div style="color: #747775;">Carregando agenda...</div>
+                <div style="color: #747775; font-size: 13px;">Carregando agenda...</div>
             </div>
         </div>
     </div>
 
     <nav id="navbar">
-        <div style="font-weight: 500; font-size: 18px;">🎓 EPB LAB</div>
+        <div style="font-weight: 600; font-size: 18px;">🎓 EPB LAB</div>
         <div id="menu-dinamico" class="nav-links"></div>
-        <button class="btn-sair-nav" onclick="fazerLogout()">Sair</button>
+        <button class="btn-sair-nav" onclick="fazerLogout()">Sair da Conta</button>
     </nav>
 
     <div id="area-conteudo">
@@ -167,7 +170,7 @@
 
         <div id="pag-admin" class="pagina">
             <h3>Painel do Administrador</h3>
-            <p id="admin-status" style="font-weight: 500; font-size: 13px; color: #0b57d0; min-height: 15px;"></p>
+            <p id="admin-status" style="font-weight: 500; font-size: 13px; color: #0b57d0; min-height: 15px; margin-bottom: 16px;"></p>
             <div class="grid-layout">
                 <div class="box">
                     <h4>Professores</h4>
@@ -264,7 +267,7 @@
             let html = '';
             LISTA_SALAS.forEach(nome => {
                 let res = AGENDAMENTOS_PUBLICOS.filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px;">Disponível</div>';
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:6px; font-style:italic;">Disponível</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
                     cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
@@ -314,10 +317,10 @@
             let html = '';
             LISTA_SALAS.forEach(nome => {
                 let res = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px;">Livre</div>';
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:6px; font-style:italic;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
-                    let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === email) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}')">X</button>` : '';
+                    let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === email) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
                     cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div>${btn}</div>`;
                 });
                 html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
@@ -367,9 +370,22 @@
                 Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); 
                 document.getElementById('lab-turma').innerHTML = op;
                 
-                // Popula listas admin
-                let htmlProfs = ''; dados.db.professores.forEach(p => htmlProfs += `<li>${p}</li>`); document.getElementById('lista-admin-profs').innerHTML = htmlProfs;
-                let htmlTurmas = ''; Object.keys(dados.db.turmas).forEach(t => htmlTurmas += `<li>${t}</li>`); document.getElementById('lista-admin-turmas').innerHTML = htmlTurmas;
+                // Popula listas admin com os botões de excluir restaurados
+                let htmlProfs = ''; 
+                dados.db.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Excluir</button></li>`); 
+                document.getElementById('lista-admin-profs').innerHTML = htmlProfs;
+                
+                let htmlTurmas = ''; 
+                Object.keys(dados.db.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${dados.db.turmas[t]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
+                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmas;
+                
+                let htmlAlunos = ''; 
+                Object.keys(dados.db.alunos).forEach(a => {
+                    let turmasAluno = dados.db.alunos[a];
+                    turmasAluno.forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}')">Excluir</button></li>`);
+                });
+                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos;
+
                 let opProf = '<option value="">Prof Responsável</option>'; dados.db.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
                 let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
 
@@ -400,7 +416,7 @@
             renderCalendario();
         }
 
-        // Função de envio à prova de falhas com UI visual
+        // --- SISTEMA SPA: SEM RECARREGAR A PÁGINA ---
         async function fetchBanco(payload, msgElement) { 
             if (msgElement) { msgElement.innerText = "Processando..."; msgElement.style.color = "#0b57d0"; }
             try { 
@@ -414,7 +430,18 @@
                 }
                 
                 if (msgElement) { msgElement.innerText = "Concluído!"; msgElement.style.color = "#146c2e"; }
-                setTimeout(() => location.reload(), 800); 
+                
+                // Busca os dados novos de forma invisível e atualiza as listas na tela atual
+                let emailLogado = document.getElementById('email-oculto').innerText;
+                let resUser = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
+                DADOS_SISTEMA = await resUser.json();
+                
+                let resPub = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
+                let jsonPub = await resPub.json();
+                AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
+
+                configurarPainel(DADOS_SISTEMA, false); // false = não joga o usuário pra outra aba
+                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3500);
                 
             } catch(e) { 
                 if (msgElement) { msgElement.innerText = "Erro de rede."; msgElement.style.color = "#d32f2f"; }
@@ -429,20 +456,35 @@
                 let campo = document.getElementById('admin-novo-prof');
                 if(!campo.value) return alert("Digite o e-mail");
                 payload.novoEmail = campo.value; 
+                campo.value = '';
             }
             if (acao === 'admin_add_turma') { 
-                let t = document.getElementById('admin-nome-turma').value;
-                let p = document.getElementById('admin-select-prof').value;
-                if(!t || !p) return alert("Preencha turma e professor");
-                payload.nomeTurma = t; payload.profResp = p; 
+                let campoT = document.getElementById('admin-nome-turma');
+                let campoP = document.getElementById('admin-select-prof');
+                if(!campoT.value || !campoP.value) return alert("Preencha turma e professor");
+                payload.nomeTurma = campoT.value; payload.profResp = campoP.value; 
+                campoT.value = ''; campoP.value = '';
             }
             if (acao === 'admin_add_aluno') { 
-                let a = document.getElementById('admin-novo-aluno').value;
-                let t = document.getElementById('admin-select-turma').value;
-                if(!a || !t) return alert("Preencha aluno e turma");
-                payload.alunoEmail = a; payload.turmaDestino = t; 
+                let campoA = document.getElementById('admin-novo-aluno');
+                let campoT = document.getElementById('admin-select-turma');
+                if(!campoA.value || !campoT.value) return alert("Preencha aluno e turma");
+                payload.alunoEmail = campoA.value; payload.turmaDestino = campoT.value; 
+                campoA.value = ''; campoT.value = '';
             }
             fetchBanco(payload, document.getElementById('admin-status'));
+        }
+
+        function adminExcluir(acao, alvo) {
+            if(confirm(`Tem certeza que deseja remover '${alvo}'?`)) {
+                fetchBanco({ action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo }, document.getElementById('admin-status'));
+            }
+        }
+
+        function adminExcluirAluno(alvoEmail, turmaAlvo) { 
+            if(confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) {
+                fetchBanco({ action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo }, document.getElementById('admin-status')); 
+            }
         }
 
         function abrirPagina(id, btn) { 
