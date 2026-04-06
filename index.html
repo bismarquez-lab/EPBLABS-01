@@ -11,10 +11,12 @@
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     
     <style>
+        /* --- FUNDO E TIPOGRAFIA GOOGLE MATERIAL 3 --- */
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
+        /* --- NAVBAR INTERNA --- */
         #navbar { position: absolute; top: 0; left: 0; width: 100%; height: 64px; z-index: 20; background: #ffffff; border-bottom: 1px solid #e3e3e3; display: none; justify-content: space-between; align-items: center; padding: 0 32px; box-sizing: border-box;}
         .nav-links { display: flex; gap: 8px; }
         .nav-btn { background: transparent; color: #444746; border: none; padding: 10px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-size: 14px;}
@@ -23,6 +25,7 @@
         .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px;}
         .btn-sair-nav:hover { background: #f1f3f4; color: #1f1f1f; }
 
+        /* --- TELA DE INÍCIO (LOGIN + CALENDÁRIO PÚBLICO) --- */
         #tela-inicio {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
             display: flex; justify-content: center; align-items: center; gap: 32px;
@@ -38,6 +41,7 @@
         .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Google Sans', sans-serif; font-weight: 500; transition: 0.2s; height: 40px; box-sizing: border-box; font-size: 14px; }
         .btn-microsoft:hover { background-color: #f1f3f4; color: #1f1f1f;}
 
+        /* --- LAYOUT TELA CHEIA INTERNA --- */
         #area-conteudo { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -46,15 +50,18 @@
 
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; overflow: hidden; }
 
+        /* --- CARDS MINIMALISTAS --- */
         .box { background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.2s ease; }
         .box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .box h4 { margin: 0 0 16px 0; font-size: 16px; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; color: #1f1f1f; flex-shrink: 0; font-weight: 500;}
         
+        /* --- ROLAGEM INTERNA --- */
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         .scroll-interno::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
 
+        /* --- FORMULÁRIOS --- */
         input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
         input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;}
         
@@ -85,12 +92,12 @@
         #email-usuario { color: #444746; font-size: 14px; margin-top: 4px;}
         #badge-funcao { display: inline-block; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; margin-top: 10px; background: #f0f4f9; color: #444746; border: 1px solid #e3e3e3;}
 
+        /* --- ESTILO DOS CARDS DE LABORATÓRIO (LIMPO E SÓBRIO) --- */
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 16px; font-size: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);}
-        .card-lab strong { color: #0b57d0; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
-        .reserva-item { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: flex-start; border-left: 4px solid #146c2e; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .card-lab strong { color: #1f1f1f; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
         
-        /* Novo Badge visual para a hora */
-        .badge-hora { display: inline-block; background: #d3e3fd; color: #041e49; padding: 4px 8px; border-radius: 6px; font-size: 12px; margin-bottom: 6px; font-weight: bold; border: 1px solid #c2d7fa; }
+        /* Box da reserva mais minimalista */
+        .reserva-item { background: #f8f9fa; padding: 10px 14px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e3e3e3; }
     </style>
 </head>
 <body>
@@ -172,26 +179,26 @@
                         <select id="lab-horario">
                             <option value="">Qual a Aula/Horário?</option>
                             <optgroup label="Turno da Manhã">
-                                <option value="Manhã - 1ª Aula (07:30 às 08:20)">1ª Aula (07:30 às 08:20)</option>
-                                <option value="Manhã - 2ª Aula (08:20 às 09:10)">2ª Aula (08:20 às 09:10)</option>
-                                <option value="Manhã - 3ª Aula (09:10 às 10:00)">3ª Aula (09:10 às 10:00)</option>
-                                <option value="Manhã - 4ª Aula (10:20 às 11:10)">4ª Aula (10:20 às 11:10)</option>
-                                <option value="Manhã - 5ª Aula (11:10 às 12:00)">5ª Aula (11:10 às 12:00)</option>
-                                <option value="Manhã - 6ª Aula (12:00 às 12:50)">6ª Aula (12:00 às 12:50)</option>
+                                <option value="Manhã - 1ª Aula - 07:30 até 08:20">1ª Aula - 07:30 até 08:20</option>
+                                <option value="Manhã - 2ª Aula - 08:20 até 09:10">2ª Aula - 08:20 até 09:10</option>
+                                <option value="Manhã - 3ª Aula - 09:10 até 10:00">3ª Aula - 09:10 até 10:00</option>
+                                <option value="Manhã - 4ª Aula - 10:20 até 11:10">4ª Aula - 10:20 até 11:10</option>
+                                <option value="Manhã - 5ª Aula - 11:10 até 12:00">5ª Aula - 11:10 até 12:00</option>
+                                <option value="Manhã - 6ª Aula - 12:00 até 12:50">6ª Aula - 12:00 até 12:50</option>
                             </optgroup>
                             <optgroup label="Turno da Tarde">
-                                <option value="Tarde - 1ª Aula (13:30 às 14:20)">1ª Aula (13:30 às 14:20)</option>
-                                <option value="Tarde - 2ª Aula (14:20 às 15:10)">2ª Aula (14:20 às 15:10)</option>
-                                <option value="Tarde - 3ª Aula (15:10 às 16:00)">3ª Aula (15:10 às 16:00)</option>
-                                <option value="Tarde - 4ª Aula (16:20 às 17:10)">4ª Aula (16:20 às 17:10)</option>
-                                <option value="Tarde - 5ª Aula (17:10 às 18:00)">5ª Aula (17:10 às 18:00)</option>
-                                <option value="Tarde - 6ª Aula (18:00 às 18:50)">6ª Aula (18:00 às 18:50)</option>
+                                <option value="Tarde - 1ª Aula - 13:30 até 14:20">1ª Aula - 13:30 até 14:20</option>
+                                <option value="Tarde - 2ª Aula - 14:20 até 15:10">2ª Aula - 14:20 até 15:10</option>
+                                <option value="Tarde - 3ª Aula - 15:10 até 16:00">3ª Aula - 15:10 até 16:00</option>
+                                <option value="Tarde - 4ª Aula - 16:20 até 17:10">4ª Aula - 16:20 até 17:10</option>
+                                <option value="Tarde - 5ª Aula - 17:10 até 18:00">5ª Aula - 17:10 até 18:00</option>
+                                <option value="Tarde - 6ª Aula - 18:00 até 18:50">6ª Aula - 18:00 até 18:50</option>
                             </optgroup>
                             <optgroup label="Turno da Noite">
-                                <option value="Noite - 1ª Aula (19:00 às 19:50)">1ª Aula (19:00 às 19:50)</option>
-                                <option value="Noite - 2ª Aula (19:50 às 20:40)">2ª Aula (19:50 às 20:40)</option>
-                                <option value="Noite - 3ª Aula (21:00 às 21:50)">3ª Aula (21:00 às 21:50)</option>
-                                <option value="Noite - 4ª Aula (21:50 às 22:45)">4ª Aula (21:50 às 22:45)</option>
+                                <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option>
+                                <option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option>
+                                <option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option>
+                                <option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
 
@@ -336,23 +343,9 @@
             } catch(e) { document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:#d32f2f;'>Erro de conexão.</p>"; }
         };
 
-        // --- LÓGICA DO BADGE DE HORÁRIO ---
-        function criarBadgeDeHorario(textoCompleto) {
-            // Se o texto for antigo e não tiver parênteses, retorna só o texto verde normal
-            if(!textoCompleto.includes('(')) {
-                return `<strong style="color:#146c2e; font-size:13px; display:block; margin-bottom:4px;">${textoCompleto}</strong>`;
-            }
-            
-            // Separa "Manhã - 1ª Aula" de "07:30 às 08:20"
-            let partes = textoCompleto.split('(');
-            let nomeAula = partes[0].trim();
-            let horaExata = partes[1].replace(')', '').trim();
-            
-            // Monta o Badge Azul + O nome da aula verde
-            return `
-                <span class="badge-hora">🕒 ${horaExata}</span><br>
-                <strong style="color:#146c2e; font-size:13px; display:inline;">${nomeAula}</strong>
-            `;
+        // Função que pega qualquer formato de horário (antigo ou novo) e deixa limpo
+        function formatarVisualHorario(texto) {
+            return texto.replace('(', '- ').replace(')', '').replace('às', 'até');
         }
 
         function renderCalendarioPublico() {
@@ -367,14 +360,17 @@
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
-                        let htmlHorario = criarBadgeDeHorario(r.horario);
+                        let horarioLimpo = formatarVisualHorario(r.horario);
                         
                         conteudoReserva += `<div class="reserva-item">
-                            <div>${htmlHorario}<br><span style="font-size:11px; color:#444746; margin-top:2px; display:inline-block;">${r.turma} (${nickProf})</span></div>
+                            <div>
+                                <strong style="color:#1f1f1f; font-size:13px; display:inline;">${horarioLimpo}</strong><br>
+                                <span style="font-size:12px; color:#747775; margin-top:2px; display:inline-block;">${r.turma} (${nickProf})</span>
+                            </div>
                         </div>`;
                     });
                 } else { 
-                    conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
+                    conteudoReserva = `<div style="color: #747775; font-size: 13px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
                 }
                 
                 let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
@@ -433,15 +429,18 @@
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
                         let btnApagar = (DADOS_SISTEMA.role === 'admin' || r.prof === emailLogado) ? `<button class="btn-apagar" style="margin-left: 10px;" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
-                        let htmlHorario = criarBadgeDeHorario(r.horario);
+                        let horarioLimpo = formatarVisualHorario(r.horario);
                         
                         conteudoReserva += `<div class="reserva-item">
-                            <div>${htmlHorario}<br><span style="font-size:11px; color:#444746; margin-top:2px; display:inline-block;">${r.turma} (${nickProf})</span></div>
+                            <div>
+                                <strong style="color:#1f1f1f; font-size:13px; display:inline;">${horarioLimpo}</strong><br>
+                                <span style="font-size:12px; color:#747775; margin-top:2px; display:inline-block;">${r.turma} (${nickProf})</span>
+                            </div>
                             ${btnApagar}
                         </div>`;
                     });
                 } else { 
-                    conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
+                    conteudoReserva = `<div style="color: #747775; font-size: 13px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
                 }
                 
                 let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
