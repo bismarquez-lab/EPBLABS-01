@@ -68,6 +68,9 @@
         button.action-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: all 0.2s ease; background: #0b57d0; font-family: 'Google Sans', sans-serif;}
         button.action-btn:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);}
         button.action-btn:disabled { background: #e3e3e3; color: #1f1f1f; opacity: 0.38; cursor: not-allowed; box-shadow: none;}
+        
+        #btn-confirmar-reserva { background-color: #0b57d0; color: #ffffff; font-size: 15px; padding: 14px; margin-top: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        #btn-confirmar-reserva:hover { background-color: #0842a0; }
 
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
@@ -97,7 +100,6 @@
 <body>
 
     <canvas id="meuCanvas"></canvas>
-
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-inicio">
@@ -121,7 +123,7 @@
         <div class="box-calendario-publico">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f3f4; padding-bottom: 16px; margin-bottom: 20px;">
                 <div>
-                    <h3 style="margin: 0; color: #1f1f1f; font-weight: 500;">Grade de Laboratórios</h3>
+                    <h3 style="margin: 0; color: #1f1f1f; font-weight: 500;">Grade de Salas e Laboratórios</h3>
                     <p style="margin: 5px 0 0 0; color: #747775; font-size: 13px;">Consulte a disponibilidade de hoje.</p>
                 </div>
                 <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; font-weight: 500;">
@@ -162,19 +164,20 @@
                     <h4>Nova Reserva</h4>
                     <div class="scroll-interno" style="padding-right: 5px;">
                         <input type="date" id="lab-data">
+                        
                         <select id="lab-numero">
-                            <option value="">Escolha o Laboratório...</option>
+                            <option value="">Escolha a Sala/Laboratório...</option>
                             <option value="Laboratório 1">Laboratório 1</option>
                             <option value="Laboratório 2">Laboratório 2</option>
                             <option value="Laboratório 3">Laboratório 3</option>
                             <option value="Laboratório 4">Laboratório 4</option>
                             <option value="Laboratório 5">Laboratório 5</option>
-                            <option value="Laboratório 6">Laboratório 6</option>
+                            <option value="Sala Maker">Sala Maker</option>
                             <option value="Laboratório 7">Laboratório 7</option>
                             <option value="Laboratório 8">Laboratório 8</option>
                             <option value="Laboratório 9">Laboratório 9</option>
-                            <option value="Laboratório 10">Laboratório 10</option>
                         </select>
+                        
                         <select id="lab-horario">
                             <option value="">Qual Período/Aula?</option>
                             <option value="Manhã - 1ª e 2ª Aula">Manhã - 1ª e 2ª Aula</option>
@@ -186,13 +189,13 @@
                         </select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         
-                        <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">Confirmar Reserva</button>
+                        <button class="action-btn" id="btn-confirmar-reserva" onclick="reservarLab()">Confirmar Reserva</button>
                     </div>
                 </div>
 
                 <div class="box" style="grid-column: span 2;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; margin-bottom: 16px;">
-                        <h4 style="margin: 0; border: none; padding: 0;">📅 Painel de Controle dos Labs</h4>
+                        <h4 style="margin: 0; border: none; padding: 0;">📅 Painel de Controle das Salas</h4>
                         <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin: 0; padding: 6px 12px;">
                     </div>
                     <div class="scroll-interno" id="grade-laboratorios" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"></div>
@@ -302,6 +305,12 @@
         let DADOS_SISTEMA = null; 
         let AGENDAMENTOS_PUBLICOS = [];
 
+        // --- LISTA OFICIAL DE SALAS ---
+        const LISTA_SALAS = [
+            "Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", 
+            "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"
+        ];
+
         // Setar data de hoje nos calendários por padrão
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
@@ -326,11 +335,12 @@
             let grade = document.getElementById('grade-laboratorios-publica');
             
             let labsHtml = '';
-            for(let i = 1; i <= 10; i++) {
-                let nomeLab = "Laboratório " + i;
+            
+            // Loop na Lista Oficial
+            LISTA_SALAS.forEach(nomeLab => {
                 let reservasDesteLab = AGENDAMENTOS_PUBLICOS.filter(a => a.data === dataEscolhida && a.lab === nomeLab);
-                
                 let conteudoReserva = '';
+                
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
@@ -341,8 +351,11 @@
                 } else {
                     conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`;
                 }
-                labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
-            }
+
+                // Ícone especial se for a Sala Maker
+                let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
+                labsHtml += `<div class="card-lab"><strong>${icone} ${nomeLab}</strong>${conteudoReserva}</div>`;
+            });
             grade.innerHTML = labsHtml;
         }
 
@@ -379,7 +392,6 @@
                 const json = await res.json();
                 DADOS_SISTEMA = json;
                 
-                // Esconde a tela dupla de início e mostra o portal interno
                 document.getElementById('tela-inicio').style.display = 'none';
                 document.getElementById('navbar').style.display = 'flex';
                 document.getElementById('area-conteudo').style.display = 'block';
@@ -400,11 +412,11 @@
             let emailLogado = document.getElementById('email-oculto').innerText;
             
             let labsHtml = '';
-            for(let i = 1; i <= 10; i++) {
-                let nomeLab = "Laboratório " + i;
+            
+            LISTA_SALAS.forEach(nomeLab => {
                 let reservasDesteLab = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === dataEscolhida && a.lab === nomeLab);
-                
                 let conteudoReserva = '';
+                
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
@@ -419,8 +431,10 @@
                 } else {
                     conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`;
                 }
-                labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
-            }
+
+                let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
+                labsHtml += `<div class="card-lab"><strong>${icone} ${nomeLab}</strong>${conteudoReserva}</div>`;
+            });
             grade.innerHTML = labsHtml;
         }
 
@@ -433,7 +447,7 @@
             if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos da reserva!");
             
             let jaExiste = (DADOS_SISTEMA.agendamentos || []).find(a => a.data === data && a.lab === lab && a.horario === horario);
-            if(jaExiste) return alert("Este laboratório já está reservado neste horário!");
+            if(jaExiste) return alert("Esta sala/laboratório já está reservada neste horário!");
 
             fetchBanco({ action: 'add_agendamento', dataReserva: data, lab: lab, horario: horario, turma: turma, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status'));
         }
@@ -627,7 +641,6 @@
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
                 if(msgElement) { msgElement.innerText = "Ação concluída com sucesso!"; msgElement.style.color = "#009624"; }
                 
-                // Recarregar os dados públicos também
                 let resPub = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
                 let jsonPub = await resPub.json();
                 AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
