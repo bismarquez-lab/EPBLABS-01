@@ -96,8 +96,33 @@
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 16px; font-size: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);}
         .card-lab strong { color: #1f1f1f; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
         
-        /* Box da reserva mais minimalista */
-        .reserva-item { background: #f8f9fa; padding: 10px 14px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e3e3e3; }
+        /* Box da reserva - Padding reduzido e layout super compacto */
+        .reserva-item { 
+            background: #f8f9fa; padding: 6px 8px; border-radius: 8px; margin-top: 6px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border: 1px solid #e3e3e3; border-left: 3px solid #0b57d0;
+        }
+        .reserva-texto-container { flex-grow: 1; min-width: 0; }
+        
+        /* Fontes menores e ajustadas para não quebrar linha */
+        .texto-aula { 
+            font-size: 10.5px; 
+            letter-spacing: -0.2px; 
+            color: #1f1f1f; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            font-weight: 400;
+            display: block;
+        }
+        .texto-turma { 
+            font-size: 10px; 
+            color: #747775; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -343,360 +368,98 @@
             } catch(e) { document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:#d32f2f;'>Erro de conexão.</p>"; }
         };
 
-        // Função que pega qualquer formato de horário (antigo ou novo) e deixa limpo
-        function formatarVisualHorario(texto) {
-            return texto.replace('(', '- ').replace(')', '').replace('às', 'até');
+        // FUNÇÃO QUE ABREVIA O TEXTO PARA CABER EM UMA LINHA
+        function formatarTextoCompacto(texto) {
+            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
+            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
+            return t;
         }
 
         function renderCalendarioPublico() {
-            let dataEscolhida = document.getElementById('filtro-calendario-publico').value;
+            let data = document.getElementById('filtro-calendario-publico').value;
             let grade = document.getElementById('grade-laboratorios-publica');
-            let labsHtml = '';
-            
-            LISTA_SALAS.forEach(nomeLab => {
-                let reservasDesteLab = AGENDAMENTOS_PUBLICOS.filter(a => a.data === dataEscolhida && a.lab === nomeLab);
-                let conteudoReserva = '';
-                
-                if (reservasDesteLab.length > 0) {
-                    reservasDesteLab.forEach(r => {
-                        let nickProf = r.prof.split('@')[0];
-                        let horarioLimpo = formatarVisualHorario(r.horario);
-                        
-                        conteudoReserva += `<div class="reserva-item">
-                            <div>
-                                <strong style="color:#1f1f1f; font-size:13px; display:inline;">${horarioLimpo}</strong><br>
-                                <span style="font-size:12px; color:#747775; margin-top:2px; display:inline-block;">${r.turma} (${nickProf})</span>
-                            </div>
-                        </div>`;
-                    });
-                } else { 
-                    conteudoReserva = `<div style="color: #747775; font-size: 13px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
-                }
-                
-                let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
-                labsHtml += `<div class="card-lab"><strong>${icone} ${nomeLab}</strong>${conteudoReserva}</div>`;
+            let html = '';
+            LISTA_SALAS.forEach(nome => {
+                let res = AGENDAMENTOS_PUBLICOS.filter(a => a.data === data && a.lab === nome);
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px; font-style:italic;">Disponível</div>';
+                res.forEach(r => {
+                    let compact = formatarTextoCompacto(r.horario);
+                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
+                });
+                html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
             });
-            grade.innerHTML = labsHtml;
+            grade.innerHTML = html;
         }
 
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-        async function loginMicrosoft() {
-            try {
-                const loginResponse = await msalInstance.loginPopup({ scopes: ["user.read"] });
-                let nome = loginResponse.account.name || "Usuário";
-                let email = loginResponse.account.username;
-                let fotoGenerica = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=e3e3e3&color=1f1f1f&size=120`;
-                iniciarPortal({ email: email, given_name: nome, picture: fotoGenerica });
-            } catch (error) { console.error(error); alert("Erro ao entrar com a Microsoft."); }
-        }
-
-        function decodificarJwt(token) { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
-
-        async function lidarComLoginGoogle(response) { iniciarPortal(decodificarJwt(response.credential)); }
+        async function loginMicrosoft() { try { const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); } catch(e) { alert("Erro Microsoft."); } }
+        function decodificarJwt(t) { return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
+        async function lidarComLoginGoogle(r) { iniciarPortal(decodificarJwt(r.credential)); }
 
         async function iniciarPortal(dados) {
-            document.getElementById('status-login').innerText = "Autenticando... Aguarde.";
+            document.getElementById('status-login').innerText = "Autenticando...";
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
-            document.getElementById('email-usuario').innerText = dados.email;
             document.getElementById('foto-perfil').src = dados.picture;
             try {
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
-                const json = await res.json();
-                DADOS_SISTEMA = json;
+                const json = await res.json(); DADOS_SISTEMA = json;
                 document.getElementById('tela-inicio').style.display = 'none';
                 document.getElementById('navbar').style.display = 'flex';
                 document.getElementById('area-conteudo').style.display = 'block';
-                configurarPainel(json, true); 
+                configurarPainel(json, true);
                 fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
             } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar."; }
         }
 
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
-            let dataEscolhida = document.getElementById('filtro-calendario').value;
-            let grade = document.getElementById('grade-laboratorios');
-            let emailLogado = document.getElementById('email-oculto').innerText;
-            let labsHtml = '';
-            
-            LISTA_SALAS.forEach(nomeLab => {
-                let reservasDesteLab = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === dataEscolhida && a.lab === nomeLab);
-                let conteudoReserva = '';
-                
-                if (reservasDesteLab.length > 0) {
-                    reservasDesteLab.forEach(r => {
-                        let nickProf = r.prof.split('@')[0];
-                        let btnApagar = (DADOS_SISTEMA.role === 'admin' || r.prof === emailLogado) ? `<button class="btn-apagar" style="margin-left: 10px;" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
-                        let horarioLimpo = formatarVisualHorario(r.horario);
-                        
-                        conteudoReserva += `<div class="reserva-item">
-                            <div>
-                                <strong style="color:#1f1f1f; font-size:13px; display:inline;">${horarioLimpo}</strong><br>
-                                <span style="font-size:12px; color:#747775; margin-top:2px; display:inline-block;">${r.turma} (${nickProf})</span>
-                            </div>
-                            ${btnApagar}
-                        </div>`;
-                    });
-                } else { 
-                    conteudoReserva = `<div style="color: #747775; font-size: 13px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
-                }
-                
-                let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
-                labsHtml += `<div class="card-lab"><strong>${icone} ${nomeLab}</strong>${conteudoReserva}</div>`;
+            let data = document.getElementById('filtro-calendario').value;
+            let email = document.getElementById('email-oculto').innerText;
+            let html = '';
+            LISTA_SALAS.forEach(nome => {
+                let res = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === data && a.lab === nome);
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px; font-style:italic;">Livre</div>';
+                res.forEach(r => {
+                    let compact = formatarTextoCompacto(r.horario);
+                    let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === email) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}')">X</button>` : '';
+                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div>${btn}</div>`;
+                });
+                html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
             });
-            grade.innerHTML = labsHtml;
+            document.getElementById('grade-laboratorios').innerHTML = html;
         }
 
         function reservarLab() {
-            let data = document.getElementById('lab-data').value;
-            let lab = document.getElementById('lab-numero').value;
-            let horario = document.getElementById('lab-horario').value;
-            let turma = document.getElementById('lab-turma').value;
-            let semanasSelecionadas = document.getElementById('lab-semanas').value;
-
-            if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos da reserva!");
-            
-            let jaExiste = (DADOS_SISTEMA.agendamentos || []).find(a => a.data === data && a.lab === lab && a.horario === horario);
-            if(jaExiste) return alert("Esta sala já está reservada neste horário!");
-
-            fetchBanco({ 
-                action: 'add_agendamento', 
-                dataReserva: data, 
-                lab: lab, 
-                horario: horario, 
-                turma: turma, 
-                semanas: semanasSelecionadas, 
-                userEmail: document.getElementById('email-oculto').innerText 
-            }, document.getElementById('geral-status'));
+            let p = { action: 'add_agendamento', dataReserva: document.getElementById('lab-data').value, lab: document.getElementById('lab-numero').value, horario: document.getElementById('lab-horario').value, turma: document.getElementById('lab-turma').value, semanas: document.getElementById('lab-semanas').value, userEmail: document.getElementById('email-oculto').innerText };
+            if(!p.dataReserva || !p.turma) return alert("Preencha tudo!");
+            fetchBanco(p, document.getElementById('geral-status'));
         }
+        function cancelarReserva(id) { if(confirm("Excluir?")) fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status')); }
 
-        function cancelarReserva(id) {
-            if(!confirm("Cancelar esta reserva?")) return;
-            fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status'));
-        }
-
-        function renderMateriaisAluno() {
-            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
-            let filtro = document.getElementById('aluno-filtro-turma').value;
-            let mat = DADOS_SISTEMA.materiais;
-            if (filtro !== 'todas') mat = mat.filter(m => m.turma === filtro);
-            let htmlMat = '';
-            mat.forEach(m => {
-                let nickProf = (DADOS_SISTEMA.db.turmas[m.turma] || "").split('@')[0] || 'Prof';
-                htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome} <span style="font-size: 12px; color: #747775; font-weight: normal;">(por ${nickProf})</span></a></li>`;
-            });
-            document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
-        }
-
-        function renderArquivosAdmin() {
-            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin' || !DADOS_SISTEMA.visaoGeralAdmin) return;
-            let filtro = document.getElementById('admin-filtro-arquivos').value;
-            let html = '';
-            DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
-                if (filtro !== 'todas' && t.turma !== filtro) return;
-                html += `<li class="separador-turma">🏫 ${t.turma} <span style="font-size:12px; color:#747775; font-weight: normal;">(Prof: ${t.professor})</span></li>`;
-                let nickProf = t.professor ? t.professor.split('@')[0] : 'Prof';
-                t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><span class="tag-material">[Material: ${nickProf}]</span> <a href="${m.link}" target="_blank">📄 ${m.nome}</a> <span style="color:#747775; font-size:12px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Excluir</button></li>`);
-                t.entregas.forEach(e => {
-                    let nickAluno = e.aluno.split('@')[0];
-                    html += `<li style="padding-left: 16px;"><span><span class="tag-entrega">[Entrega: ${nickAluno}]</span> <a href="${e.link}" target="_blank">📄 ${e.nome}</a> <span style="color:#747775; font-size:12px;">(${e.data})</span></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">Excluir</button></li>`;
-                });
-            });
-            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#747775;">Nenhum arquivo encontrado.</li>';
-        }
-
-        function configurarPainel(dados, isInitialLogin = false) {
-            if (dados.config) {
-                let textoExtensoes = dados.config.extensoes.join(', ').toUpperCase();
-                document.querySelectorAll('.info-upload').forEach(el => el.innerText = `Permitido: ${textoExtensoes} (Máx. ${dados.config.limiteMB}MB)`);
-                let aceitos = dados.config.extensoes.map(ext => '.' + ext).join(', ');
-                document.getElementById('prof-file').setAttribute('accept', aceitos);
-                document.getElementById('aluno-file').setAttribute('accept', aceitos);
-            }
-            let paginaAtivaId = 'pag-perfil'; 
-            if (isInitialLogin) {
-                if (dados.role === 'admin') paginaAtivaId = 'pag-admin';
-                else if (dados.role === 'professor') paginaAtivaId = 'pag-prof';
-                else paginaAtivaId = 'pag-aluno';
-            } else { document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; }); }
-
-            let menu = document.getElementById('menu-dinamico');
-            let badge = document.getElementById('badge-funcao');
-            let emailLogado = document.getElementById('email-oculto').innerText;
-
-            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
-            renderCalendario();
-
+        function configurarPainel(dados, isInitial) {
+            let menu = document.getElementById('menu-dinamico'); let email = document.getElementById('email-oculto').innerText;
+            menu.innerHTML = `<button class="nav-btn active" onclick="abrirPagina('pag-perfil', this)">Labs</button>`;
             if (dados.role === "admin") {
-                badge.innerText = "Modo Administrador";
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel de Controle</button>`;
+                document.getElementById('badge-funcao').innerText = "Admin"; menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
-                document.getElementById('lab-turma').innerHTML = '<option value="Manutenção/Admin">Bloqueio / Manutenção</option>';
-                Object.keys(dados.db.turmas).forEach(t => document.getElementById('lab-turma').innerHTML += `<option value="${t}">${t}</option>`);
-                let htmlProfsLista = '';
-                dados.db.professores.forEach(p => htmlProfsLista += `<li><span>👤 ${p}</span> <button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Remover</button></li>`);
-                document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li>Sem professores.</li>';
-                let htmlTurmasLista = '';
-                Object.keys(dados.db.turmas).forEach(t => htmlTurmasLista += `<li><span>🏫 ${t} <span style="font-size:12px; color:#747775;">(Prof: ${dados.db.turmas[t]})</span></span> <button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Remover</button></li>`);
-                document.getElementById('lista-admin-turmas').innerHTML = htmlTurmasLista || '<li>Sem turmas.</li>';
-                let htmlAlunos = '';
-                Object.keys(dados.db.alunos).forEach(a => {
-                    let turmasAluno = typeof dados.db.alunos[a] === 'string' ? [dados.db.alunos[a]] : dados.db.alunos[a];
-                    turmasAluno.forEach(t => htmlAlunos += `<li><span>👤 ${a} <span style="font-size:12px; color:#747775;">(${t})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a}', '${t}', 'admin-status')">Remover</button></li>`);
-                });
-                document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li>Sem alunos.</li>';
-                let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
-                if(dados.visaoGeralAdmin) dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
-                document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos;
-                renderArquivosAdmin(); 
+                let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); document.getElementById('lab-turma').innerHTML = op;
             } else if (dados.role === "professor") {
-                badge.innerText = "Modo Professor";
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Compartilhar Aulas</button>`;
-                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gerenciar Turmas</button>`;
+                document.getElementById('badge-funcao').innerText = "Professor"; menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Aulas</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
-                let selectT_Lab = document.getElementById('lab-turma');
-                selectT_Lab.innerHTML = '<option value="">Qual a Turma?</option>';
-                let selectT = document.getElementById('prof-seleciona-turma');
-                let selectTAdd = document.getElementById('prof-select-turma-add');
-                selectT.innerHTML = '<option value="">Para qual Turma?</option>';
-                selectTAdd.innerHTML = '<option value="">Selecione a sua Turma...</option>';
-                Object.keys(dados.db.turmas).forEach(t => {
-                    if(dados.db.turmas[t] === emailLogado) {
-                        selectT.innerHTML += `<option value="${t}">${t}</option>`;
-                        selectTAdd.innerHTML += `<option value="${t}">${t}</option>`;
-                        selectT_Lab.innerHTML += `<option value="${t}">${t}</option>`;
-                    }
-                });
-                let matPorTurma = {};
-                dados.materiais.forEach(m => { if(!matPorTurma[m.turma]) matPorTurma[m.turma] = []; matPorTurma[m.turma].push(m); });
-                let htmlMat = '';
-                for(let t in matPorTurma) {
-                    htmlMat += `<li class="separador-turma">🏫 ${t}</li>`;
-                    matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">Remover</button></li>`);
-                }
-                document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Sem materiais.</li>';
-                let htmlVisao = '';
-                if (!dados.visaoGeral || dados.visaoGeral.length === 0) { htmlVisao = '<li>Sem entregas.</li>'; } 
-                else { dados.visaoGeral.forEach(aluno => {
-                        htmlVisao += `<li class="li-visao-geral"><strong style="color: #1f1f1f; font-size: 15px; font-weight: 500;">👤 ${aluno.aluno} <span style="font-size:13px; color:#747775;">(${aluno.turma})</span></strong><ul class="ul-interna">`;
-                        aluno.arquivos.forEach(arq => htmlVisao += `<li><span><a href="${arq.link}" target="_blank">📄 ${arq.nome}</a> <span style="color:#747775; font-size:12px;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">Apagar</button></li>`);
-                        htmlVisao += `</ul></li>`;
-                    });
-                }
-                document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
-                let htmlAlunosProf = '';
-                if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:12px; color:#747775;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Desmatricular</button></li>`); }
-                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li>Sem alunos.</li>';
-            } else {
-                document.getElementById('painel-reserva-lab').style.display = 'none';
-                let turmas = dados.minhasTurmas || [];
-                if (turmas.length > 0) {
-                    badge.innerText = `Área do Aluno (${turmas.length} Turmas)`;
-                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minhas Entregas</button>`;
-                    let optsFiltro = '<option value="todas">Todas as Turmas</option>';
-                    let optsUpload = '<option value="">Selecione a Turma...</option>';
-                    turmas.forEach(t => { optsFiltro += `<option value="${t}">${t}</option>`; optsUpload += `<option value="${t}">${t}</option>`; });
-                    document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro;
-                    document.getElementById('aluno-select-turma').innerHTML = optsUpload;
-                    renderMateriaisAluno();
-                    let htmlEnv = '';
-                    dados.envios.forEach(m => htmlEnv += `<li><span><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'aluno-status')">Desfazer</button></li>`);
-                    document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li>Sem envios.</li>';
-                } else {
-                    badge.innerText = "Pendente"; 
-                    document.getElementById('pag-aluno').innerHTML = "<h3>Sem turmas atribuídas.</h3><p>Aguarde a matrícula.</p>";
-                    menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Vazio</button>`;
-                }
-            }
-            document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
-            document.getElementById(paginaAtivaId).style.display = 'flex';
-            document.getElementById('aluno-filtro-turma')?.addEventListener('change', renderMateriaisAluno);
-            menu.querySelectorAll('.nav-btn').forEach(btn => { if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active'); });
+                let op = ''; Object.keys(dados.db.turmas).forEach(t => { if(dados.db.turmas[t] === email) op += `<option value="${t}">${t}</option>`; }); document.getElementById('lab-turma').innerHTML = op;
+            } else { document.getElementById('badge-funcao').innerText = "Aluno"; menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minhas Entregas</button>`; }
+            renderCalendario();
         }
 
-        function abrirPagina(id, btn) {
-            document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).style.display = 'flex';
-            btn.classList.add('active');
-        }
+        async function fetchBanco(p, el) { try { await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(p), headers: {'Content-Type': 'text/plain'}}); location.reload(); } catch(e) { alert("Erro."); } }
+        function abrirPagina(id, btn) { document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).style.display = 'flex'; btn.classList.add('active'); }
+        function fazerLogout() { location.reload(); }
 
-        function fazerLogout() { google.accounts.id.disableAutoSelect(); sessionStorage.clear(); localStorage.clear(); location.reload(); }
-
-        async function fetchBanco(payload, msgElement) {
-            if(msgElement) { msgElement.innerText = "Processando..."; msgElement.style.color = "#0b57d0"; }
-            try {
-                await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
-                if(msgElement) { msgElement.innerText = "Sucesso!"; msgElement.style.color = "#146c2e"; }
-                let resPub = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
-                let jsonPub = await resPub.json();
-                AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
-                let emailLogado = document.getElementById('email-oculto').innerText;
-                const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
-                const json = await res.json();
-                DADOS_SISTEMA = json;
-                configurarPainel(json);
-                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3500);
-            } catch(e) { if(msgElement) { msgElement.innerText = "Erro."; msgElement.style.color = "#d32f2f"; } }
-        }
-
-        function adminAcao(acao) {
-            let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText };
-            if (acao === 'admin_add_prof') { payload.novoEmail = document.getElementById('admin-novo-prof').value; document.getElementById('admin-novo-prof').value = ''; }
-            if (acao === 'admin_add_turma') { payload.nomeTurma = document.getElementById('admin-nome-turma').value; payload.profResp = document.getElementById('admin-select-prof').value; document.getElementById('admin-nome-turma').value = '';}
-            if (acao === 'admin_add_aluno') { payload.alunoEmail = document.getElementById('admin-novo-aluno').value; payload.turmaDestino = document.getElementById('admin-select-turma').value; document.getElementById('admin-novo-aluno').value = '';}
-            fetchBanco(payload, document.getElementById('admin-status'));
-        }
-
-        function adminExcluir(acao, alvo) { if(!confirm(`Remover '${alvo}'?`)) return; fetchBanco({ action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo }, document.getElementById('admin-status')); }
-
-        function profAddTurma() {
-            let nomeTurma = document.getElementById('prof-nova-turma').value;
-            if(!nomeTurma) return alert("Digite o nome da turma.");
-            fetchBanco({ action: 'prof_add_turma', userEmail: document.getElementById('email-oculto').innerText, nomeTurma: nomeTurma }, document.getElementById('prof-visao-status'));
-            document.getElementById('prof-nova-turma').value = '';
-        }
-
-        function profAddAluno() {
-            let emailAluno = document.getElementById('prof-novo-aluno').value;
-            let turma = document.getElementById('prof-select-turma-add').value;
-            if(!emailAluno || !turma) return alert("Preencha os campos.");
-            fetchBanco({ action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma }, document.getElementById('prof-visao-status'));
-            document.getElementById('prof-novo-aluno').value = '';
-        }
-
-        function excluirAluno(alvoEmail, turmaAlvo, idStatusElemento) { if(!confirm(`Remover '${alvoEmail}'?`)) return; fetchBanco({ action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo }, document.getElementById(idStatusElemento)); }
-
-        function upload(tipo) {
-            let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
-            let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
-            let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
-            let btn = document.getElementById(tipo === 'professor' ? 'btn-prof-upload' : 'btn-aluno-upload');
-            if (input.files.length === 0) { status.innerText = "Escolha um arquivo."; return; }
-            if (!selectTurma.value) { status.innerText = "Selecione a Turma."; return; }
-            let arquivo = input.files[0];
-            let limiteBytes = DADOS_SISTEMA.config.limiteMB * 1024 * 1024;
-            if (arquivo.size > limiteBytes) { status.innerText = "Muito pesado."; status.style.color = "#d32f2f"; input.value = ''; return; }
-            let reader = new FileReader();
-            status.innerText = "Fazendo upload..."; status.style.color = "#0b57d0"; btn.disabled = true; 
-            reader.onload = async function(e) {
-                await fetchBanco({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value }, status);
-                input.value = ''; btn.disabled = false; 
-            };
-            reader.readAsDataURL(arquivo);
-        }
-
-        async function apagar(id, idStatusElemento) { if(!confirm("Apagar da nuvem?")) return; await fetchBanco({ action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById(idStatusElemento)); }
-
-        const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let particlesArray = []; const cores = ['#e3e3e3', '#dadce0', '#e8eaed', '#f1f3f4']; 
-        let mouse = { x: null, y: null, radius: 150 }; window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
-        class Particle { constructor() { this.x = Math.random() * innerWidth; this.y = Math.random() * innerHeight; this.dx = (Math.random()*0.8)-0.4; this.dy = (Math.random()*0.8)-0.4; this.tam = Math.random()*2+1; this.cor = cores[Math.floor(Math.random()*cores.length)]; } atualizar() { if (this.x > canvas.width || this.x < 0) this.dx = -this.dx; if (this.y > canvas.height || this.y < 0) this.dy = -this.dy; let dx = mouse.x - this.x; let dy = mouse.y - this.y; let dist = Math.sqrt(dx * dx + dy * dy); if (dist < mouse.radius) { this.x -= (dx / dist) * 1.2; this.y -= (dy / dist) * 1.2; } else { this.x += this.dx; this.y += this.dy; } ctx.beginPath(); ctx.arc(this.x, this.y, this.tam, 0, Math.PI * 2); ctx.fillStyle = this.cor; ctx.fill(); } }
-        for (let i = 0; i < 50; i++) particlesArray.push(new Particle()); 
-        function animar() { requestAnimationFrame(animar); ctx.clearRect(0, 0, innerWidth, innerHeight); for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].atualizar(); for (let j = i; j < particlesArray.length; j++) { let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2); if (d < 25000) { ctx.strokeStyle = `rgba(116, 119, 117, ${(1 - d/25000)*0.08})`; ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); } } } } animar();
+        const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
+        for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
     </script>
 </body>
 </html>
