@@ -11,8 +11,8 @@
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     
     <style>
-        /* --- FUNDO E TIPOGRAFIA MATERIAL 3 --- */
-        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap');
+        /* --- ESTILO MATERIAL 3 --- */
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
@@ -24,34 +24,28 @@
         .nav-btn.active { background: #d3e3fd; color: #041e49; }
         .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px;}
 
-        /* --- TELA DE INÍCIO REFINADA --- */
+        /* --- TELA INICIAL REFINADA --- */
         #tela-inicio {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
             display: flex; justify-content: center; align-items: center; gap: 24px;
             padding: 24px; box-sizing: border-box; flex-wrap: wrap; overflow-y: auto;
         }
-
         .box-login { 
             background: #ffffff; border-radius: 28px; padding: 40px; width: 340px; text-align: center; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.05); flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
         }
         .icone-login { font-size: 32px; background: #f0f4f9; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 16px;}
-        .box-login h2 { color: #1f1f1f; margin: 0 0 8px 0; font-size: 24px; font-weight: 500;}
-        .box-login p { color: #444746; margin-bottom: 24px; font-size: 14px;}
-        
         .box-calendario-publico { 
             background: #ffffff; border-radius: 28px; padding: 24px; width: 100%; max-width: 850px; 
             height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
         }
+        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; width: 190px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 40px; font-size: 13px; }
 
-        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 0 12px; width: 190px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 40px; font-size: 13px; }
-
-        /* --- LAYOUT INTERNO --- */
-        #area-conteudo { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 100px); display: none; }
+        /* --- CONTEÚDO INTERNO --- */
+        #area-conteudo { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 24px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; }
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; flex-grow: 1; overflow: hidden; }
         .box { background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; }
-        .box h4 { margin: 0 0 12px 0; font-size: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; color: #1f1f1f; font-weight: 500;}
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 4px; }
         .scroll-interno::-webkit-scrollbar { width: 4px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
@@ -59,33 +53,20 @@
         input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px;}
         button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0;}
         
-        .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
-        .lista-arq li { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
-        .btn-apagar { background: transparent; color: #d32f2f; border: none; font-size: 12px; cursor: pointer; font-weight: 500;}
-
         .perfil-container { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; border-bottom: 1px solid #e3e3e3; padding-bottom: 16px;}
         #foto-perfil { width: 64px; height: 64px; border-radius: 50%; background: #eee;}
-        #nome-usuario { margin: 0; font-size: 20px; font-weight: 400;} 
-        #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; background: #f0f4f9; border: 1px solid #e3e3e3; margin-top: 4px;}
 
-        /* --- ESTILO DOS LABS COMPACTO (AQUI A MÁGICA ACONTECE) --- */
-        .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 12px; margin-bottom: 8px; transition: 0.2s;}
+        /* --- ESTILO DOS LABS COMPACTO --- */
+        .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 12px; margin-bottom: 8px;}
         .card-lab strong { color: #1f1f1f; font-size: 14px; display: block; margin-bottom: 4px; font-weight: 500;}
-        
         .reserva-item { 
             background: #f8f9fa; padding: 8px 10px; border-radius: 6px; margin-top: 4px; 
             display: flex; justify-content: space-between; align-items: center; 
             border-left: 3px solid #0b57d0; 
         }
-        .reserva-texto-container { flex-grow: 1; min-width: 0; }
-        
-        /* Texto da aula em uma linha, sem negrito e menor */
-        .texto-aula { 
-            font-size: 12px; color: #1f1f1f; display: block; 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400;
-        }
-        /* Texto da turma ainda mais discreto */
-        .texto-turma { font-size: 11px; color: #747775; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .texto-aula { font-size: 12px; color: #1f1f1f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400;}
+        .texto-turma { font-size: 11px; color: #747775; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .btn-apagar { background: transparent; color: #d32f2f; border: none; font-size: 12px; cursor: pointer; font-weight: 500;}
     </style>
 </head>
 <body>
@@ -96,7 +77,7 @@
     <div id="tela-inicio">
         <div class="box-login">
             <div class="icone-login">🎓</div>
-            <h2>EPB LAB</h2>
+            <h2 style="letter-spacing: -1px;">EPB LAB</h2>
             <p>Portal de Laboratórios Etec</p>
             <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular"></div>
@@ -111,7 +92,7 @@
         <div class="box-calendario-publico">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3 style="margin: 0; font-size: 18px; font-weight: 500;">Grade de Laboratórios</h3>
-                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 4px 8px; font-size: 13px; border-radius: 20px;">
+                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 4px 12px; font-size: 13px; border-radius: 20px;">
             </div>
             <div class="scroll-interno" id="grade-laboratorios-publica" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
                 <div style="color: #747775;">Carregando agenda...</div>
@@ -127,14 +108,14 @@
 
     <div id="area-conteudo">
         <span id="email-oculto" style="display:none;"></span>
-        <div id="pag-perfil" class="pagina" style="display: flex; flex-direction: column;">
+        <div id="pag-perfil" class="pagina" style="display: flex;">
             <div class="perfil-container">
                 <img id="foto-perfil" src="">
-                <div><h3 id="nome-usuario">Usuário</h3><span id="badge-funcao">Carregando...</span></div>
+                <div><h3 id="nome-usuario" style="margin:0;">Usuário</h3><span id="badge-funcao">Carregando...</span></div>
             </div>
             <div class="grid-layout">
                 <div class="box" id="painel-reserva-lab" style="display: none; background: #f8f9fa; max-width: 300px;">
-                    <h4>Nova Reserva</h4>
+                    <h4 style="margin:0 0 12px 0;">Nova Reserva</h4>
                     <div class="scroll-interno">
                         <input type="date" id="lab-data">
                         <select id="lab-numero">
@@ -159,10 +140,9 @@
                 </div>
             </div>
         </div>
-        <div id="pag-admin" class="pagina"><h3>Controle</h3><div id="admin-status"></div><div class="grid-layout"><div class="box"><h4>Professores</h4><input id="admin-novo-prof"><button onclick="adminAcao('admin_add_prof')">Add</button><ul id="lista-admin-profs" class="lista-arq"></ul></div><div class="box"><h4>Turmas</h4><input id="admin-nome-turma"><select id="admin-select-prof"></select><button onclick="adminAcao('admin_add_turma')">Add</button><ul id="lista-admin-turmas" class="lista-arq"></ul></div><div class="box"><h4>Alunos</h4><input id="admin-novo-aluno"><select id="admin-select-turma"></select><button onclick="adminAcao('admin_add_aluno')">Add</button><ul id="lista-admin-alunos" class="lista-arq"></ul></div></div></div>
-        <div id="pag-prof" class="pagina"><h3>Materiais</h3><div class="grid-layout"><div class="box"><h4>Enviar</h4><select id="prof-seleciona-turma"></select><input type="file" id="prof-file"><button onclick="upload('professor')">Upload</button></div><div class="box"><h4>Ativos</h4><ul id="lista-materiais-prof" class="lista-arq"></ul></div></div></div>
-        <div id="pag-visao-prof" class="pagina"><h3>Turmas</h3><div class="grid-layout"><div class="box"><h4>Add Turma</h4><input id="prof-nova-turma"><button onclick="profAddTurma()">Criar</button></div><div class="box"><h4>Matricular</h4><input id="prof-novo-aluno"><select id="prof-select-turma-add"></select><button onclick="profAddAluno()">Add</button></div><div class="box"><h4>Entregas</h4><ul id="lista-visao-geral" class="lista-arq"></ul></div></div></div>
-        <div id="pag-aluno" class="pagina"><h3>Minha Sala</h3><div class="grid-layout"><div class="box"><h4>Entregar</h4><select id="aluno-select-turma"></select><input type="file" id="aluno-file"><button onclick="upload('aluno')">Enviar</button></div><div class="box"><h4>Materiais</h4><ul id="lista-materiais-aluno" class="lista-arq"></ul></div><div class="box"><h4>Enviados</h4><ul id="lista-envios-aluno" class="lista-arq"></ul></div></div></div>
+        <div id="pag-admin" class="pagina"><h3>Painel Admin</h3><div class="grid-layout"><div class="box"><h4>Professores</h4><input id="admin-novo-prof"><button onclick="adminAcao('admin_add_prof')">Add</button><ul id="lista-admin-profs" style="margin-top:10px; padding:0; list-style:none;"></ul></div><div class="box"><h4>Turmas</h4><input id="admin-nome-turma"><select id="admin-select-prof"></select><button onclick="adminAcao('admin_add_turma')">Criar</button></div></div></div>
+        <div id="pag-prof" class="pagina"><h3>Professor</h3><div class="grid-layout"><div class="box"><h4>Materiais</h4><select id="prof-seleciona-turma"></select><input type="file" id="prof-file"><button onclick="upload('professor')">Enviar</button></div></div></div>
+        <div id="pag-aluno" class="pagina"><h3>Minha Sala</h3><div class="grid-layout"><div class="box"><h4>Trabalhos</h4><select id="aluno-select-turma"></select><input type="file" id="aluno-file"><button onclick="upload('aluno')">Entregar</button></div></div></div>
     </div>
 
     <script>
@@ -180,10 +160,9 @@
                 let json = await res.json();
                 AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
                 renderCalendarioPublico();
-            } catch(e) { document.getElementById('grade-laboratorios-publica').innerHTML = "Erro de conexão."; }
+            } catch(e) { console.log(e); }
         };
 
-        // FUNÇÃO QUE ABREVIA O TEXTO PARA CABER EM UMA LINHA
         function formatarTextoCompacto(texto) {
             let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
             if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
@@ -192,42 +171,42 @@
 
         function renderCalendarioPublico() {
             let data = document.getElementById('filtro-calendario-publico').value;
-            let grade = document.getElementById('grade-laboratorios-publica');
             let html = '';
             LISTA_SALAS.forEach(nome => {
                 let res = AGENDAMENTOS_PUBLICOS.filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px; font-style:italic;">Disponível</div>';
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px;">Disponível</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
-                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
+                    cont += `<div class="reserva-item"><div class="texto-aula">${compact}</div></div>`;
                 });
                 html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
             });
-            grade.innerHTML = html;
+            document.getElementById('grade-laboratorios-publica').innerHTML = html;
         }
 
-        // Lógica de Login (Simplificada para o exemplo)
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
-        async function loginMicrosoft() { try { const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); } catch(e) { alert("Erro Microsoft."); } }
+        async function loginMicrosoft() { try { const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); } catch(e) { console.log(e); } }
         function decodificarJwt(t) { return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
         async function lidarComLoginGoogle(r) { iniciarPortal(decodificarJwt(r.credential)); }
 
         async function iniciarPortal(dados) {
-            document.getElementById('status-login').innerText = "Autenticando...";
+            document.getElementById('status-login').innerText = "Iniciando sessão...";
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
-            document.getElementById('email-usuario').innerText = dados.email;
             document.getElementById('foto-perfil').src = dados.picture;
             try {
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
                 const json = await res.json(); DADOS_SISTEMA = json;
+                
+                // MOSTRA A ÁREA INTERNA E ESCONDE O LOGIN
                 document.getElementById('tela-inicio').style.display = 'none';
                 document.getElementById('navbar').style.display = 'flex';
                 document.getElementById('area-conteudo').style.display = 'block';
+                
                 configurarPainel(json, true);
                 fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
-            } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar."; }
+            } catch(e) { document.getElementById('status-login').innerText = "Erro."; }
         }
 
         function renderCalendario() {
@@ -237,7 +216,7 @@
             let html = '';
             LISTA_SALAS.forEach(nome => {
                 let res = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px; font-style:italic;">Livre</div>';
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:11px; margin-top:4px;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
                     let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === email) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}')">X</button>` : '';
@@ -250,31 +229,46 @@
 
         function reservarLab() {
             let p = { action: 'add_agendamento', dataReserva: document.getElementById('lab-data').value, lab: document.getElementById('lab-numero').value, horario: document.getElementById('lab-horario').value, turma: document.getElementById('lab-turma').value, semanas: document.getElementById('lab-semanas').value, userEmail: document.getElementById('email-oculto').innerText };
-            if(!p.dataReserva || !p.turma) return alert("Preencha tudo!");
-            fetchBanco(p, document.getElementById('geral-status'));
+            if(!p.dataReserva || !p.turma) return alert("Erro."); fetchBanco(p);
         }
-        function cancelarReserva(id) { if(confirm("Excluir?")) fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status')); }
+        function cancelarReserva(id) { if(confirm("Excluir?")) fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }); }
 
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); let email = document.getElementById('email-oculto').innerText;
             menu.innerHTML = `<button class="nav-btn active" onclick="abrirPagina('pag-perfil', this)">Labs</button>`;
+            
+            let paginaInicial = 'pag-perfil';
+
             if (dados.role === "admin") {
-                document.getElementById('badge-funcao').innerText = "Admin"; menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel</button>`;
+                document.getElementById('badge-funcao').innerText = "Administrador"; 
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); document.getElementById('lab-turma').innerHTML = op;
+                paginaInicial = 'pag-admin';
             } else if (dados.role === "professor") {
-                document.getElementById('badge-funcao').innerText = "Professor"; menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Aulas</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
+                document.getElementById('badge-funcao').innerText = "Professor"; 
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 let op = ''; Object.keys(dados.db.turmas).forEach(t => { if(dados.db.turmas[t] === email) op += `<option value="${t}">${t}</option>`; }); document.getElementById('lab-turma').innerHTML = op;
-            } else { document.getElementById('badge-funcao').innerText = "Aluno"; menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minhas Entregas</button>`; }
+                paginaInicial = 'pag-prof';
+            } else { 
+                document.getElementById('badge-funcao').innerText = "Aluno"; 
+                menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Arquivos</button>`;
+                paginaInicial = 'pag-aluno';
+            }
+            
+            if(isInitial) {
+                 document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
+                 document.getElementById(paginaInicial).style.display = 'flex';
+                 menu.querySelectorAll('.nav-btn').forEach(b => { if(b.innerText.toLowerCase().includes(paginaInicial.split('-')[1])) b.classList.add('active'); else b.classList.remove('active'); });
+            }
             renderCalendario();
         }
 
-        async function fetchBanco(p, el) { try { await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(p), headers: {'Content-Type': 'text/plain'}}); location.reload(); } catch(e) { alert("Erro."); } }
+        async function fetchBanco(p) { try { await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(p), headers: {'Content-Type': 'text/plain'}}); location.reload(); } catch(e) { alert("Erro."); } }
         function abrirPagina(id, btn) { document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).style.display = 'flex'; btn.classList.add('active'); }
         function fazerLogout() { location.reload(); }
 
-        // Canvas animado (simplificado)
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
         for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
