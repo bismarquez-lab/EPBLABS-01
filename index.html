@@ -25,36 +25,40 @@
         .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px;}
         .btn-sair-nav:hover { background: #f1f3f4; color: #1f1f1f; }
 
-        /* --- TELA DE LOGIN --- */
-        #tela-login { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 48px 40px; width: 380px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        #tela-login h2 { color: #1f1f1f; margin-top: 0; font-size: 28px; font-weight: 400;}
-        #tela-login p { color: #444746; margin-bottom: 32px; font-size: 16px;}
+        /* --- TELA DE INÍCIO (LOGIN + CALENDÁRIO PÚBLICO) --- */
+        #tela-inicio {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
+            display: flex; justify-content: center; align-items: center; gap: 30px;
+            padding: 30px; box-sizing: border-box; flex-wrap: wrap; overflow-y: auto;
+        }
+
+        .box-login { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 48px 40px; width: 380px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex-shrink: 0;}
+        .box-login h2 { color: #1f1f1f; margin-top: 0; font-size: 28px; font-weight: 400;}
+        .box-login p { color: #444746; margin-bottom: 32px; font-size: 16px;}
         
-        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Google Sans', 'Segoe UI', sans-serif; font-weight: 500; transition: background-color 0.2s; height: 40px; box-sizing: border-box; font-size: 14px; }
+        .box-calendario-publico { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; width: 100%; max-width: 750px; height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Google Sans', sans-serif; font-weight: 500; transition: 0.2s; height: 40px; box-sizing: border-box; font-size: 14px; }
         .btn-microsoft:hover { background-color: #f1f3f4; color: #1f1f1f;}
 
-        /* --- LAYOUT TELA CHEIA --- */
+        /* --- LAYOUT TELA CHEIA (ÁREA INTERNA) --- */
         #area-conteudo { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         .pagina > h3 { margin-top: 0; margin-bottom: 8px; flex-shrink: 0; color: #1f1f1f; font-size: 24px; font-weight: 400;}
         .pagina > p { margin-top: 0; margin-bottom: 24px; flex-shrink: 0; color: #444746; font-size: 14px;}
 
-        /* --- CSS GRID DASHBOARD --- */
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; overflow: hidden; }
 
-        /* --- CARDS MINIMALISTAS --- */
         .box { background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.2s ease; }
         .box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .box h4 { margin: 0 0 16px 0; font-size: 16px; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; color: #1f1f1f; flex-shrink: 0; font-weight: 500;}
         
-        /* --- ROLAGEM INTERNA --- */
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         .scroll-interno::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
 
-        /* --- FORMULÁRIOS --- */
         input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
         input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;}
         
@@ -62,7 +66,17 @@
         button.action-btn:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);}
         button.action-btn:disabled { background: #e3e3e3; color: #1f1f1f; opacity: 0.38; cursor: not-allowed; box-shadow: none;}
         
-        /* --- LISTAS --- */
+        /* Botão específico de Confirmar Reserva para ter destaque */
+        #btn-confirmar-reserva {
+            background-color: #0b57d0;
+            color: #ffffff;
+            font-size: 15px;
+            padding: 14px;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #btn-confirmar-reserva:hover { background-color: #0842a0; }
+
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
         .lista-arq a { color: #0b57d0; text-decoration: none; word-break: break-all; margin-right: 15px; font-weight: 500;} 
@@ -93,19 +107,37 @@
     <canvas id="meuCanvas"></canvas>
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
-    <div id="tela-login">
-        <h2>EPB LAB</h2>
-        <p>Acesse com a sua conta de e-mail.</p>
-        <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 32px;">
-            <div class="g_id_signin" data-type="standard" data-theme="outline" data-width="200" data-shape="rectangular"></div>
-            <button class="btn-microsoft" onclick="loginMicrosoft()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 23 23">
-                    <path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/>
-                    <path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/>
-                </svg>
-                Entrar com Microsoft
-            </button>
+    <div id="tela-inicio">
+        
+        <div class="box-login">
+            <h2>EPB LAB</h2>
+            <p>Acesse com a sua conta de e-mail.</p>
+            <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 32px;">
+                <div class="g_id_signin" data-type="standard" data-theme="outline" data-width="200" data-shape="rectangular"></div>
+                <button class="btn-microsoft" onclick="loginMicrosoft()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 23 23">
+                        <path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/>
+                        <path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/>
+                    </svg>
+                    Entrar com Microsoft
+                </button>
+            </div>
+            <p id="status-login" style="margin-top: 20px; font-size: 13px; color: #0b57d0;"></p>
         </div>
+
+        <div class="box-calendario-publico">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f3f4; padding-bottom: 16px; margin-bottom: 20px;">
+                <div>
+                    <h3 style="margin: 0; color: #1f1f1f; font-weight: 500;">Grade de Laboratórios</h3>
+                    <p style="margin: 5px 0 0 0; color: #747775; font-size: 13px;">Consulte a disponibilidade de hoje.</p>
+                </div>
+                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; font-weight: bold;">
+            </div>
+            <div class="scroll-interno" id="grade-laboratorios-publica" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="color: #747775; padding: 20px;">Buscando horários no servidor...</div>
+            </div>
+        </div>
+
     </div>
 
     <nav id="navbar">
@@ -159,26 +191,23 @@
                         <option value="Noite - 3ª a 5ª Aula">Noite - 3ª a 5ª Aula</option>
                     </select>
                     <select id="lab-turma"><option value="">Sua Turma...</option></select>
-                    <button class="action-btn" onclick="reservarLab()">Confirmar Reserva</button>
+                    
+                    <button class="action-btn" id="btn-confirmar-reserva" onclick="reservarLab()">Confirmar Reserva</button>
                 </div>
 
                 <div class="box" style="grid-column: span 2;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; margin-bottom: 16px;">
-                        <h4 style="margin: 0; border: none; padding: 0;">📅 Grade de Laboratórios</h4>
+                        <h4 style="margin: 0; border: none; padding: 0;">📅 Painel de Controle dos Labs</h4>
                         <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin: 0; padding: 6px 12px;">
                     </div>
-                    
-                    <div class="scroll-interno" id="grade-laboratorios" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        </div>
+                    <div class="scroll-interno" id="grade-laboratorios" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
                 </div>
-
             </div>
         </div>
 
         <div id="pag-admin" class="pagina">
             <h3>Configurações do Sistema</h3>
             <p id="admin-status" style="text-align: center; font-weight: 500; min-height: 15px; font-size: 13px; color: #0b57d0;"></p>
-            
             <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="box">
                     <h4>Gerenciar Professores</h4>
@@ -276,11 +305,55 @@
     <script>
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         let DADOS_SISTEMA = null; 
+        let AGENDAMENTOS_PUBLICOS = [];
 
         // Setar data de hoje no calendário por padrão
+        document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
 
+        // ==========================================
+        // CARREGAMENTO PÚBLICO (ANTES DO LOGIN)
+        // ==========================================
+        window.onload = async function() {
+            try {
+                let res = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
+                let json = await res.json();
+                AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
+                renderCalendarioPublico();
+            } catch(e) {
+                document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:red;'>Erro ao carregar a grade.</p>";
+            }
+        };
+
+        function renderCalendarioPublico() {
+            let dataEscolhida = document.getElementById('filtro-calendario-publico').value;
+            let grade = document.getElementById('grade-laboratorios-publica');
+            
+            let labsHtml = '';
+            for(let i = 1; i <= 10; i++) {
+                let nomeLab = "Laboratório " + i;
+                let reservasDesteLab = AGENDAMENTOS_PUBLICOS.filter(a => a.data === dataEscolhida && a.lab === nomeLab);
+                
+                let conteudoReserva = '';
+                if (reservasDesteLab.length > 0) {
+                    reservasDesteLab.forEach(r => {
+                        let nickProf = r.prof.split('@')[0];
+                        conteudoReserva += `<div class="reserva-item">
+                            <div><strong style="color:#009624; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444;">${r.turma} (${nickProf})</span></div>
+                        </div>`;
+                    });
+                } else {
+                    conteudoReserva = `<div style="color: #aaa; font-size: 12px; margin-top: 10px; font-style: italic;">Livre</div>`;
+                }
+                labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
+            }
+            grade.innerHTML = labsHtml;
+        }
+
+        // ==========================================
+        // LÓGICA DE LOGIN
+        // ==========================================
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
 
@@ -299,28 +372,31 @@
         async function lidarComLoginGoogle(response) { iniciarPortal(decodificarJwt(response.credential)); }
 
         async function iniciarPortal(dados) {
+            document.getElementById('status-login').innerText = "Autenticando...";
+            
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
             document.getElementById('email-usuario').innerText = dados.email;
             document.getElementById('foto-perfil').src = dados.picture;
             
-            document.getElementById('tela-login').style.display = 'none';
-            document.getElementById('navbar').style.display = 'flex';
-            document.getElementById('area-conteudo').style.display = 'block';
-            document.getElementById('badge-funcao').innerText = "Carregando ambiente...";
-
             try {
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
+                
+                // Mudar da Tela de Início para a Área Interna
+                document.getElementById('tela-inicio').style.display = 'none';
+                document.getElementById('navbar').style.display = 'flex';
+                document.getElementById('area-conteudo').style.display = 'block';
+
                 configurarPainel(json, true); 
 
                 fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
-            } catch(e) { alert("Erro ao conectar no banco de dados."); }
+            } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar."; }
         }
 
         // ==========================================
-        // MÓDULO DE LABORATÓRIOS
+        // MÓDULO DE LABORATÓRIOS (INTERNO)
         // ==========================================
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
@@ -329,20 +405,16 @@
             let emailLogado = document.getElementById('email-oculto').innerText;
             
             let labsHtml = '';
-            // Construir do Lab 1 ao 10
             for(let i = 1; i <= 10; i++) {
                 let nomeLab = "Laboratório " + i;
-                
-                // Procurar reservas para este lab nesta data
                 let reservasDesteLab = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === dataEscolhida && a.lab === nomeLab);
                 
                 let conteudoReserva = '';
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
-                        // Mostrar botão de lixeira só se for o dono ou admin
                         let btnApagar = (DADOS_SISTEMA.role === 'admin' || r.prof === emailLogado) ? 
-                            `<button class="btn-apagar" style="padding: 2px 5px; font-size:10px;" onclick="cancelarReserva('${r.id}')">X</button>` : '';
+                            `<button class="btn-apagar" style="padding: 4px 8px; font-size:12px;" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
                         
                         conteudoReserva += `<div class="reserva-item">
                             <div><strong style="color:#009624; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444;">${r.turma} (${nickProf})</span></div>
@@ -350,9 +422,8 @@
                         </div>`;
                     });
                 } else {
-                    conteudoReserva = `<div style="color: #aaa; font-size: 12px; margin-top: 10px; font-style: italic;">Disponível</div>`;
+                    conteudoReserva = `<div style="color: #aaa; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`;
                 }
-
                 labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
             }
             grade.innerHTML = labsHtml;
@@ -366,7 +437,6 @@
 
             if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos da reserva!");
             
-            // Bloqueio de duplicidade (Front-end)
             let jaExiste = (DADOS_SISTEMA.agendamentos || []).find(a => a.data === data && a.lab === lab && a.horario === horario);
             if(jaExiste) return alert("Este laboratório já está reservado neste horário!");
 
@@ -377,7 +447,6 @@
             if(!confirm("Tem certeza que deseja cancelar esta reserva?")) return;
             fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status'));
         }
-
 
         // ==========================================
         // RENDERIZAÇÃO GERAL
@@ -432,17 +501,15 @@
             let badge = document.getElementById('badge-funcao');
             let emailLogado = document.getElementById('email-oculto').innerText;
 
-            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Visão Geral & Labs</button>`;
+            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
 
-            // Renderizar Calendário Inicialmente
-            renderCalendario();
+            renderCalendario(); // Renderiza o calendário interno
 
             // -- ADMIN --
             if (dados.role === "admin") {
                 badge.innerText = "Modo Administrador";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel de Controle</button>`;
                 
-                // Mostrar formulário de reserva
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 document.getElementById('lab-turma').innerHTML = '<option value="Manutenção/Admin">Bloqueio / Manutenção</option>';
                 Object.keys(dados.db.turmas).forEach(t => document.getElementById('lab-turma').innerHTML += `<option value="${t}">${t}</option>`);
@@ -473,7 +540,6 @@
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Compartilhar Aulas</button>`;
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gerenciar Turmas</button>`;
                 
-                // Mostrar formulário de reserva
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 let selectT_Lab = document.getElementById('lab-turma');
                 selectT_Lab.innerHTML = '<option value="">Qual a Turma?</option>';
@@ -520,7 +586,6 @@
 
             // -- ALUNO --
             } else {
-                // Aluno não vê formulário de reserva
                 document.getElementById('painel-reserva-lab').style.display = 'none';
 
                 let turmas = dados.minhasTurmas || [];
@@ -566,6 +631,12 @@
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
                 if(msgElement) { msgElement.innerText = "Ação concluída com sucesso!"; msgElement.style.color = "#009624"; }
+                
+                // Recarregar os dados públicos também para atualizar a tela de fora caso alguém olhe
+                let resPub = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
+                let jsonPub = await resPub.json();
+                AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
+
                 let emailLogado = document.getElementById('email-oculto').innerText;
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
                 const json = await res.json();
