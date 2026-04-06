@@ -11,10 +11,12 @@
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     
     <style>
+        /* --- FUNDO E TIPOGRAFIA GOOGLE MATERIAL 3 --- */
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
+        /* --- NAVBAR INTERNA --- */
         #navbar { position: absolute; top: 0; left: 0; width: 100%; height: 64px; z-index: 20; background: #ffffff; border-bottom: 1px solid #e3e3e3; display: none; justify-content: space-between; align-items: center; padding: 0 32px; box-sizing: border-box;}
         .nav-links { display: flex; gap: 8px; }
         .nav-btn { background: transparent; color: #444746; border: none; padding: 10px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-size: 14px;}
@@ -23,6 +25,7 @@
         .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px;}
         .btn-sair-nav:hover { background: #f1f3f4; color: #1f1f1f; }
 
+        /* --- TELA DE INÍCIO (LOGIN + CALENDÁRIO PÚBLICO) --- */
         #tela-inicio {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
             display: flex; justify-content: center; align-items: center; gap: 32px;
@@ -38,6 +41,7 @@
         .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Google Sans', sans-serif; font-weight: 500; transition: 0.2s; height: 40px; box-sizing: border-box; font-size: 14px; }
         .btn-microsoft:hover { background-color: #f1f3f4; color: #1f1f1f;}
 
+        /* --- LAYOUT TELA CHEIA INTERNA --- */
         #area-conteudo { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -46,15 +50,18 @@
 
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; overflow: hidden; }
 
+        /* --- CARDS MINIMALISTAS --- */
         .box { background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.2s ease; }
         .box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .box h4 { margin: 0 0 16px 0; font-size: 16px; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; color: #1f1f1f; flex-shrink: 0; font-weight: 500;}
         
+        /* --- ROLAGEM INTERNA --- */
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         .scroll-interno::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
 
+        /* --- FORMULÁRIOS --- */
         input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
         input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;}
         
@@ -85,9 +92,12 @@
         #email-usuario { color: #444746; font-size: 14px; margin-top: 4px;}
         #badge-funcao { display: inline-block; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; margin-top: 10px; background: #f0f4f9; color: #444746; border: 1px solid #e3e3e3;}
 
+        /* --- ESTILO DOS CARDS DE LABORATÓRIO --- */
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 16px; font-size: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);}
         .card-lab strong { color: #0b57d0; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
         .reserva-item { background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #146c2e;}
+        .tag-material { color: #0b57d0; font-weight: 500; }
+        .tag-entrega { color: #1f1f1f; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -333,19 +343,26 @@
             } catch(e) { document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:#d32f2f;'>Erro de conexão.</p>"; }
         };
 
+        // --- FUNÇÃO DE RENDERIZAÇÃO PÚBLICA ATUALIZADA ---
         function renderCalendarioPublico() {
             let dataEscolhida = document.getElementById('filtro-calendario-publico').value;
             let grade = document.getElementById('grade-laboratorios-publica');
             let labsHtml = '';
+            
             LISTA_SALAS.forEach(nomeLab => {
                 let reservasDesteLab = AGENDAMENTOS_PUBLICOS.filter(a => a.data === dataEscolhida && a.lab === nomeLab);
                 let conteudoReserva = '';
+                
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
+                        // Exibe exatamente o texto completo da reserva (ex: Manhã - 1ª Aula (07:30 às 08:20))
                         conteudoReserva += `<div class="reserva-item"><div><strong style="color:#146c2e; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444746;">${r.turma} (${nickProf})</span></div></div>`;
                     });
-                } else { conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; }
+                } else { 
+                    conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
+                }
+                
                 let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
                 labsHtml += `<div class="card-lab"><strong>${icone} ${nomeLab}</strong>${conteudoReserva}</div>`;
             });
@@ -387,22 +404,30 @@
             } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar."; }
         }
 
+        // --- FUNÇÃO DE RENDERIZAÇÃO INTERNA ATUALIZADA ---
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
             let dataEscolhida = document.getElementById('filtro-calendario').value;
             let grade = document.getElementById('grade-laboratorios');
             let emailLogado = document.getElementById('email-oculto').innerText;
             let labsHtml = '';
+            
             LISTA_SALAS.forEach(nomeLab => {
                 let reservasDesteLab = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === dataEscolhida && a.lab === nomeLab);
                 let conteudoReserva = '';
+                
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
                         let btnApagar = (DADOS_SISTEMA.role === 'admin' || r.prof === emailLogado) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
+                        
+                        // Exibe exatamente o texto completo da reserva
                         conteudoReserva += `<div class="reserva-item"><div><strong style="color:#146c2e; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444746;">${r.turma} (${nickProf})</span></div>${btnApagar}</div>`;
                     });
-                } else { conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; }
+                } else { 
+                    conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; 
+                }
+                
                 let icone = nomeLab === "Sala Maker" ? "🛠️" : "💻";
                 labsHtml += `<div class="card-lab"><strong>${icone} ${nomeLab}</strong>${conteudoReserva}</div>`;
             });
@@ -416,7 +441,7 @@
             let turma = document.getElementById('lab-turma').value;
             let semanasSelecionadas = document.getElementById('lab-semanas').value;
 
-            if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos!");
+            if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos da reserva!");
             
             let jaExiste = (DADOS_SISTEMA.agendamentos || []).find(a => a.data === data && a.lab === lab && a.horario === horario);
             if(jaExiste) return alert("Esta sala já está reservada neste horário!");
@@ -547,7 +572,7 @@
                 }
                 document.getElementById('lista-visao-geral').innerHTML = htmlVisao;
                 let htmlAlunosProf = '';
-                if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:12px; color:#747775;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Remover</button></li>`); }
+                if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>👤 ${a.email} <span style="font-size:12px; color:#747775;">(${a.turma})</span></span> <button class="btn-apagar" onclick="excluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Desmatricular</button></li>`); }
                 document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li>Sem alunos.</li>';
             } else {
                 document.getElementById('painel-reserva-lab').style.display = 'none';
