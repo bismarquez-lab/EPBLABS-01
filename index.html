@@ -58,9 +58,15 @@
         input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
         input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;}
         
+        select optgroup { font-weight: 700; color: #0b57d0; background: #f8f9fa; }
+        select option { color: #1f1f1f; background: #ffffff; font-weight: 400; padding: 4px;}
+
         button.action-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: all 0.2s ease; background: #0b57d0; font-family: 'Google Sans', sans-serif;}
         button.action-btn:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);}
         button.action-btn:disabled { background: #e3e3e3; color: #1f1f1f; opacity: 0.38; cursor: not-allowed; box-shadow: none;}
+        
+        #btn-confirmar-reserva { background-color: #0b57d0; color: #ffffff; font-size: 15px; padding: 14px; margin-top: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        #btn-confirmar-reserva:hover { background-color: #0842a0; }
 
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
@@ -82,8 +88,6 @@
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 16px; font-size: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);}
         .card-lab strong { color: #0b57d0; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
         .reserva-item { background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #146c2e;}
-        .tag-material { color: #0b57d0; font-weight: 500; }
-        .tag-entrega { color: #1f1f1f; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -161,15 +165,33 @@
                             <option value="Laboratório 8">Laboratório 8</option>
                             <option value="Laboratório 9">Laboratório 9</option>
                         </select>
+
                         <select id="lab-horario">
-                            <option value="">Qual Período/Aula?</option>
-                            <option value="Manhã - 1ª e 2ª Aula">Manhã - 1ª e 2ª Aula</option>
-                            <option value="Manhã - 3ª a 5ª Aula">Manhã - 3ª a 5ª Aula</option>
-                            <option value="Tarde - 1ª e 2ª Aula">Tarde - 1ª e 2ª Aula</option>
-                            <option value="Tarde - 3ª a 5ª Aula">Tarde - 3ª a 5ª Aula</option>
-                            <option value="Noite - 1ª e 2ª Aula">Noite - 1ª e 2ª Aula</option>
-                            <option value="Noite - 3ª a 5ª Aula">Noite - 3ª a 5ª Aula</option>
+                            <option value="">Qual a Aula/Horário?</option>
+                            <optgroup label="Turno da Manhã">
+                                <option value="Manhã - 1ª Aula (07:30 às 08:20)">1ª Aula (07:30 às 08:20)</option>
+                                <option value="Manhã - 2ª Aula (08:20 às 09:10)">2ª Aula (08:20 às 09:10)</option>
+                                <option value="Manhã - 3ª Aula (09:10 às 10:00)">3ª Aula (09:10 às 10:00)</option>
+                                <option value="Manhã - 4ª Aula (10:20 às 11:10)">4ª Aula (10:20 às 11:10)</option>
+                                <option value="Manhã - 5ª Aula (11:10 às 12:00)">5ª Aula (11:10 às 12:00)</option>
+                                <option value="Manhã - 6ª Aula (12:00 às 12:50)">6ª Aula (12:00 às 12:50)</option>
+                            </optgroup>
+                            <optgroup label="Turno da Tarde">
+                                <option value="Tarde - 1ª Aula (13:30 às 14:20)">1ª Aula (13:30 às 14:20)</option>
+                                <option value="Tarde - 2ª Aula (14:20 às 15:10)">2ª Aula (14:20 às 15:10)</option>
+                                <option value="Tarde - 3ª Aula (15:10 às 16:00)">3ª Aula (15:10 às 16:00)</option>
+                                <option value="Tarde - 4ª Aula (16:20 às 17:10)">4ª Aula (16:20 às 17:10)</option>
+                                <option value="Tarde - 5ª Aula (17:10 às 18:00)">5ª Aula (17:10 às 18:00)</option>
+                                <option value="Tarde - 6ª Aula (18:00 às 18:50)">6ª Aula (18:00 às 18:50)</option>
+                            </optgroup>
+                            <optgroup label="Turno da Noite">
+                                <option value="Noite - 1ª Aula (19:00 às 19:50)">1ª Aula (19:00 às 19:50)</option>
+                                <option value="Noite - 2ª Aula (19:50 às 20:40)">2ª Aula (19:50 às 20:40)</option>
+                                <option value="Noite - 3ª Aula (21:00 às 21:50)">3ª Aula (21:00 às 21:50)</option>
+                                <option value="Noite - 4ª Aula (21:50 às 22:45)">4ª Aula (21:50 às 22:45)</option>
+                            </optgroup>
                         </select>
+
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         
                         <p style="font-size: 13px; color: #444; margin-bottom: 8px;">Repetir semanalmente por:</p>
@@ -182,7 +204,7 @@
                             <option value="20">20 semanas (Semestre)</option>
                         </select>
                         
-                        <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">Confirmar Reserva</button>
+                        <button class="action-btn" id="btn-confirmar-reserva" onclick="reservarLab()">Confirmar Reserva</button>
                     </div>
                 </div>
 
@@ -321,6 +343,7 @@
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
+                        // Exibe o horário completo (ex: Manhã - 1ª Aula (07:30 às 08:20))
                         conteudoReserva += `<div class="reserva-item"><div><strong style="color:#146c2e; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444746;">${r.turma} (${nickProf})</span></div></div>`;
                     });
                 } else { conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; }
@@ -348,7 +371,7 @@
         async function lidarComLoginGoogle(response) { iniciarPortal(decodificarJwt(response.credential)); }
 
         async function iniciarPortal(dados) {
-            document.getElementById('status-login').innerText = "Autenticando...";
+            document.getElementById('status-login').innerText = "Autenticando... Aguarde.";
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
             document.getElementById('email-usuario').innerText = dados.email;
@@ -392,11 +415,22 @@
             let lab = document.getElementById('lab-numero').value;
             let horario = document.getElementById('lab-horario').value;
             let turma = document.getElementById('lab-turma').value;
-            let semanas = document.getElementById('lab-semanas').value;
+            let semanasSelecionadas = document.getElementById('lab-semanas').value;
 
             if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos!");
             
-            fetchBanco({ action: 'add_agendamento', dataReserva: data, lab: lab, horario: horario, turma: turma, semanas: semanas, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status'));
+            let jaExiste = (DADOS_SISTEMA.agendamentos || []).find(a => a.data === data && a.lab === lab && a.horario === horario);
+            if(jaExiste) return alert("Esta sala já está reservada neste horário!");
+
+            fetchBanco({ 
+                action: 'add_agendamento', 
+                dataReserva: data, 
+                lab: lab, 
+                horario: horario, 
+                turma: turma, 
+                semanas: semanasSelecionadas, 
+                userEmail: document.getElementById('email-oculto').innerText 
+            }, document.getElementById('geral-status'));
         }
 
         function cancelarReserva(id) {
