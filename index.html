@@ -90,7 +90,7 @@
     <div id="tela-inicio">
         <div class="box-login">
             <div class="icone-login">🎓</div>
-            <h2>EPB LAB</h2>
+            <h2>Etec Parque Blém</h2>
             <p style="color: #444746; font-size: 14px; margin-bottom: 24px;">Portal de Laboratórios Etec</p>
             <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular"></div>
@@ -192,6 +192,16 @@
                     <select id="admin-select-turma"><option value="">Qual Turma?</option></select>
                     <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular</button>
                     <ul id="lista-admin-alunos" class="lista-arq" style="margin-top:16px;"></ul>
+                </div>
+                
+                <div class="box" style="grid-column: 1 / -1; background: #f8f9fa;">
+                    <h4>Gestão de Arquivos na Nuvem (Drive)</h4>
+                    <select id="admin-filtro-arquivos" style="background: #fff;" onchange="renderArquivosAdmin()">
+                        <option value="todas">Carregando Nuvem...</option>
+                    </select>
+                    <div class="scroll-interno" style="max-height: 250px; background: #fff; padding: 16px; border-radius: 12px; border: 1px solid #e3e3e3;">
+                        <ul class="lista-arq" id="lista-arquivos-admin"></ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -391,6 +401,26 @@
             });
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
         }
+        
+        // FUNÇÃO RESTAURADA PARA O ADMIN VER OS ARQUIVOS DO DRIVE
+        function renderArquivosAdmin() {
+            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin' || !DADOS_SISTEMA.visaoGeralAdmin) return;
+            let filtro = document.getElementById('admin-filtro-arquivos').value;
+            let html = '';
+            DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
+                if (filtro !== 'todas' && t.turma !== filtro) return;
+                
+                html += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t.turma} <span style="font-size:11px; color:#747775; font-weight: normal;">(Prof: ${t.professor})</span></li>`;
+                let nickProf = t.professor ? t.professor.split('@')[0] : 'Prof';
+                
+                t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><strong style="color:#0b57d0; font-size:11px;">[Material: ${nickProf}]</strong> <a href="${m.link}" target="_blank">📄 ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Apagar</button></li>`);
+                t.entregas.forEach(e => {
+                    let nickAluno = e.aluno.split('@')[0];
+                    html += `<li style="padding-left: 16px;"><span><strong style="color:#1f1f1f; font-size:11px;">[Entrega: ${nickAluno}]</strong> <a href="${e.link}" target="_blank">📄 ${e.nome}</a></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">Apagar</button></li>`;
+                });
+            });
+            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#747775;">Nenhum arquivo encontrado na nuvem.</li>';
+        }
 
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
@@ -428,6 +458,14 @@
 
                 let opProf = '<option value="">Prof Responsável</option>'; dados.db.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
                 let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
+
+                // Restaura o select da Gestão de Arquivos
+                let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
+                if(dados.visaoGeralAdmin) {
+                    dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
+                }
+                document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos;
+                renderArquivosAdmin();
 
                 if(isInitial) paginaInicial = 'pag-admin';
 
@@ -629,7 +667,7 @@
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
         for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
-        document.getElementById('aluno-filtro-turma')?.addEventListener('change', renderMateriaisAluno);
+        document.getElementById('admin-filtro-arquivos')?.addEventListener('change', renderArquivosAdmin);
     </script>
 </body>
 </html>
