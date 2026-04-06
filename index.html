@@ -343,7 +343,6 @@
                 if (reservasDesteLab.length > 0) {
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
-                        // Exibe o horário completo (ex: Manhã - 1ª Aula (07:30 às 08:20))
                         conteudoReserva += `<div class="reserva-item"><div><strong style="color:#146c2e; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444746;">${r.turma} (${nickProf})</span></div></div>`;
                     });
                 } else { conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`; }
