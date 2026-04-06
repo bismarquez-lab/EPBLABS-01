@@ -17,7 +17,6 @@
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
-        /* --- NAVBAR --- */
         #navbar { position: absolute; top: 0; left: 0; width: 100%; height: 64px; z-index: 20; background: #ffffff; border-bottom: 1px solid #e3e3e3; display: none; justify-content: space-between; align-items: center; padding: 0 32px; box-sizing: border-box;}
         .nav-links { display: flex; gap: 8px; }
         .nav-btn { background: transparent; color: #444746; border: none; padding: 10px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px;}
@@ -25,7 +24,6 @@
         .nav-btn.active { background: #d3e3fd; color: #041e49; }
         .btn-sair-nav { background: transparent; color: #444746; border: 1px solid #747775; padding: 8px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px;}
 
-        /* --- TELA INICIAL --- */
         #tela-inicio {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
             display: flex; justify-content: center; align-items: center; gap: 24px;
@@ -43,7 +41,6 @@
         }
         .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 0 12px; width: 190px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 40px; font-size: 13px; font-family: 'Inter', sans-serif;}
 
-        /* --- CONTEÚDO INTERNO (DASHBOARD) --- */
         #area-conteudo { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 24px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; }
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; flex-grow: 1; overflow: hidden; }
@@ -67,7 +64,6 @@
         #nome-usuario { margin: 0; font-size: 20px; font-weight: 500;} 
         #badge-funcao { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; background: #f0f4f9; border: 1px solid #e3e3e3; margin-top: 4px;}
 
-        /* --- ESTILO DOS LABS COMPACTO --- */
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 12px; margin-bottom: 8px;}
         .card-lab strong { color: #1f1f1f; font-size: 14px; display: block; margin-bottom: 4px; font-weight: 600;}
         .reserva-item { 
@@ -90,7 +86,7 @@
     <div id="tela-inicio">
         <div class="box-login">
             <div class="icone-login">🎓</div>
-            <h2>Etec Parque Belém</h2>
+            <h2>EPB LAB</h2>
             <p style="color: #444746; font-size: 14px; margin-bottom: 24px;">Portal de Laboratórios Etec</p>
             <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular"></div>
@@ -114,7 +110,7 @@
     </div>
 
     <nav id="navbar">
-        <div style="font-weight: 600; font-size: 18px;">🎓 Etec Parque Belém</div>
+        <div style="font-weight: 600; font-size: 18px;">🎓 EPB LAB</div>
         <div id="menu-dinamico" class="nav-links"></div>
         <button class="btn-sair-nav" onclick="fazerLogout()">Sair da Conta</button>
     </nav>
@@ -288,7 +284,15 @@
                 let json = await res.json();
                 AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
                 renderCalendarioPublico();
-            } catch(e) { console.log("Erro ao carregar calendário público."); }
+            } catch(e) { console.log("Erro calendário"); }
+
+            // ==========================================
+            // RECUPERAÇÃO DA SESSÃO AO APERTAR F5
+            // ==========================================
+            let usuarioSalvo = localStorage.getItem("epblab_user");
+            if(usuarioSalvo) {
+                iniciarPortal(JSON.parse(usuarioSalvo), true);
+            }
         };
 
         function formatarTextoCompacto(texto) {
@@ -319,15 +323,19 @@
             try { 
                 const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); 
                 iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); 
-            } catch(e) { alert("Erro ao conectar com Microsoft."); } 
+            } catch(e) { alert("Erro Microsoft."); } 
         }
         
         function decodificarJwt(t) { return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
         
         async function lidarComLoginGoogle(r) { iniciarPortal(decodificarJwt(r.credential)); }
 
-        async function iniciarPortal(dados) {
-            document.getElementById('status-login').innerText = "Iniciando sessão...";
+        async function iniciarPortal(dados, isAutoLogin = false) {
+            if(!isAutoLogin) document.getElementById('status-login').innerText = "Iniciando sessão...";
+            
+            // Salva os dados na memória do navegador para o F5 funcionar
+            localStorage.setItem("epblab_user", JSON.stringify(dados));
+            
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
             document.getElementById('foto-perfil').src = dados.picture;
@@ -341,8 +349,8 @@
                 document.getElementById('area-conteudo').style.display = 'block';
                 
                 configurarPainel(json, true);
-                fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
-            } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar ao servidor."; }
+                if(!isAutoLogin) fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
+            } catch(e) { if(!isAutoLogin) document.getElementById('status-login').innerText = "Erro ao conectar."; }
         }
 
         function renderCalendario() {
@@ -402,7 +410,6 @@
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
         }
         
-        // FUNÇÃO RESTAURADA PARA O ADMIN VER OS ARQUIVOS DO DRIVE
         function renderArquivosAdmin() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin' || !DADOS_SISTEMA.visaoGeralAdmin) return;
             let filtro = document.getElementById('admin-filtro-arquivos').value;
@@ -440,7 +447,6 @@
                 Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); 
                 document.getElementById('lab-turma').innerHTML = op;
                 
-                // Popula listas admin
                 let htmlProfs = ''; 
                 dados.db.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}', 'admin-status')">Excluir</button></li>`); 
                 document.getElementById('lista-admin-profs').innerHTML = htmlProfs || '<li>Sem professores.</li>';
@@ -459,7 +465,6 @@
                 let opProf = '<option value="">Prof Responsável</option>'; dados.db.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
                 let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
 
-                // Restaura o select da Gestão de Arquivos
                 let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
                 if(dados.visaoGeralAdmin) {
                     dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
@@ -480,7 +485,6 @@
                 document.getElementById('prof-seleciona-turma').innerHTML = op;
                 document.getElementById('prof-select-turma-add').innerHTML = op;
 
-                // Materiais Prof
                 let matPorTurma = {};
                 dados.materiais.forEach(m => { if(!matPorTurma[m.turma]) matPorTurma[m.turma] = []; matPorTurma[m.turma].push(m); });
                 let htmlMat = '';
@@ -490,7 +494,6 @@
                 }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
-                // Entregas Visão Geral
                 let htmlVisao = '';
                 if (dados.visaoGeral && dados.visaoGeral.length > 0) {
                     dados.visaoGeral.forEach(aluno => {
@@ -502,7 +505,6 @@
                 }
                 document.getElementById('lista-visao-geral').innerHTML = htmlVisao || '<li>Nenhuma entrega recebida.</li>';
 
-                // Alunos do Prof
                 let htmlAlunosProf = '';
                 if (dados.alunosDoProf) {
                      dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>🎓 ${a.email} <span style="font-size:11px; color:#747775;">(${a.turma})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Excluir</button></li>`);
@@ -546,7 +548,6 @@
             renderCalendario();
         }
 
-        // --- SISTEMA SPA (ATUALIZAÇÃO INVISÍVEL) ---
         async function fetchBanco(payload, msgElement) { 
             if (msgElement) { msgElement.innerText = "Processando..."; msgElement.style.color = "#0b57d0"; }
             try { 
@@ -561,7 +562,6 @@
                 
                 if (msgElement) { msgElement.innerText = "Concluído!"; msgElement.style.color = "#146c2e"; }
                 
-                // Busca os dados atualizados sem recarregar a tela
                 let emailLogado = document.getElementById('email-oculto').innerText;
                 let resUser = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
                 DADOS_SISTEMA = await resUser.json();
@@ -570,7 +570,7 @@
                 let jsonPub = await resPub.json();
                 AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
 
-                configurarPainel(DADOS_SISTEMA, false); // Repopula tudo na mesma tela
+                configurarPainel(DADOS_SISTEMA, false); 
                 if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3500);
                 
             } catch(e) { 
@@ -661,9 +661,12 @@
             btn.classList.add('active'); 
         }
         
-        function fazerLogout() { location.reload(); }
+        function fazerLogout() { 
+            localStorage.removeItem("epblab_user"); // Remove o acesso na saída
+            localStorage.clear(); sessionStorage.clear(); 
+            location.reload(); 
+        }
 
-        // Fundo animado 
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
         for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
