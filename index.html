@@ -278,21 +278,28 @@
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
 
-        window.onload = async function() {
-            try {
-                let res = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
-                let json = await res.json();
-                AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
-                renderCalendarioPublico();
-            } catch(e) { console.log("Erro calendário"); }
-
-            // ==========================================
-            // RECUPERAÇÃO DA SESSÃO AO APERTAR F5
-            // ==========================================
+        window.onload = function() {
+            // 1. TENTA RECUPERAR A SESSÃO IMEDIATAMENTE (F5 Fix)
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
+                // Esconde a tela de login na hora para não piscar
+                document.getElementById('tela-inicio').style.display = 'none';
+                document.getElementById('navbar').style.display = 'flex';
+                document.getElementById('area-conteudo').style.display = 'block';
+                document.getElementById('pag-perfil').style.display = 'flex';
+                document.getElementById('geral-status').innerText = "Restaurando sessão...";
+                
                 iniciarPortal(JSON.parse(usuarioSalvo), true);
             }
+
+            // 2. CARREGA O CALENDÁRIO PÚBLICO EM PARALELO
+            fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`)
+            .then(res => res.json())
+            .then(json => {
+                AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
+                renderCalendarioPublico();
+            })
+            .catch(e => console.log("Erro calendário"));
         };
 
         function formatarTextoCompacto(texto) {
@@ -323,7 +330,7 @@
             try { 
                 const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); 
                 iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); 
-            } catch(e) { alert("Erro Microsoft."); } 
+            } catch(e) { alert("Erro ao conectar com Microsoft."); } 
         }
         
         function decodificarJwt(t) { return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
@@ -333,7 +340,7 @@
         async function iniciarPortal(dados, isAutoLogin = false) {
             if(!isAutoLogin) document.getElementById('status-login').innerText = "Iniciando sessão...";
             
-            // Salva os dados na memória do navegador para o F5 funcionar
+            // Salva na memória do navegador para sobreviver ao F5
             localStorage.setItem("epblab_user", JSON.stringify(dados));
             
             document.getElementById('email-oculto').innerText = dados.email;
@@ -344,13 +351,21 @@
                 const json = await res.json(); 
                 DADOS_SISTEMA = json;
                 
-                document.getElementById('tela-inicio').style.display = 'none';
-                document.getElementById('navbar').style.display = 'flex';
-                document.getElementById('area-conteudo').style.display = 'block';
+                if(!isAutoLogin) {
+                    document.getElementById('tela-inicio').style.display = 'none';
+                    document.getElementById('navbar').style.display = 'flex';
+                    document.getElementById('area-conteudo').style.display = 'block';
+                }
                 
                 configurarPainel(json, true);
-                if(!isAutoLogin) fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
-            } catch(e) { if(!isAutoLogin) document.getElementById('status-login').innerText = "Erro ao conectar."; }
+                if(!isAutoLogin) {
+                    fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
+                } else {
+                    document.getElementById('geral-status').innerText = ""; // Limpa a msg de F5
+                }
+            } catch(e) { 
+                if(!isAutoLogin) document.getElementById('status-login').innerText = "Erro ao conectar ao servidor."; 
+            }
         }
 
         function renderCalendario() {
@@ -640,7 +655,7 @@
 
             let arquivo = input.files[0];
             let reader = new FileReader();
-            status.innerText = "Enviando para o Drive..."; status.style.color = "#0b57d0";
+            status.innerText = "Enviando para a Nuvem..."; status.style.color = "#0b57d0";
 
             reader.onload = async function(e) {
                 await fetchBanco({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value }, status);
@@ -662,7 +677,7 @@
         }
         
         function fazerLogout() { 
-            localStorage.removeItem("epblab_user"); // Remove o acesso na saída
+            localStorage.removeItem("epblab_user"); 
             localStorage.clear(); sessionStorage.clear(); 
             location.reload(); 
         }
