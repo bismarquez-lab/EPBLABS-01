@@ -30,29 +30,13 @@
         #tela-login h2 { color: #1f1f1f; margin-top: 0; font-size: 28px; font-weight: 400;}
         #tela-login p { color: #444746; margin-bottom: 32px; font-size: 16px;}
         
-        .btn-microsoft {
-            background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; 
-            padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; gap: 10px; font-family: 'Google Sans', 'Segoe UI', sans-serif; font-weight: 500;
-            transition: background-color 0.2s; height: 40px; box-sizing: border-box; font-size: 14px;
-        }
+        .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Google Sans', 'Segoe UI', sans-serif; font-weight: 500; transition: background-color 0.2s; height: 40px; box-sizing: border-box; font-size: 14px; }
         .btn-microsoft:hover { background-color: #f1f3f4; color: #1f1f1f;}
 
         /* --- LAYOUT TELA CHEIA --- */
-        #area-conteudo { 
-            position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; 
-            width: 96%; max-width: 1400px; 
-            height: calc(100vh - 110px); display: none; 
-        }
+        #area-conteudo { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         
-        .pagina { 
-            background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; 
-            display: none; height: 100%; box-sizing: border-box; 
-            overflow: hidden; 
-            flex-direction: column; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
+        .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         .pagina > h3 { margin-top: 0; margin-bottom: 8px; flex-shrink: 0; color: #1f1f1f; font-size: 24px; font-weight: 400;}
         .pagina > p { margin-top: 0; margin-bottom: 24px; flex-shrink: 0; color: #444746; font-size: 14px;}
 
@@ -60,13 +44,7 @@
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; overflow: hidden; }
 
         /* --- CARDS MINIMALISTAS --- */
-        .box { 
-            background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; 
-            border: 1px solid #e3e3e3; 
-            display: flex; flex-direction: column; 
-            overflow: hidden; 
-            transition: box-shadow 0.2s ease;
-        }
+        .box { background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.2s ease; }
         .box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .box h4 { margin: 0 0 16px 0; font-size: 16px; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; color: #1f1f1f; flex-shrink: 0; font-weight: 500;}
         
@@ -78,9 +56,8 @@
 
         /* --- FORMULÁRIOS --- */
         input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
-        input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;} /* Ajuste de padding para não dar salto visual */
+        input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;}
         
-        /* Botão Primário Estilo Google */
         button.action-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: all 0.2s ease; background: #0b57d0; font-family: 'Google Sans', sans-serif;}
         button.action-btn:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);}
         button.action-btn:disabled { background: #e3e3e3; color: #1f1f1f; opacity: 0.38; cursor: not-allowed; box-shadow: none;}
@@ -94,21 +71,19 @@
         .btn-apagar { background: transparent; color: #d32f2f; border: none; border-radius: 4px; padding: 6px 8px; font-size: 13px; cursor: pointer; flex-shrink: 0; font-weight: 500;}
         .btn-apagar:hover { background: #fce8e6; }
 
-        .li-visao-geral { flex-direction: column !important; align-items: flex-start !important; background: #f8f9fa; border-radius: 12px; padding: 16px !important; margin-bottom: 16px !important; border: 1px solid #e3e3e3 !important;}
-        .ul-interna { width: 100%; margin-top: 12px !important; padding-left: 8px !important; }
-        .ul-interna li { border: none; padding: 0; margin-bottom: 8px; }
-
         .separador-turma { background: #f0f4f9; padding: 10px 16px; border-radius: 8px; font-weight: 500; color: #1f1f1f; margin-top: 20px; display: block !important; text-align: left; font-size: 14px; border: 1px solid #e3e3e3;}
-        
         .info-upload { font-size: 12px; color: #444746; text-align: center; margin-bottom: 16px; display: block;}
 
-        .perfil-container { text-align: center; margin-top: 8vh; }
-        #foto-perfil { width: 120px; height: 120px; border-radius: 50%; margin-bottom: 24px; border: 1px solid #e3e3e3; background: white;}
-        #nome-usuario { margin: 0; font-size: 32px; color: #1f1f1f; font-weight: 400;} 
-        #email-usuario { color: #444746; font-size: 16px; margin-top: 8px;}
-        #badge-funcao { display: inline-block; padding: 8px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; margin-top: 24px; background: #f0f4f9; color: #444746; border: 1px solid #e3e3e3;}
+        .perfil-container { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; border-bottom: 1px solid #e3e3e3; padding-bottom: 20px;}
+        #foto-perfil { width: 80px; height: 80px; border-radius: 50%; border: 1px solid #e3e3e3; background: white;}
+        #nome-usuario { margin: 0; font-size: 26px; color: #1f1f1f; font-weight: 400;} 
+        #email-usuario { color: #444746; font-size: 14px; margin-top: 4px;}
+        #badge-funcao { display: inline-block; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; margin-top: 10px; background: #f0f4f9; color: #444746; border: 1px solid #e3e3e3;}
 
-        /* Tags visuais neutras para o modo global */
+        /* --- ESTILO DOS CARDS DE LABORATÓRIO --- */
+        .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 16px; font-size: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);}
+        .card-lab strong { color: #0b57d0; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
+        .reserva-item { background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #009624;}
         .tag-material { color: #0b57d0; font-weight: 500; }
         .tag-entrega { color: #1f1f1f; font-weight: 500; }
     </style>
@@ -116,16 +91,13 @@
 <body>
 
     <canvas id="meuCanvas"></canvas>
-
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-login">
         <h2>EPB LAB</h2>
         <p>Acesse com a sua conta de e-mail.</p>
-        
         <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; margin-top: 32px;">
             <div class="g_id_signin" data-type="standard" data-theme="outline" data-width="200" data-shape="rectangular"></div>
-            
             <button class="btn-microsoft" onclick="loginMicrosoft()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 23 23">
                     <path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/>
@@ -147,12 +119,59 @@
     <div id="area-conteudo">
         <span id="email-oculto" style="display:none;"></span>
 
-        <div id="pag-perfil" class="pagina" style="display: flex;">
-            <div class="perfil-container">
+        <div id="pag-perfil" class="pagina" style="display: flex; flex-direction: column;">
+            
+            <div class="perfil-container" style="flex-shrink: 0;">
                 <img id="foto-perfil" src="">
-                <h3 id="nome-usuario">Nome</h3>
-                <p id="email-usuario">email</p>
-                <span id="badge-funcao">Carregando...</span>
+                <div style="text-align: left;">
+                    <h3 id="nome-usuario">Nome</h3>
+                    <p id="email-usuario" style="margin-bottom:0;">email</p>
+                    <span id="badge-funcao">Carregando...</span>
+                    <p id="geral-status" style="margin: 10px 0 0 0; font-weight: 500; font-size: 13px; color: #0b57d0;"></p>
+                </div>
+            </div>
+
+            <div class="grid-layout" style="grid-template-columns: 1fr 3fr; flex-grow: 1;">
+                
+                <div class="box" id="painel-reserva-lab" style="display: none; background: #f8f9fa;">
+                    <h4>Nova Reserva</h4>
+                    <input type="date" id="lab-data">
+                    <select id="lab-numero">
+                        <option value="">Escolha o Laboratório...</option>
+                        <option value="Laboratório 1">Laboratório 1</option>
+                        <option value="Laboratório 2">Laboratório 2</option>
+                        <option value="Laboratório 3">Laboratório 3</option>
+                        <option value="Laboratório 4">Laboratório 4</option>
+                        <option value="Laboratório 5">Laboratório 5</option>
+                        <option value="Laboratório 6">Laboratório 6</option>
+                        <option value="Laboratório 7">Laboratório 7</option>
+                        <option value="Laboratório 8">Laboratório 8</option>
+                        <option value="Laboratório 9">Laboratório 9</option>
+                        <option value="Laboratório 10">Laboratório 10</option>
+                    </select>
+                    <select id="lab-horario">
+                        <option value="">Qual Período/Aula?</option>
+                        <option value="Manhã - 1ª e 2ª Aula">Manhã - 1ª e 2ª Aula</option>
+                        <option value="Manhã - 3ª a 5ª Aula">Manhã - 3ª a 5ª Aula</option>
+                        <option value="Tarde - 1ª e 2ª Aula">Tarde - 1ª e 2ª Aula</option>
+                        <option value="Tarde - 3ª a 5ª Aula">Tarde - 3ª a 5ª Aula</option>
+                        <option value="Noite - 1ª e 2ª Aula">Noite - 1ª e 2ª Aula</option>
+                        <option value="Noite - 3ª a 5ª Aula">Noite - 3ª a 5ª Aula</option>
+                    </select>
+                    <select id="lab-turma"><option value="">Sua Turma...</option></select>
+                    <button class="action-btn" onclick="reservarLab()">Confirmar Reserva</button>
+                </div>
+
+                <div class="box" style="grid-column: span 2;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; margin-bottom: 16px;">
+                        <h4 style="margin: 0; border: none; padding: 0;">📅 Grade de Laboratórios</h4>
+                        <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin: 0; padding: 6px 12px;">
+                    </div>
+                    
+                    <div class="scroll-interno" id="grade-laboratorios" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        </div>
+                </div>
+
             </div>
         </div>
 
@@ -165,31 +184,22 @@
                     <h4>Gerenciar Professores</h4>
                     <input type="email" id="admin-novo-prof" placeholder="Email do Professor">
                     <button class="action-btn" onclick="adminAcao('admin_add_prof')">Salvar Professor</button>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-admin-profs" style="margin-top:16px;"></ul>
-                    </div>
+                    <div class="scroll-interno"><ul class="lista-arq" id="lista-admin-profs" style="margin-top:16px;"></ul></div>
                 </div>
-                
                 <div class="box">
                     <h4>Gerenciar Turmas</h4>
                     <input type="text" id="admin-nome-turma" placeholder="Ex: 9º Ano A">
                     <select id="admin-select-prof"><option value="">Professor Responsável...</option></select>
                     <button class="action-btn" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-admin-turmas" style="margin-top:16px;"></ul>
-                    </div>
+                    <div class="scroll-interno"><ul class="lista-arq" id="lista-admin-turmas" style="margin-top:16px;"></ul></div>
                 </div>
-
                 <div class="box">
                     <h4>Gerenciar Alunos</h4>
                     <input type="email" id="admin-novo-aluno" placeholder="Email do Aluno">
                     <select id="admin-select-turma"><option value="">Selecione a Turma...</option></select>
                     <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-admin-alunos" style="margin-top:16px;"></ul>
-                    </div>
+                    <div class="scroll-interno"><ul class="lista-arq" id="lista-admin-alunos" style="margin-top:16px;"></ul></div>
                 </div>
-
                 <div class="box" style="grid-column: 1 / -1; background: #f8f9fa;">
                     <h4>Gestão Global de Arquivos (Drive)</h4>
                     <select id="admin-filtro-arquivos" style="background: #fff;" onchange="renderArquivosAdmin()"><option value="todas">Carregando Nuvem...</option></select>
@@ -203,7 +213,6 @@
         <div id="pag-prof" class="pagina">
             <h3>Painel de Aulas</h3>
             <p id="prof-status" style="min-height: 15px; font-weight: 500; font-size: 13px; text-align: center; color: #0b57d0;"></p>
-
             <div class="grid-layout" style="grid-template-columns: 1fr 2fr;">
                 <div class="box" style="background: #f8f9fa;">
                     <h4>Compartilhar Material</h4>
@@ -214,9 +223,7 @@
                 </div>
                 <div class="box">
                     <h4>Materiais Ativos (Por Turma)</h4>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-materiais-prof"></ul>
-                    </div>
+                    <div class="scroll-interno"><ul class="lista-arq" id="lista-materiais-prof"></ul></div>
                 </div>
             </div>
         </div>
@@ -224,41 +231,26 @@
         <div id="pag-visao-prof" class="pagina">
             <h3>Gestão da Turma</h3>
             <p id="prof-visao-status" style="min-height: 15px; font-weight: 500; font-size: 13px; text-align: center; color: #0b57d0;"></p>
-
             <div class="grid-layout" style="grid-template-columns: repeat(4, 1fr);">
                 <div class="box" style="background: #f8f9fa;">
                     <h4>Criar Nova Turma</h4>
                     <input type="text" id="prof-nova-turma" placeholder="Ex: Matemática - 1º Ano" style="background: #fff;">
                     <button class="action-btn" onclick="profAddTurma()">Criar Turma</button>
                 </div>
-
                 <div class="box" style="background: #f8f9fa;">
                     <h4>Matricular Aluno</h4>
                     <input type="email" id="prof-novo-aluno" placeholder="Email do Aluno" style="background: #fff;">
                     <select id="prof-select-turma-add" style="background: #fff;"><option value="">Selecione a Turma...</option></select>
                     <button class="action-btn" onclick="profAddAluno()">Adicionar Aluno</button>
                 </div>
-
-                <div class="box">
-                    <h4>Alunos Matriculados</h4>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-prof-alunos"></ul>
-                    </div>
-                </div>
-
-                <div class="box">
-                    <h4>Entregas Recebidas</h4>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-visao-geral"></ul>
-                    </div>
-                </div>
+                <div class="box"><h4>Alunos Matriculados</h4><div class="scroll-interno"><ul class="lista-arq" id="lista-prof-alunos"></ul></div></div>
+                <div class="box"><h4>Entregas Recebidas</h4><div class="scroll-interno"><ul class="lista-arq" id="lista-visao-geral"></ul></div></div>
             </div>
         </div>
 
         <div id="pag-aluno" class="pagina">
             <h3 id="titulo-turma-aluno">Minha Sala Virtual</h3>
             <p id="aluno-status" style="min-height: 15px; font-weight: 500; font-size: 13px; text-align: center; color: #0b57d0;"></p>
-
             <div class="grid-layout" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="box" style="background: #f8f9fa;">
                     <h4>Entregar Trabalho</h4>
@@ -267,20 +259,14 @@
                     <span class="info-upload">Carregando regras...</span>
                     <button id="btn-aluno-upload" class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
                 </div>
-
                 <div class="box">
                     <h4>Materiais da Aula</h4>
                     <select id="aluno-filtro-turma"><option value="todas">Todas as Turmas</option></select>
-                    <div class="scroll-interno" style="margin-top: 16px;">
-                        <ul class="lista-arq" id="lista-materiais-aluno"></ul>
-                    </div>
+                    <div class="scroll-interno" style="margin-top: 16px;"><ul class="lista-arq" id="lista-materiais-aluno"></ul></div>
                 </div>
-                
                 <div class="box">
                     <h4>Meus Envios</h4>
-                    <div class="scroll-interno">
-                        <ul class="lista-arq" id="lista-envios-aluno"></ul>
-                    </div>
+                    <div class="scroll-interno"><ul class="lista-arq" id="lista-envios-aluno"></ul></div>
                 </div>
             </div>
         </div>
@@ -291,12 +277,11 @@
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         let DADOS_SISTEMA = null; 
 
-        const msalConfig = {
-            auth: {
-                clientId: "83802911-104c-43af-ab13-62ff6df1e42f",
-                authority: "https://login.microsoftonline.com/common"
-            }
-        };
+        // Setar data de hoje no calendário por padrão
+        document.getElementById('filtro-calendario').valueAsDate = new Date();
+        document.getElementById('lab-data').valueAsDate = new Date();
+
+        const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
 
         async function loginMicrosoft() {
@@ -305,18 +290,13 @@
                 let nome = loginResponse.account.name || "Usuário";
                 let email = loginResponse.account.username;
                 let fotoGenerica = `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=e3e3e3&color=1f1f1f&size=120`;
-
                 iniciarPortal({ email: email, given_name: nome, picture: fotoGenerica });
-            } catch (error) {
-                console.error(error); alert("Erro ao entrar com a Microsoft.");
-            }
+            } catch (error) { console.error(error); alert("Erro ao entrar com a Microsoft."); }
         }
 
         function decodificarJwt(token) { return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
 
-        async function lidarComLoginGoogle(response) {
-            iniciarPortal(decodificarJwt(response.credential));
-        }
+        async function lidarComLoginGoogle(response) { iniciarPortal(decodificarJwt(response.credential)); }
 
         async function iniciarPortal(dados) {
             document.getElementById('email-oculto').innerText = dados.email;
@@ -335,24 +315,81 @@
                 DADOS_SISTEMA = json;
                 configurarPainel(json, true); 
 
-                fetch(URL_DO_SCRIPT, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }),
-                    headers: {'Content-Type': 'text/plain'}
-                });
+                fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
             } catch(e) { alert("Erro ao conectar no banco de dados."); }
         }
 
+        // ==========================================
+        // MÓDULO DE LABORATÓRIOS
+        // ==========================================
+        function renderCalendario() {
+            if (!DADOS_SISTEMA) return;
+            let dataEscolhida = document.getElementById('filtro-calendario').value;
+            let grade = document.getElementById('grade-laboratorios');
+            let emailLogado = document.getElementById('email-oculto').innerText;
+            
+            let labsHtml = '';
+            // Construir do Lab 1 ao 10
+            for(let i = 1; i <= 10; i++) {
+                let nomeLab = "Laboratório " + i;
+                
+                // Procurar reservas para este lab nesta data
+                let reservasDesteLab = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === dataEscolhida && a.lab === nomeLab);
+                
+                let conteudoReserva = '';
+                if (reservasDesteLab.length > 0) {
+                    reservasDesteLab.forEach(r => {
+                        let nickProf = r.prof.split('@')[0];
+                        // Mostrar botão de lixeira só se for o dono ou admin
+                        let btnApagar = (DADOS_SISTEMA.role === 'admin' || r.prof === emailLogado) ? 
+                            `<button class="btn-apagar" style="padding: 2px 5px; font-size:10px;" onclick="cancelarReserva('${r.id}')">X</button>` : '';
+                        
+                        conteudoReserva += `<div class="reserva-item">
+                            <div><strong style="color:#009624; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444;">${r.turma} (${nickProf})</span></div>
+                            ${btnApagar}
+                        </div>`;
+                    });
+                } else {
+                    conteudoReserva = `<div style="color: #aaa; font-size: 12px; margin-top: 10px; font-style: italic;">Disponível</div>`;
+                }
+
+                labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
+            }
+            grade.innerHTML = labsHtml;
+        }
+
+        function reservarLab() {
+            let data = document.getElementById('lab-data').value;
+            let lab = document.getElementById('lab-numero').value;
+            let horario = document.getElementById('lab-horario').value;
+            let turma = document.getElementById('lab-turma').value;
+
+            if(!data || !lab || !horario || !turma) return alert("Preencha todos os campos da reserva!");
+            
+            // Bloqueio de duplicidade (Front-end)
+            let jaExiste = (DADOS_SISTEMA.agendamentos || []).find(a => a.data === data && a.lab === lab && a.horario === horario);
+            if(jaExiste) return alert("Este laboratório já está reservado neste horário!");
+
+            fetchBanco({ action: 'add_agendamento', dataReserva: data, lab: lab, horario: horario, turma: turma, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status'));
+        }
+
+        function cancelarReserva(id) {
+            if(!confirm("Tem certeza que deseja cancelar esta reserva?")) return;
+            fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status'));
+        }
+
+
+        // ==========================================
+        // RENDERIZAÇÃO GERAL
+        // ==========================================
         function renderMateriaisAluno() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
             let filtro = document.getElementById('aluno-filtro-turma').value;
             let mat = DADOS_SISTEMA.materiais;
             if (filtro !== 'todas') mat = mat.filter(m => m.turma === filtro);
-            
             let htmlMat = '';
             mat.forEach(m => {
-                let profEmail = DADOS_SISTEMA.db.turmas[m.turma];
-                let nickProf = profEmail ? profEmail.split('@')[0] : 'Prof';
+                let nickProf = (DADOS_SISTEMA.db.turmas[m.turma] || "").split('@')[0] || 'Prof';
                 htmlMat += `<li><a href="${m.link}" target="_blank">📄 [${m.turma}] ${m.nome} <span style="font-size: 12px; color: #747775; font-weight: normal;">(por ${nickProf})</span></a></li>`;
             });
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
@@ -362,18 +399,11 @@
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin' || !DADOS_SISTEMA.visaoGeralAdmin) return;
             let filtro = document.getElementById('admin-filtro-arquivos').value;
             let html = '';
-            
             DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
                 if (filtro !== 'todas' && t.turma !== filtro) return;
-                
                 html += `<li class="separador-turma">🏫 ${t.turma} <span style="font-size:12px; color:#747775; font-weight: normal;">(Prof: ${t.professor})</span></li>`;
-                
                 let nickProf = t.professor ? t.professor.split('@')[0] : 'Prof';
-
-                t.materiais.forEach(m => {
-                    html += `<li style="padding-left: 16px;"><span><span class="tag-material">[Material: ${nickProf}]</span> <a href="${m.link}" target="_blank">📄 ${m.nome}</a> <span style="color:#747775; font-size:12px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Excluir</button></li>`;
-                });
-
+                t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><span class="tag-material">[Material: ${nickProf}]</span> <a href="${m.link}" target="_blank">📄 ${m.nome}</a> <span style="color:#747775; font-size:12px;">(${m.data})</span></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Excluir</button></li>`);
                 t.entregas.forEach(e => {
                     let nickAluno = e.aluno.split('@')[0];
                     html += `<li style="padding-left: 16px;"><span><span class="tag-entrega">[Entrega: ${nickAluno}]</span> <a href="${e.link}" target="_blank">📄 ${e.nome}</a> <span style="color:#747775; font-size:12px;">(${e.data})</span></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">Excluir</button></li>`;
@@ -385,8 +415,7 @@
         function configurarPainel(dados, isInitialLogin = false) {
             if (dados.config) {
                 let textoExtensoes = dados.config.extensoes.join(', ').toUpperCase();
-                let limiteMB = dados.config.limiteMB;
-                document.querySelectorAll('.info-upload').forEach(el => el.innerText = `Permitido: ${textoExtensoes} (Máx. ${limiteMB}MB)`);
+                document.querySelectorAll('.info-upload').forEach(el => el.innerText = `Permitido: ${textoExtensoes} (Máx. ${dados.config.limiteMB}MB)`);
                 let aceitos = dados.config.extensoes.map(ext => '.' + ext).join(', ');
                 document.getElementById('prof-file').setAttribute('accept', aceitos);
                 document.getElementById('aluno-file').setAttribute('accept', aceitos);
@@ -397,21 +426,27 @@
                 if (dados.role === 'admin') paginaAtivaId = 'pag-admin';
                 else if (dados.role === 'professor') paginaAtivaId = 'pag-prof';
                 else paginaAtivaId = 'pag-aluno';
-            } else {
-                document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; });
-            }
+            } else { document.querySelectorAll('.pagina').forEach(p => { if(p.style.display === 'flex') paginaAtivaId = p.id; }); }
 
             let menu = document.getElementById('menu-dinamico');
             let badge = document.getElementById('badge-funcao');
             let emailLogado = document.getElementById('email-oculto').innerText;
 
-            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Visão Geral</button>`;
+            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Visão Geral & Labs</button>`;
+
+            // Renderizar Calendário Inicialmente
+            renderCalendario();
 
             // -- ADMIN --
             if (dados.role === "admin") {
                 badge.innerText = "Modo Administrador";
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel de Controle</button>`;
                 
+                // Mostrar formulário de reserva
+                document.getElementById('painel-reserva-lab').style.display = 'flex';
+                document.getElementById('lab-turma').innerHTML = '<option value="Manutenção/Admin">Bloqueio / Manutenção</option>';
+                Object.keys(dados.db.turmas).forEach(t => document.getElementById('lab-turma').innerHTML += `<option value="${t}">${t}</option>`);
+
                 let htmlProfsLista = '';
                 dados.db.professores.forEach(p => htmlProfsLista += `<li><span>👤 ${p}</span> <button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Remover</button></li>`);
                 document.getElementById('lista-admin-profs').innerHTML = htmlProfsLista || '<li style="color:#747775;">Nenhum professor.</li>';
@@ -428,9 +463,7 @@
                 document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li style="color:#747775;">Nenhum aluno.</li>';
 
                 let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
-                if(dados.visaoGeralAdmin) {
-                    dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
-                }
+                if(dados.visaoGeralAdmin) dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
                 document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos;
                 renderArquivosAdmin(); 
 
@@ -440,6 +473,11 @@
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Compartilhar Aulas</button>`;
                 menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gerenciar Turmas</button>`;
                 
+                // Mostrar formulário de reserva
+                document.getElementById('painel-reserva-lab').style.display = 'flex';
+                let selectT_Lab = document.getElementById('lab-turma');
+                selectT_Lab.innerHTML = '<option value="">Qual a Turma?</option>';
+
                 let selectT = document.getElementById('prof-seleciona-turma');
                 let selectTAdd = document.getElementById('prof-select-turma-add');
                 selectT.innerHTML = '<option value="">Para qual Turma?</option>';
@@ -449,6 +487,7 @@
                     if(dados.db.turmas[t] === emailLogado) {
                         selectT.innerHTML += `<option value="${t}">${t}</option>`;
                         selectTAdd.innerHTML += `<option value="${t}">${t}</option>`;
+                        selectT_Lab.innerHTML += `<option value="${t}">${t}</option>`;
                     }
                 });
 
@@ -481,6 +520,9 @@
 
             // -- ALUNO --
             } else {
+                // Aluno não vê formulário de reserva
+                document.getElementById('painel-reserva-lab').style.display = 'none';
+
                 let turmas = dados.minhasTurmas || [];
                 if (turmas.length > 0) {
                     badge.innerText = `Área do Aluno (${turmas.length} Turmas)`;
@@ -506,10 +548,7 @@
 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
             document.getElementById(paginaAtivaId).style.display = 'flex';
-            
-            // Adiciona listener para renderizar materiais de aluno ao trocar select (foi reatribuido no innerHTML)
             document.getElementById('aluno-filtro-turma')?.addEventListener('change', renderMateriaisAluno);
-            
             menu.querySelectorAll('.nav-btn').forEach(btn => { if(btn.getAttribute('onclick').includes(paginaAtivaId)) btn.classList.add('active'); });
         }
 
@@ -520,23 +559,20 @@
             btn.classList.add('active');
         }
 
-        function fazerLogout() { 
-            google.accounts.id.disableAutoSelect(); 
-            sessionStorage.clear(); localStorage.clear(); location.reload(); 
-        }
+        function fazerLogout() { google.accounts.id.disableAutoSelect(); sessionStorage.clear(); localStorage.clear(); location.reload(); }
 
         async function fetchBanco(payload, msgElement) {
-            if(msgElement) { msgElement.innerText = "Salvando alterações..."; msgElement.style.color = "#0b57d0"; }
+            if(msgElement) { msgElement.innerText = "Processando requisição..."; msgElement.style.color = "#0b57d0"; }
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
-                if(msgElement) { msgElement.innerText = "Pronto."; msgElement.style.color = "#146c2e"; }
+                if(msgElement) { msgElement.innerText = "Ação concluída com sucesso!"; msgElement.style.color = "#009624"; }
                 let emailLogado = document.getElementById('email-oculto').innerText;
                 const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
                 const json = await res.json();
                 DADOS_SISTEMA = json;
                 configurarPainel(json);
-                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3000);
-            } catch(e) { if(msgElement) { msgElement.innerText = "Erro de conexão."; msgElement.style.color = "#b3261e"; } }
+                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3500);
+            } catch(e) { if(msgElement) { msgElement.innerText = "Erro de conexão."; msgElement.style.color = "#d32f2f"; } }
         }
 
         function adminAcao(acao) {
@@ -585,8 +621,8 @@
             let limiteBytes = DADOS_SISTEMA.config.limiteMB * 1024 * 1024;
             let extensao = arquivo.name.split('.').pop().toLowerCase();
 
-            if (arquivo.size > limiteBytes) { status.innerText = "Arquivo excede o tamanho limite."; status.style.color = "#b3261e"; input.value = ''; return; }
-            if (!DADOS_SISTEMA.config.extensoes.includes(extensao)) { status.innerText = "Formato não suportado."; status.style.color = "#b3261e"; input.value = ''; return; }
+            if (arquivo.size > limiteBytes) { status.innerText = "Arquivo excede o tamanho limite."; status.style.color = "#d32f2f"; input.value = ''; return; }
+            if (!DADOS_SISTEMA.config.extensoes.includes(extensao)) { status.innerText = "Formato não suportado."; status.style.color = "#d32f2f"; input.value = ''; return; }
 
             let reader = new FileReader();
             status.innerText = "Fazendo upload seguro..."; status.style.color = "#0b57d0"; btn.disabled = true; 
@@ -603,39 +639,14 @@
             await fetchBanco({ action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById(idStatusElemento));
         }
 
-        // --- Canvas Background (Partículas Ultra-Sutis) ---
+        // --- Canvas Background ---
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let particlesArray = []; 
-        const cores = ['#e3e3e3', '#dadce0', '#e8eaed', '#f1f3f4']; 
-        let mouse = { x: null, y: null, radius: 150 };
-        window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; });
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-
-        class Particle {
-            constructor() { this.x = Math.random() * innerWidth; this.y = Math.random() * innerHeight; this.dx = (Math.random()*0.8)-0.4; this.dy = (Math.random()*0.8)-0.4; this.tam = Math.random()*2+1; this.cor = cores[Math.floor(Math.random()*cores.length)]; }
-            atualizar() {
-                if (this.x > canvas.width || this.x < 0) this.dx = -this.dx; if (this.y > canvas.height || this.y < 0) this.dy = -this.dy;
-                let dx = mouse.x - this.x; let dy = mouse.y - this.y; let dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < mouse.radius) { this.x -= (dx / dist) * 1.2; this.y -= (dy / dist) * 1.2; } else { this.x += this.dx; this.y += this.dy; }
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.tam, 0, Math.PI * 2); ctx.fillStyle = this.cor; ctx.fill();
-            }
-        }
+        let particlesArray = []; const cores = ['#e3e3e3', '#dadce0', '#e8eaed', '#f1f3f4']; 
+        let mouse = { x: null, y: null, radius: 150 }; window.addEventListener('mousemove', e => { mouse.x = e.x; mouse.y = e.y; }); window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        class Particle { constructor() { this.x = Math.random() * innerWidth; this.y = Math.random() * innerHeight; this.dx = (Math.random()*0.8)-0.4; this.dy = (Math.random()*0.8)-0.4; this.tam = Math.random()*2+1; this.cor = cores[Math.floor(Math.random()*cores.length)]; } atualizar() { if (this.x > canvas.width || this.x < 0) this.dx = -this.dx; if (this.y > canvas.height || this.y < 0) this.dy = -this.dy; let dx = mouse.x - this.x; let dy = mouse.y - this.y; let dist = Math.sqrt(dx * dx + dy * dy); if (dist < mouse.radius) { this.x -= (dx / dist) * 1.2; this.y -= (dy / dist) * 1.2; } else { this.x += this.dx; this.y += this.dy; } ctx.beginPath(); ctx.arc(this.x, this.y, this.tam, 0, Math.PI * 2); ctx.fillStyle = this.cor; ctx.fill(); } }
         for (let i = 0; i < 50; i++) particlesArray.push(new Particle()); 
-        function animar() {
-            requestAnimationFrame(animar); 
-            ctx.clearRect(0, 0, innerWidth, innerHeight); 
-            for (let i = 0; i < particlesArray.length; i++) { 
-                particlesArray[i].atualizar(); 
-                for (let j = i; j < particlesArray.length; j++) { 
-                    let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2); 
-                    if (d < 25000) { 
-                        ctx.strokeStyle = `rgba(116, 119, 117, ${(1 - d/25000)*0.08})`; 
-                        ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); 
-                    } 
-                } 
-            }
-        } animar();
+        function animar() { requestAnimationFrame(animar); ctx.clearRect(0, 0, innerWidth, innerHeight); for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].atualizar(); for (let j = i; j < particlesArray.length; j++) { let d = ((particlesArray[i].x - particlesArray[j].x)**2) + ((particlesArray[i].y - particlesArray[j].y)**2); if (d < 25000) { ctx.strokeStyle = `rgba(116, 119, 117, ${(1 - d/25000)*0.08})`; ctx.beginPath(); ctx.moveTo(particlesArray[i].x, particlesArray[i].y); ctx.lineTo(particlesArray[j].x, particlesArray[j].y); ctx.stroke(); } } } } animar();
     </script>
 </body>
 </html>
