@@ -16,7 +16,7 @@
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
-        /* --- NAVBAR --- */
+        /* --- NAVBAR INTERNA --- */
         #navbar { position: absolute; top: 0; left: 0; width: 100%; height: 64px; z-index: 20; background: #ffffff; border-bottom: 1px solid #e3e3e3; display: none; justify-content: space-between; align-items: center; padding: 0 32px; box-sizing: border-box;}
         .nav-links { display: flex; gap: 8px; }
         .nav-btn { background: transparent; color: #444746; border: none; padding: 10px 20px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-size: 14px;}
@@ -28,20 +28,20 @@
         /* --- TELA DE INÍCIO (LOGIN + CALENDÁRIO PÚBLICO) --- */
         #tela-inicio {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10;
-            display: flex; justify-content: center; align-items: center; gap: 30px;
-            padding: 30px; box-sizing: border-box; flex-wrap: wrap; overflow-y: auto;
+            display: flex; justify-content: center; align-items: center; gap: 32px;
+            padding: 32px; box-sizing: border-box; flex-wrap: wrap; overflow-y: auto;
         }
 
         .box-login { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 48px 40px; width: 380px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex-shrink: 0;}
         .box-login h2 { color: #1f1f1f; margin-top: 0; font-size: 28px; font-weight: 400;}
         .box-login p { color: #444746; margin-bottom: 32px; font-size: 16px;}
         
-        .box-calendario-publico { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; width: 100%; max-width: 750px; height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .box-calendario-publico { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; width: 100%; max-width: 800px; height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
         .btn-microsoft { background-color: #ffffff; color: #444746; border: 1px solid #747775; border-radius: 4px; padding: 8px 15px; width: 200px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Google Sans', sans-serif; font-weight: 500; transition: 0.2s; height: 40px; box-sizing: border-box; font-size: 14px; }
         .btn-microsoft:hover { background-color: #f1f3f4; color: #1f1f1f;}
 
-        /* --- LAYOUT TELA CHEIA (ÁREA INTERNA) --- */
+        /* --- LAYOUT TELA CHEIA INTERNA --- */
         #area-conteudo { position: absolute; top: 88px; left: 50%; transform: translateX(-50%); z-index: 10; width: 96%; max-width: 1400px; height: calc(100vh - 110px); display: none; }
         
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 32px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
@@ -50,32 +50,24 @@
 
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; flex-grow: 1; overflow: hidden; }
 
+        /* --- CARDS MINIMALISTAS --- */
         .box { background: #ffffff; padding: 24px; border-radius: 16px; margin: 0; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.2s ease; }
         .box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .box h4 { margin: 0 0 16px 0; font-size: 16px; border-bottom: 1px solid #f1f3f4; padding-bottom: 12px; color: #1f1f1f; flex-shrink: 0; font-weight: 500;}
         
+        /* --- ROLAGEM INTERNA --- */
         .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
         .scroll-interno::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
 
+        /* --- FORMULÁRIOS --- */
         input, select { width: 100%; padding: 12px 16px; margin-bottom: 16px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Google Sans', sans-serif;}
         input:focus, select:focus { outline: none; border-color: #0b57d0; border-width: 2px; padding: 11px 15px;}
         
         button.action-btn { width: 100%; padding: 12px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; margin-bottom: 8px; font-size: 14px; transition: all 0.2s ease; background: #0b57d0; font-family: 'Google Sans', sans-serif;}
         button.action-btn:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,0.15);}
         button.action-btn:disabled { background: #e3e3e3; color: #1f1f1f; opacity: 0.38; cursor: not-allowed; box-shadow: none;}
-        
-        /* Botão específico de Confirmar Reserva para ter destaque */
-        #btn-confirmar-reserva {
-            background-color: #0b57d0;
-            color: #ffffff;
-            font-size: 15px;
-            padding: 14px;
-            margin-top: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        #btn-confirmar-reserva:hover { background-color: #0842a0; }
 
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
@@ -97,7 +89,7 @@
         /* --- ESTILO DOS CARDS DE LABORATÓRIO --- */
         .card-lab { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; padding: 16px; font-size: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);}
         .card-lab strong { color: #0b57d0; font-size: 16px; display: block; margin-bottom: 8px; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px;}
-        .reserva-item { background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #009624;}
+        .reserva-item { background: #f8f9fa; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #146c2e;}
         .tag-material { color: #0b57d0; font-weight: 500; }
         .tag-entrega { color: #1f1f1f; font-weight: 500; }
     </style>
@@ -105,6 +97,7 @@
 <body>
 
     <canvas id="meuCanvas"></canvas>
+
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <div id="tela-inicio">
@@ -122,7 +115,7 @@
                     Entrar com Microsoft
                 </button>
             </div>
-            <p id="status-login" style="margin-top: 20px; font-size: 13px; color: #0b57d0;"></p>
+            <p id="status-login" style="margin-top: 20px; font-size: 13px; color: #0b57d0; font-weight: 500;"></p>
         </div>
 
         <div class="box-calendario-publico">
@@ -131,9 +124,9 @@
                     <h3 style="margin: 0; color: #1f1f1f; font-weight: 500;">Grade de Laboratórios</h3>
                     <p style="margin: 5px 0 0 0; color: #747775; font-size: 13px;">Consulte a disponibilidade de hoje.</p>
                 </div>
-                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; font-weight: bold;">
+                <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; font-weight: 500;">
             </div>
-            <div class="scroll-interno" id="grade-laboratorios-publica" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="scroll-interno" id="grade-laboratorios-publica" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div style="color: #747775; padding: 20px;">Buscando horários no servidor...</div>
             </div>
         </div>
@@ -163,36 +156,38 @@
                 </div>
             </div>
 
-            <div class="grid-layout" style="grid-template-columns: 1fr 3fr; flex-grow: 1;">
+            <div class="grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); flex-grow: 1;">
                 
                 <div class="box" id="painel-reserva-lab" style="display: none; background: #f8f9fa;">
                     <h4>Nova Reserva</h4>
-                    <input type="date" id="lab-data">
-                    <select id="lab-numero">
-                        <option value="">Escolha o Laboratório...</option>
-                        <option value="Laboratório 1">Laboratório 1</option>
-                        <option value="Laboratório 2">Laboratório 2</option>
-                        <option value="Laboratório 3">Laboratório 3</option>
-                        <option value="Laboratório 4">Laboratório 4</option>
-                        <option value="Laboratório 5">Laboratório 5</option>
-                        <option value="Laboratório 6">Laboratório 6</option>
-                        <option value="Laboratório 7">Laboratório 7</option>
-                        <option value="Laboratório 8">Laboratório 8</option>
-                        <option value="Laboratório 9">Laboratório 9</option>
-                        <option value="Laboratório 10">Laboratório 10</option>
-                    </select>
-                    <select id="lab-horario">
-                        <option value="">Qual Período/Aula?</option>
-                        <option value="Manhã - 1ª e 2ª Aula">Manhã - 1ª e 2ª Aula</option>
-                        <option value="Manhã - 3ª a 5ª Aula">Manhã - 3ª a 5ª Aula</option>
-                        <option value="Tarde - 1ª e 2ª Aula">Tarde - 1ª e 2ª Aula</option>
-                        <option value="Tarde - 3ª a 5ª Aula">Tarde - 3ª a 5ª Aula</option>
-                        <option value="Noite - 1ª e 2ª Aula">Noite - 1ª e 2ª Aula</option>
-                        <option value="Noite - 3ª a 5ª Aula">Noite - 3ª a 5ª Aula</option>
-                    </select>
-                    <select id="lab-turma"><option value="">Sua Turma...</option></select>
-                    
-                    <button class="action-btn" id="btn-confirmar-reserva" onclick="reservarLab()">Confirmar Reserva</button>
+                    <div class="scroll-interno" style="padding-right: 5px;">
+                        <input type="date" id="lab-data">
+                        <select id="lab-numero">
+                            <option value="">Escolha o Laboratório...</option>
+                            <option value="Laboratório 1">Laboratório 1</option>
+                            <option value="Laboratório 2">Laboratório 2</option>
+                            <option value="Laboratório 3">Laboratório 3</option>
+                            <option value="Laboratório 4">Laboratório 4</option>
+                            <option value="Laboratório 5">Laboratório 5</option>
+                            <option value="Laboratório 6">Laboratório 6</option>
+                            <option value="Laboratório 7">Laboratório 7</option>
+                            <option value="Laboratório 8">Laboratório 8</option>
+                            <option value="Laboratório 9">Laboratório 9</option>
+                            <option value="Laboratório 10">Laboratório 10</option>
+                        </select>
+                        <select id="lab-horario">
+                            <option value="">Qual Período/Aula?</option>
+                            <option value="Manhã - 1ª e 2ª Aula">Manhã - 1ª e 2ª Aula</option>
+                            <option value="Manhã - 3ª a 5ª Aula">Manhã - 3ª a 5ª Aula</option>
+                            <option value="Tarde - 1ª e 2ª Aula">Tarde - 1ª e 2ª Aula</option>
+                            <option value="Tarde - 3ª a 5ª Aula">Tarde - 3ª a 5ª Aula</option>
+                            <option value="Noite - 1ª e 2ª Aula">Noite - 1ª e 2ª Aula</option>
+                            <option value="Noite - 3ª a 5ª Aula">Noite - 3ª a 5ª Aula</option>
+                        </select>
+                        <select id="lab-turma"><option value="">Sua Turma...</option></select>
+                        
+                        <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">Confirmar Reserva</button>
+                    </div>
                 </div>
 
                 <div class="box" style="grid-column: span 2;">
@@ -200,7 +195,7 @@
                         <h4 style="margin: 0; border: none; padding: 0;">📅 Painel de Controle dos Labs</h4>
                         <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin: 0; padding: 6px 12px;">
                     </div>
-                    <div class="scroll-interno" id="grade-laboratorios" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
+                    <div class="scroll-interno" id="grade-laboratorios" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"></div>
                 </div>
             </div>
         </div>
@@ -307,7 +302,7 @@
         let DADOS_SISTEMA = null; 
         let AGENDAMENTOS_PUBLICOS = [];
 
-        // Setar data de hoje no calendário por padrão
+        // Setar data de hoje nos calendários por padrão
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
@@ -322,7 +317,7 @@
                 AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
                 renderCalendarioPublico();
             } catch(e) {
-                document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:red;'>Erro ao carregar a grade.</p>";
+                document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:#d32f2f;'>Erro ao carregar a grade do servidor.</p>";
             }
         };
 
@@ -340,11 +335,11 @@
                     reservasDesteLab.forEach(r => {
                         let nickProf = r.prof.split('@')[0];
                         conteudoReserva += `<div class="reserva-item">
-                            <div><strong style="color:#009624; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444;">${r.turma} (${nickProf})</span></div>
+                            <div><strong style="color:#146c2e; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444746;">${r.turma} (${nickProf})</span></div>
                         </div>`;
                     });
                 } else {
-                    conteudoReserva = `<div style="color: #aaa; font-size: 12px; margin-top: 10px; font-style: italic;">Livre</div>`;
+                    conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`;
                 }
                 labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
             }
@@ -372,7 +367,7 @@
         async function lidarComLoginGoogle(response) { iniciarPortal(decodificarJwt(response.credential)); }
 
         async function iniciarPortal(dados) {
-            document.getElementById('status-login').innerText = "Autenticando...";
+            document.getElementById('status-login').innerText = "Autenticando... Aguarde.";
             
             document.getElementById('email-oculto').innerText = dados.email;
             document.getElementById('nome-usuario').innerText = dados.given_name;
@@ -384,7 +379,7 @@
                 const json = await res.json();
                 DADOS_SISTEMA = json;
                 
-                // Mudar da Tela de Início para a Área Interna
+                // Esconde a tela dupla de início e mostra o portal interno
                 document.getElementById('tela-inicio').style.display = 'none';
                 document.getElementById('navbar').style.display = 'flex';
                 document.getElementById('area-conteudo').style.display = 'block';
@@ -392,7 +387,7 @@
                 configurarPainel(json, true); 
 
                 fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
-            } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar."; }
+            } catch(e) { document.getElementById('status-login').innerText = "Erro ao conectar com o servidor."; document.getElementById('status-login').style.color = "#d32f2f"; }
         }
 
         // ==========================================
@@ -417,12 +412,12 @@
                             `<button class="btn-apagar" style="padding: 4px 8px; font-size:12px;" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
                         
                         conteudoReserva += `<div class="reserva-item">
-                            <div><strong style="color:#009624; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444;">${r.turma} (${nickProf})</span></div>
+                            <div><strong style="color:#146c2e; font-size:12px; display:inline;">${r.horario}</strong><br><span style="font-size:11px; color:#444746;">${r.turma} (${nickProf})</span></div>
                             ${btnApagar}
                         </div>`;
                     });
                 } else {
-                    conteudoReserva = `<div style="color: #aaa; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`;
+                    conteudoReserva = `<div style="color: #747775; font-size: 12px; margin-top: 10px; font-style: italic;">Livre para agendamento</div>`;
                 }
                 labsHtml += `<div class="card-lab"><strong>💻 ${nomeLab}</strong>${conteudoReserva}</div>`;
             }
@@ -501,9 +496,9 @@
             let badge = document.getElementById('badge-funcao');
             let emailLogado = document.getElementById('email-oculto').innerText;
 
-            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
+            menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Visão Geral & Labs</button>`;
 
-            renderCalendario(); // Renderiza o calendário interno
+            renderCalendario();
 
             // -- ADMIN --
             if (dados.role === "admin") {
@@ -632,7 +627,7 @@
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}});
                 if(msgElement) { msgElement.innerText = "Ação concluída com sucesso!"; msgElement.style.color = "#009624"; }
                 
-                // Recarregar os dados públicos também para atualizar a tela de fora caso alguém olhe
+                // Recarregar os dados públicos também
                 let resPub = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
                 let jsonPub = await resPub.json();
                 AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
