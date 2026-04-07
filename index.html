@@ -305,7 +305,6 @@
         let DADOS_SISTEMA = null; 
         let AGENDAMENTOS_PUBLICOS = [];
         let USER_EMAIL = '';
-        
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
@@ -463,7 +462,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS (COM BLINDAGEM)
+        // 4. AÇÕES DE BANCO DE DADOS (COM BLINDAGEM E MODAL)
         // ==========================================
         async function adminAcao(acao) {
             showStatus("Salvando...", "processando");
@@ -560,23 +559,16 @@
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO COM MODAL E TRY/CATCH ---
-        async function cancelarReserva(idFb, groupId) { 
-            // Proteção para reservas muito antigas que não tem groupId ainda
+        function cancelarReserva(idFb, groupId) { 
             if(!groupId || groupId === 'undefined' || groupId === 'null' || groupId === '') {
                 if(confirm("Excluir esta reserva antiga?")) {
                     showStatus("Excluindo...", "processando");
-                    try {
-                        await db.collection('agendamentos').doc(idFb).delete();
-                        await recarregarTudo();
-                    } catch(e) {
-                        console.error(e); showStatus("Erro ao excluir reserva", "erro");
-                    }
+                    db.collection('agendamentos').doc(idFb).delete()
+                        .then(() => recarregarTudo())
+                        .catch((e) => { console.error(e); showStatus("Erro ao excluir", "erro"); });
                 }
                 return;
             }
-            
-            // Abastece a variável global e abre o Modal bonito para reservas em Série
             reservaExclusaoAlvo = { idFb, groupId };
             document.getElementById('modal-exclusao').style.display = 'flex';
         }
@@ -590,9 +582,8 @@
             fecharModalExclusao();
             showStatus("Excluindo...", "processando");
             
-            // TIMEOUT DE SEGURANÇA: Se o Firebase travar, destrava a tela em 5s
             let seguranca = setTimeout(() => {
-                showStatus("Comunicação lenta, mas enviado. Atualize a página se necessário.", "erro");
+                showStatus("Comunicação lenta. Atualize a página se necessário.", "erro");
                 recarregarTudo();
             }, 5000);
 
@@ -602,7 +593,7 @@
                 if (tipo === 'dia') {
                     await db.collection('agendamentos').doc(idFb).delete();
                 } else if (tipo === 'serie') {
-                    // Busca segura para não travar por falta de índice no Firebase
+                    // Leitura manual para evitar erro de índice
                     let snap = await db.collection('agendamentos').get();
                     let batch = db.batch();
                     snap.forEach(doc => {
@@ -617,12 +608,12 @@
             } catch (erro) {
                 clearTimeout(seguranca);
                 console.error("ERRO AO EXCLUIR:", erro);
-                showStatus("Erro ao excluir. Tente novamente.", "erro");
+                showStatus("Erro ao excluir.", "erro");
             }
         }
 
         // ==========================================
-        // 5. UPLOAD DE ARQUIVOS E DRIVE
+        // 5. UPLOAD DE ARQUIVOS
         // ==========================================
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
@@ -656,7 +647,7 @@
         }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO DAS TELAS
+        // 6. RENDERIZAÇÃO
         // ==========================================
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
