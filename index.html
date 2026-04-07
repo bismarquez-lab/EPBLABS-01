@@ -306,7 +306,6 @@
         let AGENDAMENTOS_PUBLICOS = [];
         let USER_EMAIL = '';
         
-        // Variável para guardar qual reserva está sendo excluída no Modal
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
@@ -452,14 +451,19 @@
         }
 
         async function recarregarTudo() {
-            DADOS_SISTEMA = await extrairDadosDoFirebase(USER_EMAIL);
-            await carregarCalendarioPublico();
-            configurarPainel(DADOS_SISTEMA, false);
-            showStatus("Concluído!");
+            try {
+                DADOS_SISTEMA = await extrairDadosDoFirebase(USER_EMAIL);
+                await carregarCalendarioPublico();
+                configurarPainel(DADOS_SISTEMA, false);
+                showStatus("Concluído!");
+            } catch(e) {
+                console.error(e);
+                showStatus("Erro ao atualizar a tela", "erro");
+            }
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS E BLOQUEIO
+        // 4. AÇÕES DE BANCO DE DADOS COM TRY/CATCH BLINDADO
         // ==========================================
         async function adminAcao(acao) {
             showStatus("Salvando...", "processando");
@@ -478,38 +482,48 @@
                     if(!a || !t) return showStatus("Preencha aluno e turma", "erro");
                     await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true}); document.getElementById('admin-novo-aluno').value = '';
                 }
-                recarregarTudo();
-            } catch(e) { showStatus("Erro ao salvar", "erro"); }
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao salvar", "erro"); }
         }
 
         async function adminExcluir(acao, alvo) {
             if(!confirm(`Remover '${alvo}'?`)) return;
             showStatus("Removendo...", "processando");
-            if(acao === 'admin_del_prof') await db.collection('professores').doc(alvo).delete();
-            if(acao === 'admin_del_turma') await db.collection('turmas').doc(alvo).delete();
-            recarregarTudo();
+            try {
+                if(acao === 'admin_del_prof') await db.collection('professores').doc(alvo).delete();
+                if(acao === 'admin_del_turma') await db.collection('turmas').doc(alvo).delete();
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao remover", "erro"); }
         }
 
         async function adminExcluirAluno(alvoEmail, turmaAlvo) { 
             if(!confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) return;
             showStatus("Removendo...", "processando");
-            await db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) });
-            recarregarTudo();
+            try {
+                await db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) });
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao remover aluno", "erro"); }
         }
 
         async function profAddTurma() {
             let t = document.getElementById('prof-nova-turma').value; if(!t) return showStatus("Digite o nome da turma", "erro");
             showStatus("Criando...", "processando");
-            await db.collection('turmas').doc(t).set({professor: USER_EMAIL});
-            document.getElementById('prof-nova-turma').value = ''; recarregarTudo();
+            try {
+                await db.collection('turmas').doc(t).set({professor: USER_EMAIL});
+                document.getElementById('prof-nova-turma').value = ''; 
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao criar turma", "erro"); }
         }
 
         async function profAddAluno() {
             let a = document.getElementById('prof-novo-aluno').value.trim().toLowerCase(); let t = document.getElementById('prof-select-turma-add').value;
             if(!a || !t) return showStatus("Preencha os campos", "erro");
             showStatus("Adicionando...", "processando");
-            await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
-            document.getElementById('prof-novo-aluno').value = ''; recarregarTudo();
+            try {
+                await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
+                document.getElementById('prof-novo-aluno').value = ''; 
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao adicionar aluno", "erro"); }
         }
 
         async function reservarLab() {
@@ -533,26 +547,36 @@
             }
 
             showStatus("Agendando Sala...", "processando");
-            let groupId = "GRP_" + new Date().getTime(); 
-            let batch = db.batch();
-            
-            for (let i = 0; i < datasParaAgendar.length; i++) {
-                let docRef = db.collection('agendamentos').doc();
-                batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: groupId });
-            }
-            await batch.commit(); recarregarTudo();
+            try {
+                let groupId = "GRP_" + new Date().getTime(); 
+                let batch = db.batch();
+                
+                for (let i = 0; i < datasParaAgendar.length; i++) {
+                    let docRef = db.collection('agendamentos').doc();
+                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: groupId });
+                }
+                await batch.commit(); 
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO COM MODAL ---
-        function cancelarReserva(idFb, groupId) { 
-            if(!groupId || groupId === 'undefined') {
-                if(confirm("Excluir esta reserva?")) {
+        // --- SISTEMA DE EXCLUSÃO COM MODAL E TRY/CATCH ---
+        async function cancelarReserva(idFb, groupId) { 
+            // Proteção para reservas muito antigas que não tem groupId ainda
+            if(!groupId || groupId === 'undefined' || groupId === 'null' || groupId === '') {
+                if(confirm("Excluir esta reserva antiga?")) {
                     showStatus("Excluindo...", "processando");
-                    db.collection('agendamentos').doc(idFb).delete().then(() => recarregarTudo());
+                    try {
+                        await db.collection('agendamentos').doc(idFb).delete();
+                        await recarregarTudo();
+                    } catch(e) {
+                        console.error(e); showStatus("Erro ao excluir reserva", "erro");
+                    }
                 }
                 return;
             }
-            // Abastece a variável global e abre o Modal bonito
+            
+            // Abastece a variável global e abre o Modal bonito para reservas em Série
             reservaExclusaoAlvo = { idFb, groupId };
             document.getElementById('modal-exclusao').style.display = 'flex';
         }
@@ -566,17 +590,21 @@
             fecharModalExclusao();
             let { idFb, groupId } = reservaExclusaoAlvo;
 
-            if (tipo === 'dia') {
-                showStatus("Excluindo o dia...", "processando");
-                await db.collection('agendamentos').doc(idFb).delete();
-                recarregarTudo();
-            } else if (tipo === 'serie') {
-                showStatus("Excluindo a série inteira...", "processando");
-                let snap = await db.collection('agendamentos').where("groupId", "==", groupId).get();
-                let batch = db.batch();
-                snap.forEach(doc => { batch.delete(doc.ref); });
-                await batch.commit();
-                recarregarTudo();
+            try {
+                if (tipo === 'dia') {
+                    showStatus("Excluindo o dia...", "processando");
+                    await db.collection('agendamentos').doc(idFb).delete();
+                } else if (tipo === 'serie') {
+                    showStatus("Excluindo a série inteira...", "processando");
+                    let snap = await db.collection('agendamentos').where("groupId", "==", groupId).get();
+                    let batch = db.batch();
+                    snap.forEach(doc => { batch.delete(doc.ref); });
+                    await batch.commit();
+                }
+                await recarregarTudo();
+            } catch (erro) {
+                console.error("ERRO AO EXCLUIR:", erro);
+                showStatus("Erro ao excluir. Tente novamente.", "erro");
             }
         }
 
@@ -597,9 +625,9 @@
                     let res = await req.json();
                     if(res.status === 'sucesso') {
                         await db.collection('arquivos').add({ tipo: tipo, turmaAlvo: selectTurma.value, nome: arquivo.name, link: res.link, idDrive: res.idDrive, autor: USER_EMAIL, data: new Date().toLocaleDateString('pt-BR')});
-                        input.value = ''; recarregarTudo();
+                        input.value = ''; await recarregarTudo();
                     } else { showStatus("Erro no Drive: " + res.mensagem, "erro"); }
-                } catch(err) { showStatus("Erro de conexão", "erro"); }
+                } catch(err) { console.error(err); showStatus("Erro de conexão com Drive", "erro"); }
             };
             reader.readAsDataURL(arquivo);
         }
@@ -609,8 +637,9 @@
             showStatus("Apagando arquivo...", "processando");
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})});
-                await db.collection('arquivos').doc(idFb).delete(); recarregarTudo();
-            } catch(e) { showStatus("Erro ao apagar.", "erro"); }
+                await db.collection('arquivos').doc(idFb).delete(); 
+                await recarregarTudo();
+            } catch(e) { console.error(e); showStatus("Erro ao apagar arquivo", "erro"); }
         }
 
         // ==========================================
