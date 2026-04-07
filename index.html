@@ -302,11 +302,12 @@
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"];
 
+        // NOVA ESTRUTURA DE ESTADO GLOBAL (O "Cérebro" Local)
+        let STATE = { professores: [], turmas: {}, alunos: {}, agendamentos: [], arquivos: [] };
         let DADOS_SISTEMA = null; 
-        let AGENDAMENTOS_PUBLICOS = [];
         let USER_EMAIL = '';
-        
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
+        let isInitialLoad = true;
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
@@ -323,47 +324,19 @@
         }
 
         // ==========================================
-        // 2. INICIALIZAÇÃO E LOGIN
+        // 2. INICIALIZAÇÃO, LOGIN E ESCUTA ATIVA
         // ==========================================
-        window.onload = async function() {
+        window.onload = function() {
             setTimeout(() => document.getElementById('txt-acesso').style.display = 'inline-block', 1000);
-            await carregarCalendarioPublico();
+            
+            // INICIA OS "OUVINTES" DO FIREBASE UMA ÚNICA VEZ
+            iniciarEscutasEmTempoReal();
 
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
                 iniciarPortal(JSON.parse(usuarioSalvo), true);
             }
         };
-
-        async function carregarCalendarioPublico() {
-            try {
-                let snap = await db.collection('agendamentos').get();
-                AGENDAMENTOS_PUBLICOS = [];
-                snap.forEach(doc => { AGENDAMENTOS_PUBLICOS.push({id: doc.id, ...doc.data()}); });
-                renderCalendarioPublico();
-            } catch (e) { document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:#d32f2f;'>Erro de conexão.</p>"; }
-        }
-
-        function formatarTextoCompacto(texto) {
-            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
-            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
-            return t;
-        }
-
-        function renderCalendarioPublico() {
-            let data = document.getElementById('filtro-calendario-publico').value;
-            let html = '';
-            LISTA_SALAS.forEach(nome => {
-                let res = AGENDAMENTOS_PUBLICOS.filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Disponível</div>';
-                res.forEach(r => {
-                    let compact = formatarTextoCompacto(r.horario);
-                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
-                });
-                html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
-            });
-            document.getElementById('grade-laboratorios-publica').innerHTML = html;
-        }
 
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
@@ -377,96 +350,123 @@
         function decodificarJwt(t) { return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
         async function lidarComLoginGoogle(r) { iniciarPortal(decodificarJwt(r.credential)); }
 
-        async function iniciarPortal(dados, isAutoLogin = false) {
-            showStatus("Conectando...", "processando");
+        function iniciarPortal(dados, isAutoLogin = false) {
             localStorage.setItem("epblab_user", JSON.stringify(dados));
             USER_EMAIL = dados.email.toLowerCase().trim();
             
             document.getElementById('nome-usuario').innerText = dados.given_name;
             document.getElementById('foto-perfil').src = dados.picture;
 
-            try {
-                DADOS_SISTEMA = await extrairDadosDoFirebase(USER_EMAIL);
+            document.getElementById('area-login').style.display = 'none';
+            document.getElementById('area-usuario').style.display = 'flex';
+            document.getElementById('area-publica').style.display = 'none';
+            document.getElementById('area-privada').style.display = 'block';
+            document.getElementById('menu-dinamico').style.display = 'flex';
+            
+            if(!isAutoLogin) showStatus("Login Concluído! Preparando painel...", "processando");
+            atualizarInterface(); // Constrói a tela com os dados que já chegaram da escuta
+        }
+
+        function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
+
+        // ==========================================
+        // 3. MOTOR FIREBASE REAL-TIME (CUSTO QUASE ZERO)
+        // ==========================================
+        function iniciarEscutasEmTempoReal() {
+            // Escuta 1: Professores
+            db.collection('professores').onSnapshot(snap => {
+                STATE.professores = [];
+                snap.forEach(d => STATE.professores.push(d.id));
+                atualizarInterface();
+            });
+
+            // Escuta 2: Turmas
+            db.collection('turmas').onSnapshot(snap => {
+                STATE.turmas = {};
+                snap.forEach(d => STATE.turmas[d.id] = d.data().professor);
+                atualizarInterface();
+            });
+
+            // Escuta 3: Alunos
+            db.collection('alunos').onSnapshot(snap => {
+                STATE.alunos = {};
+                snap.forEach(d => STATE.alunos[d.id] = d.data().turmas || []);
+                atualizarInterface();
+            });
+
+            // Escuta 4: Agendamentos (O mais pesado, agora otimizado)
+            db.collection('agendamentos').onSnapshot(snap => {
+                STATE.agendamentos = [];
+                snap.forEach(doc => STATE.agendamentos.push({id: doc.id, ...doc.data()}));
                 
-                document.getElementById('area-login').style.display = 'none';
-                document.getElementById('area-usuario').style.display = 'flex';
-                document.getElementById('area-publica').style.display = 'none';
-                document.getElementById('area-privada').style.display = 'block';
-                document.getElementById('menu-dinamico').style.display = 'flex';
+                // A agenda pública sempre atualiza, logado ou não
+                renderCalendarioPublico(); 
+                atualizarInterface();
+            });
+
+            // Escuta 5: Arquivos
+            db.collection('arquivos').onSnapshot(snap => {
+                STATE.arquivos = [];
+                snap.forEach(d => STATE.arquivos.push({idFb: d.id, ...d.data()}));
+                atualizarInterface();
+            });
+        }
+
+        // Função que atua como "Muralha". Ela junta o STATE bruto e transforma em DADOS_SISTEMA pro usuário logado
+        let debounceTimer;
+        function atualizarInterface() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (!USER_EMAIL) return; // Só calcula painéis internos se estiver logado
+
+                let role = "aluno";
+                if(ADMIN_EMAILS.includes(USER_EMAIL)) role = "admin";
+                else if(STATE.professores.includes(USER_EMAIL)) role = "professor";
+
+                let materiais = []; let envios = []; let visaoGeralAdmin = []; let visaoGeral = []; let alunosDoProf = []; let minhasTurmas = [];
+
+                if(role === "admin") {
+                    Object.keys(STATE.turmas).forEach(t => {
+                        let mats = STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t);
+                        let ents = STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
+                        if(mats.length > 0 || ents.length > 0) visaoGeralAdmin.push({ turma: t, professor: STATE.turmas[t], materiais: mats, entregas: ents });
+                    });
+                }
+                else if(role === "professor") {
+                    let tProf = Object.keys(STATE.turmas).filter(t => STATE.turmas[t] === USER_EMAIL);
+                    for(let a in STATE.alunos) { STATE.alunos[a].forEach(ta => { if(tProf.includes(ta)) alunosDoProf.push({email: a, turma: ta}); }); }
+                    tProf.forEach(t => {
+                        materiais.push(...STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
+                        let ents = STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
+                        let porAluno = {}; ents.forEach(e => { if(!porAluno[e.autor]) porAluno[e.autor] = []; porAluno[e.autor].push(e); });
+                        for(let alu in porAluno) { visaoGeral.push({turma: t, aluno: alu, arquivos: porAluno[alu]}); }
+                    });
+                }
+                else {
+                    minhasTurmas = STATE.alunos[USER_EMAIL] || [];
+                    minhasTurmas.forEach(t => {
+                        materiais.push(...STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
+                        envios.push(...STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t && a.autor === USER_EMAIL));
+                    });
+                }
+
+                DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas };
                 
-                configurarPainel(DADOS_SISTEMA, true);
-                showStatus(isAutoLogin ? "Sessão Restaurada!" : "Login Concluído!"); 
-            } catch(e) { showStatus("Erro ao ler banco de dados", "erro"); }
+                configurarPainel(DADOS_SISTEMA, isInitialLoad);
+                renderCalendario();
+                
+                if(isInitialLoad) {
+                    showStatus("Sessão Sincronizada com Sucesso!");
+                    isInitialLoad = false;
+                }
+            }, 150); // Aguarda 150ms para juntar várias leituras do Firebase em 1 única atualização de tela
         }
 
         // ==========================================
-        // 3. MOTOR FIREBASE
-        // ==========================================
-        async function extrairDadosDoFirebase(emailLogado) {
-            let professores = []; let turmas = {}; let alunos = {}; let agendamentos = []; let todosArquivos = [];
-
-            const [snapProf, snapTurma, snapAluno, snapAgend, snapArq] = await Promise.all([
-                db.collection('professores').get(), db.collection('turmas').get(), db.collection('alunos').get(),
-                db.collection('agendamentos').get(), db.collection('arquivos').get()
-            ]);
-
-            snapProf.forEach(d => professores.push(d.id));
-            snapTurma.forEach(d => turmas[d.id] = d.data().professor);
-            snapAluno.forEach(d => alunos[d.id] = d.data().turmas || []);
-            snapAgend.forEach(d => agendamentos.push({id: d.id, ...d.data()}));
-            snapArq.forEach(d => todosArquivos.push({idFb: d.id, ...d.data()}));
-
-            let role = "aluno";
-            if(ADMIN_EMAILS.includes(emailLogado)) role = "admin";
-            else if(professores.includes(emailLogado)) role = "professor";
-
-            let materiais = []; let envios = []; let visaoGeralAdmin = []; let visaoGeral = []; let alunosDoProf = []; let minhasTurmas = [];
-
-            if(role === "admin") {
-                Object.keys(turmas).forEach(t => {
-                    let mats = todosArquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t);
-                    let ents = todosArquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
-                    if(mats.length > 0 || ents.length > 0) visaoGeralAdmin.push({ turma: t, professor: turmas[t], materiais: mats, entregas: ents });
-                });
-            }
-            else if(role === "professor") {
-                let tProf = Object.keys(turmas).filter(t => turmas[t] === emailLogado);
-                for(let a in alunos) { alunos[a].forEach(ta => { if(tProf.includes(ta)) alunosDoProf.push({email: a, turma: ta}); }); }
-                tProf.forEach(t => {
-                    materiais.push(...todosArquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
-                    let ents = todosArquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
-                    let porAluno = {}; ents.forEach(e => { if(!porAluno[e.autor]) porAluno[e.autor] = []; porAluno[e.autor].push(e); });
-                    for(let alu in porAluno) { visaoGeral.push({turma: t, aluno: alu, arquivos: porAluno[alu]}); }
-                });
-            }
-            else {
-                minhasTurmas = alunos[emailLogado] || [];
-                minhasTurmas.forEach(t => {
-                    materiais.push(...todosArquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
-                    envios.push(...todosArquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t && a.autor === emailLogado));
-                });
-            }
-
-            return { role, db: {professores, turmas, alunos}, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas, agendamentos };
-        }
-
-        async function recarregarTudo() {
-            try {
-                DADOS_SISTEMA = await extrairDadosDoFirebase(USER_EMAIL);
-                await carregarCalendarioPublico();
-                configurarPainel(DADOS_SISTEMA, false);
-                showStatus("Concluído!");
-            } catch(e) {
-                console.error(e);
-                showStatus("Erro ao atualizar a tela", "erro");
-            }
-        }
-
-        // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS (COM BLINDAGEM E MODAL)
+        // 4. AÇÕES DE BANCO DE DADOS (SEM RECARREGAR A TELA MANUALMENTE)
         // ==========================================
         async function adminAcao(acao) {
-            showStatus("Salvando...", "processando");
+            showStatus("Salvando na Nuvem...", "processando");
             try {
                 if (acao === 'admin_add_prof') { 
                     let v = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); if(!v) return showStatus("Digite o e-mail", "erro");
@@ -482,7 +482,7 @@
                     if(!a || !t) return showStatus("Preencha aluno e turma", "erro");
                     await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true}); document.getElementById('admin-novo-aluno').value = '';
                 }
-                await recarregarTudo();
+                showStatus("Salvo com sucesso!");
             } catch(e) { console.error(e); showStatus("Erro ao salvar", "erro"); }
         }
 
@@ -492,7 +492,7 @@
             try {
                 if(acao === 'admin_del_prof') await db.collection('professores').doc(alvo).delete();
                 if(acao === 'admin_del_turma') await db.collection('turmas').doc(alvo).delete();
-                await recarregarTudo();
+                showStatus("Removido!");
             } catch(e) { console.error(e); showStatus("Erro ao remover", "erro"); }
         }
 
@@ -501,7 +501,7 @@
             showStatus("Removendo...", "processando");
             try {
                 await db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) });
-                await recarregarTudo();
+                showStatus("Aluno removido!");
             } catch(e) { console.error(e); showStatus("Erro ao remover aluno", "erro"); }
         }
 
@@ -511,7 +511,7 @@
             try {
                 await db.collection('turmas').doc(t).set({professor: USER_EMAIL});
                 document.getElementById('prof-nova-turma').value = ''; 
-                await recarregarTudo();
+                showStatus("Turma criada!");
             } catch(e) { console.error(e); showStatus("Erro ao criar turma", "erro"); }
         }
 
@@ -522,7 +522,7 @@
             try {
                 await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
                 document.getElementById('prof-novo-aluno').value = ''; 
-                await recarregarTudo();
+                showStatus("Aluno matriculado!");
             } catch(e) { console.error(e); showStatus("Erro ao adicionar aluno", "erro"); }
         }
 
@@ -540,7 +540,7 @@
                 datasParaAgendar.push(`${y}-${m}-${d}`);
             }
 
-            let conflito = AGENDAMENTOS_PUBLICOS.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
+            let conflito = STATE.agendamentos.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
             if (conflito) {
                 let dataBr = conflito.data.split('-').reverse().join('/');
                 return alert(`⚠️ BLOQUEADO!\n\nO ${lab} já está reservado no dia ${dataBr} para este horário.\nPor favor, escolha outro laboratório ou horário.`);
@@ -556,17 +556,18 @@
                     batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: String(groupId) });
                 }
                 await batch.commit(); 
-                await recarregarTudo();
+                showStatus("Agendamento concluído!");
+                document.getElementById('lab-semanas').value = "1"; // Reseta o form
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO COM MODAL E TRY/CATCH ---
+        // --- SISTEMA DE EXCLUSÃO COM MODAL OTMIZADO (Custo de Leitura Zero) ---
         function cancelarReserva(idFb, groupId) { 
             if(!groupId || groupId === 'undefined' || groupId === 'null' || groupId === '') {
                 if(confirm("Excluir esta reserva antiga?")) {
                     showStatus("Excluindo...", "processando");
                     db.collection('agendamentos').doc(idFb).delete()
-                        .then(() => recarregarTudo())
+                        .then(() => showStatus("Reserva excluída!"))
                         .catch((e) => { console.error(e); showStatus("Erro ao excluir", "erro"); });
                 }
                 return;
@@ -583,11 +584,6 @@
         async function confirmarExclusao(tipo) {
             fecharModalExclusao();
             showStatus("Processando exclusão...", "processando");
-            
-            let seguranca = setTimeout(() => {
-                showStatus("Comunicação lenta. Atualize a página se necessário.", "erro");
-                recarregarTudo();
-            }, 5000);
 
             try {
                 let { idFb, groupId } = reservaExclusaoAlvo;
@@ -595,22 +591,17 @@
                 if (tipo === 'dia') {
                     await db.collection('agendamentos').doc(idFb).delete();
                 } else if (tipo === 'serie') {
-                    // Leitura manual para evitar erro de índice
-                    let snap = await db.collection('agendamentos').get();
+                    // A mágica: Usamos a memória local (STATE) para achar os IDs. Firebase não cobra essa busca!
+                    let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupId);
                     let batch = db.batch();
-                    let contador = 0;
-                    snap.forEach(doc => {
-                        if(String(doc.data().groupId) === groupId) {
-                            batch.delete(doc.ref);
-                            contador++;
-                        }
+                    reservasDaSerie.forEach(reserva => {
+                        let ref = db.collection('agendamentos').doc(reserva.id);
+                        batch.delete(ref);
                     });
-                    if(contador > 0) await batch.commit();
+                    if(reservasDaSerie.length > 0) await batch.commit();
                 }
-                clearTimeout(seguranca);
-                await recarregarTudo();
+                showStatus("Excluído com sucesso!");
             } catch (erro) {
-                clearTimeout(seguranca);
                 console.error("ERRO AO EXCLUIR:", erro);
                 showStatus("Erro ao excluir.", "erro");
             }
@@ -633,7 +624,7 @@
                     let res = await req.json();
                     if(res.status === 'sucesso') {
                         await db.collection('arquivos').add({ tipo: tipo, turmaAlvo: selectTurma.value, nome: arquivo.name, link: res.link, idDrive: res.idDrive, autor: USER_EMAIL, data: new Date().toLocaleDateString('pt-BR')});
-                        input.value = ''; await recarregarTudo();
+                        input.value = ''; showStatus("Arquivo Enviado!");
                     } else { showStatus("Erro no Drive: " + res.mensagem, "erro"); }
                 } catch(err) { console.error(err); showStatus("Erro de conexão com Drive", "erro"); }
             };
@@ -646,13 +637,34 @@
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})});
                 await db.collection('arquivos').doc(idFb).delete(); 
-                await recarregarTudo();
+                showStatus("Arquivo deletado!");
             } catch(e) { console.error(e); showStatus("Erro ao apagar arquivo", "erro"); }
         }
 
         // ==========================================
         // 6. RENDERIZAÇÃO DAS TELAS
         // ==========================================
+        function formatarTextoCompacto(texto) {
+            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
+            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
+            return t;
+        }
+
+        function renderCalendarioPublico() {
+            let data = document.getElementById('filtro-calendario-publico').value;
+            let html = '';
+            LISTA_SALAS.forEach(nome => {
+                let res = STATE.agendamentos.filter(a => a.data === data && a.lab === nome);
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Disponível</div>';
+                res.forEach(r => {
+                    let compact = formatarTextoCompacto(r.horario);
+                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
+                });
+                html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
+            });
+            document.getElementById('grade-laboratorios-publica').innerHTML = html;
+        }
+
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
             let data = document.getElementById('filtro-calendario').value;
@@ -771,7 +783,6 @@
                  document.getElementById(paginaInicial).style.display = 'flex';
                  menu.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes(paginaInicial)) b.classList.add('active'); });
             }
-            renderCalendario();
         }
 
         function abrirPagina(id, btn) { 
