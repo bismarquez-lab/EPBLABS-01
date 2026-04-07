@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal EPB</title>
+    <title>EPBLAB</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
@@ -69,7 +69,7 @@
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 12px; cursor: pointer; font-weight: 500; padding: 4px 8px; border-radius: 6px;}
         .btn-apagar:hover { background: #fce8e6;}
 
-        /* --- TOAST NOTIFICATION (MENSAGENS FLUTUANTES) --- */
+        /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
     </style>
@@ -77,7 +77,6 @@
 <body>
 
     <canvas id="meuCanvas"></canvas>
-    
     <div id="g_id_onload" data-client_id="212510825125-n312apg76r8sqbdkf7gcov8da25796ar.apps.googleusercontent.com" data-context="signin" data-callback="lidarComLoginGoogle" data-auto_prompt="false"></div>
 
     <nav id="navbar">
@@ -148,7 +147,7 @@
                         </select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         <select id="lab-semanas">
-                            <option value="1">Apenas hoje</option><option value="4">4 semanas</option><option value="20">Semestre todo</option>
+                            <option value="1">Apenas hoje</option><option value="4">4 semanas (Mensal)</option><option value="20">Semestre todo</option>
                         </select>
                         <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px;">Agendar Sala</button>
                     </div>
@@ -289,7 +288,6 @@
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
 
-        // --- SISTEMA DE TOAST (MENSAGENS FLUTUANTES) ---
         let toastTimeout;
         function showStatus(msg, tipo="sucesso") {
             let el = document.getElementById('toast-msg');
@@ -305,7 +303,6 @@
         // ==========================================
         window.onload = async function() {
             setTimeout(() => document.getElementById('txt-acesso').style.display = 'inline-block', 1000);
-            
             await carregarCalendarioPublico();
 
             let usuarioSalvo = localStorage.getItem("epblab_user");
@@ -437,7 +434,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS 
+        // 4. AÇÕES DE BANCO DE DADOS E BLOQUEIO DE CONFLITOS
         // ==========================================
         async function adminAcao(acao) {
             showStatus("Salvando...", "processando");
@@ -496,22 +493,60 @@
             let sem = parseInt(document.getElementById('lab-semanas').value, 10);
             if(!dataR || !lab || !hor || !t) return showStatus("Preencha todos os campos!", "erro");
             
-            showStatus("Agendando Sala...", "processando");
+            // --- 1. PREPARA AS DATAS ---
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
-            let batch = db.batch();
+            let datasParaAgendar = [];
             for (let i = 0; i < sem; i++) { 
                 let dCalc = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate() + (i * 7)); 
                 let y = dCalc.getFullYear(); let m = String(dCalc.getMonth() + 1).padStart(2, '0'); let d = String(dCalc.getDate()).padStart(2, '0');
+                datasParaAgendar.push(`${y}-${m}-${d}`);
+            }
+
+            // --- 2. TRAVA ANTI-CONFLITO ---
+            let conflito = AGENDAMENTOS_PUBLICOS.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
+            if (conflito) {
+                let dataBr = conflito.data.split('-').reverse().join('/');
+                return alert(`⚠️ BLOQUEADO!\n\nO ${lab} já está reservado no dia ${dataBr} para este horário.\nPor favor, escolha outro laboratório ou horário.`);
+            }
+
+            // --- 3. GRAVAÇÃO COM GROUP ID ---
+            showStatus("Agendando Sala...", "processando");
+            let groupId = "GRP_" + new Date().getTime(); // Identificador único da série
+            let batch = db.batch();
+            
+            for (let i = 0; i < datasParaAgendar.length; i++) {
                 let docRef = db.collection('agendamentos').doc();
-                batch.set(docRef, { data: `${y}-${m}-${d}`, lab: lab, horario: hor, turma: t, prof: USER_EMAIL });
+                batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: groupId });
             }
             await batch.commit(); recarregarTudo();
         }
 
-        async function cancelarReserva(idFb) { 
-            if(confirm("Excluir esta reserva?")) {
-                showStatus("Excluindo...", "processando");
-                await db.collection('agendamentos').doc(idFb).delete(); recarregarTudo();
+        async function cancelarReserva(idFb, groupId) { 
+            if(!groupId || groupId === 'undefined') {
+                // Para reservas antigas que foram feitas antes dessa atualização
+                if(confirm("Excluir esta reserva?")) {
+                    showStatus("Excluindo...", "processando");
+                    await db.collection('agendamentos').doc(idFb).delete(); recarregarTudo();
+                }
+                return;
+            }
+
+            // Para reservas novas em série (Mensal ou Semestral)
+            let opcao = prompt("Esta reserva faz parte de uma série.\nComo você deseja excluir?\n\nDigite 1 - Excluir APENAS esta aula (Dia)\nDigite 2 - Excluir TODA A SÉRIE");
+            
+            if (opcao === "1") {
+                showStatus("Excluindo o dia...", "processando");
+                await db.collection('agendamentos').doc(idFb).delete();
+                recarregarTudo();
+            } else if (opcao === "2") {
+                showStatus("Excluindo a série inteira...", "processando");
+                let snap = await db.collection('agendamentos').where("groupId", "==", groupId).get();
+                let batch = db.batch();
+                snap.forEach(doc => { batch.delete(doc.ref); });
+                await batch.commit();
+                recarregarTudo();
+            } else if (opcao !== null) {
+                alert("Opção inválida. Nenhuma reserva foi excluída.");
             }
         }
 
@@ -549,7 +584,7 @@
         }
 
         // ==========================================
-        // 6. INTERFACE E RENDERIZAÇÃO
+        // 6. RENDERIZAÇÃO
         // ==========================================
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
@@ -560,7 +595,8 @@
                 let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
-                    let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === USER_EMAIL) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}')">Excluir</button>` : '';
+                    // Passando o groupId para a função de exclusão
+                    let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === USER_EMAIL) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}', '${r.groupId || ''}')">Excluir</button>` : '';
                     cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div>${btn}</div>`;
                 });
                 html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
