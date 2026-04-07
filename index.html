@@ -305,6 +305,7 @@
         let DADOS_SISTEMA = null; 
         let AGENDAMENTOS_PUBLICOS = [];
         let USER_EMAIL = '';
+        
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
@@ -552,13 +553,14 @@
                 
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
-                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: groupId });
+                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: String(groupId) });
                 }
                 await batch.commit(); 
                 await recarregarTudo();
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
+        // --- SISTEMA DE EXCLUSÃO COM MODAL E TRY/CATCH ---
         function cancelarReserva(idFb, groupId) { 
             if(!groupId || groupId === 'undefined' || groupId === 'null' || groupId === '') {
                 if(confirm("Excluir esta reserva antiga?")) {
@@ -569,7 +571,7 @@
                 }
                 return;
             }
-            reservaExclusaoAlvo = { idFb, groupId };
+            reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
             document.getElementById('modal-exclusao').style.display = 'flex';
         }
 
@@ -580,7 +582,7 @@
 
         async function confirmarExclusao(tipo) {
             fecharModalExclusao();
-            showStatus("Excluindo...", "processando");
+            showStatus("Processando exclusão...", "processando");
             
             let seguranca = setTimeout(() => {
                 showStatus("Comunicação lenta. Atualize a página se necessário.", "erro");
@@ -596,12 +598,14 @@
                     // Leitura manual para evitar erro de índice
                     let snap = await db.collection('agendamentos').get();
                     let batch = db.batch();
+                    let contador = 0;
                     snap.forEach(doc => {
-                        if(doc.data().groupId === groupId) {
+                        if(String(doc.data().groupId) === groupId) {
                             batch.delete(doc.ref);
+                            contador++;
                         }
                     });
-                    await batch.commit();
+                    if(contador > 0) await batch.commit();
                 }
                 clearTimeout(seguranca);
                 await recarregarTudo();
@@ -613,7 +617,7 @@
         }
 
         // ==========================================
-        // 5. UPLOAD DE ARQUIVOS
+        // 5. UPLOAD DE ARQUIVOS E DRIVE
         // ==========================================
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
@@ -647,7 +651,7 @@
         }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO
+        // 6. RENDERIZAÇÃO DAS TELAS
         // ==========================================
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
