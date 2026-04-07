@@ -273,7 +273,7 @@
 
     <script>
         // ==========================================
-        // 1. CONFIGURAÇÃO FIREBASE E APPS SCRIPT
+        // 1. CONFIGURAÇÃO FIREBASE
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAz_QgvgVDx80smVoX20lJR9sfZvZEg7c0",
@@ -301,23 +301,60 @@
         document.getElementById('lab-data').valueAsDate = new Date();
 
         // ==========================================
-        // 2. INICIALIZAÇÃO E LOGIN (SPA / F5)
+        // 2. INICIALIZAÇÃO (AGENDA PÚBLICA + F5)
         // ==========================================
-        window.onload = function() {
-            carregarCalendarioPublico();
+        window.onload = async function() {
+            // 1. CARREGA O CALENDÁRIO PÚBLICO DO FIREBASE IMEDIATAMENTE
+            await carregarCalendarioPublico();
 
-            // Puxa o usuário salvo no navegador (Evita tela de login no F5)
+            // 2. RECUPERAÇÃO DA SESSÃO AO APERTAR F5
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
                 document.getElementById('tela-inicio').style.display = 'none';
                 document.getElementById('navbar').style.display = 'flex';
                 document.getElementById('area-conteudo').style.display = 'block';
                 document.getElementById('pag-perfil').style.display = 'flex';
-                document.getElementById('geral-status').innerText = "Restaurando sessão veloz...";
+                document.getElementById('geral-status').innerText = "Restaurando sessão...";
                 
                 iniciarPortal(JSON.parse(usuarioSalvo), true);
             }
         };
+
+        // Função que lê a agenda direto do Firebase
+        async function carregarCalendarioPublico() {
+            try {
+                let snap = await db.collection('agendamentos').get();
+                AGENDAMENTOS_PUBLICOS = [];
+                snap.forEach(doc => {
+                    AGENDAMENTOS_PUBLICOS.push({id: doc.id, ...doc.data()});
+                });
+                renderCalendarioPublico();
+            } catch (e) {
+                console.error("Erro ao ler Firebase:", e);
+                document.getElementById('grade-laboratorios-publica').innerHTML = "<p style='color:#d32f2f;'>Erro de permissão. Verifique as regras do Firebase.</p>";
+            }
+        }
+
+        function formatarTextoCompacto(texto) {
+            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
+            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
+            return t;
+        }
+
+        function renderCalendarioPublico() {
+            let data = document.getElementById('filtro-calendario-publico').value;
+            let html = '';
+            LISTA_SALAS.forEach(nome => {
+                let res = AGENDAMENTOS_PUBLICOS.filter(a => a.data === data && a.lab === nome);
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:6px; font-style:italic;">Disponível</div>';
+                res.forEach(r => {
+                    let compact = formatarTextoCompacto(r.horario);
+                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
+                });
+                html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
+            });
+            document.getElementById('grade-laboratorios-publica').innerHTML = html;
+        }
 
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
@@ -340,7 +377,6 @@
             document.getElementById('foto-perfil').src = dados.picture;
 
             try {
-                // Ao invés de chamar o Apps Script, chamamos a nova função que lê direto do Firebase
                 DADOS_SISTEMA = await extrairDadosDoFirebase(dados.email.toLowerCase().trim());
                 
                 if(!isAutoLogin) {
@@ -364,7 +400,6 @@
         async function extrairDadosDoFirebase(emailLogado) {
             let professores = []; let turmas = {}; let alunos = {}; let agendamentos = []; let todosArquivos = [];
 
-            // Dispara todas as buscas ao mesmo tempo para ser muito rápido
             const [snapProf, snapTurma, snapAluno, snapAgend, snapArq] = await Promise.all([
                 db.collection('professores').get(),
                 db.collection('turmas').get(),
@@ -379,12 +414,10 @@
             snapAgend.forEach(d => agendamentos.push({id: d.id, ...d.data()}));
             snapArq.forEach(d => todosArquivos.push({idFb: d.id, ...d.data()}));
 
-            // Determina a Função
             let role = "aluno";
             if(ADMIN_EMAILS.includes(emailLogado)) role = "admin";
             else if(professores.includes(emailLogado)) role = "professor";
 
-            // Monta as Listas (Idêntico ao que o Apps Script fazia, mas agora instantâneo no Front)
             let materiais = []; let envios = []; let visaoGeralAdmin = []; let visaoGeral = []; let alunosDoProf = []; let minhasTurmas = [];
 
             if(role === "admin") {
@@ -465,7 +498,6 @@
             let el = document.getElementById(msgId); el.innerText = "Removendo..."; el.style.color = "#0b57d0";
             if(acao === 'admin_del_prof') await db.collection('professores').doc(alvo).delete();
             if(acao === 'admin_del_turma') {
-                // Quando exclui a turma, o correto seria tirar dos alunos também. Para manter rápido:
                 await db.collection('turmas').doc(alvo).delete();
             }
             recarregarTudo(msgId);
@@ -578,19 +610,6 @@
         // ==========================================
         // 6. INTERFACE E RENDERIZAÇÃO
         // ==========================================
-        async function carregarCalendarioPublico() {
-            let snap = await db.collection('agendamentos').get();
-            AGENDAMENTOS_PUBLICOS = [];
-            snap.forEach(doc => AGENDAMENTOS_PUBLICOS.push({id: doc.id, ...doc.data()}));
-            renderCalendarioPublico();
-        }
-
-        function formatarTextoCompacto(texto) {
-            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
-            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
-            return t;
-        }
-
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
             let data = document.getElementById('filtro-calendario').value;
