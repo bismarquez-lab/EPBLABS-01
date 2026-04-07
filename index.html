@@ -10,6 +10,9 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         /* --- TIPOGRAFIA INTER E LAYOUT SPA MD3 --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -104,7 +107,7 @@
                 <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 6px 12px; font-size: 13px; border-radius: 20px;">
             </div>
             <div class="scroll-interno" id="grade-laboratorios-publica" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-                <div style="color: #747775; font-size: 13px;">Carregando agenda...</div>
+                <div style="color: #747775; font-size: 13px;">Carregando agenda na nuvem...</div>
             </div>
         </div>
     </div>
@@ -191,9 +194,9 @@
                 </div>
                 
                 <div class="box" style="grid-column: 1 / -1; background: #f8f9fa;">
-                    <h4>Gestão de Arquivos na Nuvem (Drive)</h4>
+                    <h4>Gestão de Arquivos na Nuvem</h4>
                     <select id="admin-filtro-arquivos" style="background: #fff;" onchange="renderArquivosAdmin()">
-                        <option value="todas">Carregando Nuvem...</option>
+                        <option value="todas">Todas as Turmas...</option>
                     </select>
                     <div class="scroll-interno" style="max-height: 250px; background: #fff; padding: 16px; border-radius: 12px; border: 1px solid #e3e3e3;">
                         <ul class="lista-arq" id="lista-arquivos-admin"></ul>
@@ -269,59 +272,52 @@
     </div>
 
     <script>
+        // ==========================================
+        // 1. CONFIGURAÇÃO FIREBASE E APPS SCRIPT
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAz_QgvgVDx80smVoX20lJR9sfZvZEg7c0",
+            authDomain: "epblabs-10353.firebaseapp.com",
+            projectId: "epblabs-10353",
+            storageBucket: "epblabs-10353.firebasestorage.app",
+            messagingSenderId: "420618806307",
+            appId: "1:420618806307:web:172055161daad338527d96",
+            measurementId: "G-PCKR4NQTLC"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // O URL do Apps Script AGORA SERVE SÓ PARA ARQUIVOS DO DRIVE
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
+        
+        const ADMIN_EMAILS = ["bismarquez@gmail.com"];
+        const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"];
+
         let DADOS_SISTEMA = null; 
         let AGENDAMENTOS_PUBLICOS = [];
-        const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"];
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
 
+        // ==========================================
+        // 2. INICIALIZAÇÃO E LOGIN (SPA / F5)
+        // ==========================================
         window.onload = function() {
-            // 1. TENTA RECUPERAR A SESSÃO IMEDIATAMENTE (F5 Fix)
+            carregarCalendarioPublico();
+
+            // Puxa o usuário salvo no navegador (Evita tela de login no F5)
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
-                // Esconde a tela de login na hora para não piscar
                 document.getElementById('tela-inicio').style.display = 'none';
                 document.getElementById('navbar').style.display = 'flex';
                 document.getElementById('area-conteudo').style.display = 'block';
                 document.getElementById('pag-perfil').style.display = 'flex';
-                document.getElementById('geral-status').innerText = "Restaurando sessão...";
+                document.getElementById('geral-status').innerText = "Restaurando sessão veloz...";
                 
                 iniciarPortal(JSON.parse(usuarioSalvo), true);
             }
-
-            // 2. CARREGA O CALENDÁRIO PÚBLICO EM PARALELO
-            fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`)
-            .then(res => res.json())
-            .then(json => {
-                AGENDAMENTOS_PUBLICOS = json.agendamentos || [];
-                renderCalendarioPublico();
-            })
-            .catch(e => console.log("Erro calendário"));
         };
-
-        function formatarTextoCompacto(texto) {
-            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
-            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
-            return t;
-        }
-
-        function renderCalendarioPublico() {
-            let data = document.getElementById('filtro-calendario-publico').value;
-            let html = '';
-            LISTA_SALAS.forEach(nome => {
-                let res = AGENDAMENTOS_PUBLICOS.filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:6px; font-style:italic;">Disponível</div>';
-                res.forEach(r => {
-                    let compact = formatarTextoCompacto(r.horario);
-                    cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
-                });
-                html += `<div class="card-lab"><strong>${nome === "Sala Maker" ? "🛠️" : "💻"} ${nome}</strong>${cont}</div>`;
-            });
-            document.getElementById('grade-laboratorios-publica').innerHTML = html;
-        }
 
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
         const msalInstance = new msal.PublicClientApplication(msalConfig);
@@ -332,24 +328,20 @@
                 iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); 
             } catch(e) { alert("Erro ao conectar com Microsoft."); } 
         }
-        
         function decodificarJwt(t) { return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
-        
         async function lidarComLoginGoogle(r) { iniciarPortal(decodificarJwt(r.credential)); }
 
         async function iniciarPortal(dados, isAutoLogin = false) {
-            if(!isAutoLogin) document.getElementById('status-login').innerText = "Iniciando sessão...";
+            if(!isAutoLogin) document.getElementById('status-login').innerText = "Conectando ao Firebase...";
             
-            // Salva na memória do navegador para sobreviver ao F5
             localStorage.setItem("epblab_user", JSON.stringify(dados));
-            
-            document.getElementById('email-oculto').innerText = dados.email;
+            document.getElementById('email-oculto').innerText = dados.email.toLowerCase().trim();
             document.getElementById('nome-usuario').innerText = dados.given_name;
             document.getElementById('foto-perfil').src = dados.picture;
+
             try {
-                const res = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(dados.email)}`);
-                const json = await res.json(); 
-                DADOS_SISTEMA = json;
+                // Ao invés de chamar o Apps Script, chamamos a nova função que lê direto do Firebase
+                DADOS_SISTEMA = await extrairDadosDoFirebase(dados.email.toLowerCase().trim());
                 
                 if(!isAutoLogin) {
                     document.getElementById('tela-inicio').style.display = 'none';
@@ -357,15 +349,246 @@
                     document.getElementById('area-conteudo').style.display = 'block';
                 }
                 
-                configurarPainel(json, true);
-                if(!isAutoLogin) {
-                    fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: 'registrar_login', userEmail: dados.email, nomeUser: dados.given_name, roleUser: json.role }), headers: {'Content-Type': 'text/plain'} });
-                } else {
-                    document.getElementById('geral-status').innerText = ""; // Limpa a msg de F5
-                }
+                configurarPainel(DADOS_SISTEMA, true);
+                if(isAutoLogin) document.getElementById('geral-status').innerText = ""; 
+
             } catch(e) { 
-                if(!isAutoLogin) document.getElementById('status-login').innerText = "Erro ao conectar ao servidor."; 
+                if(!isAutoLogin) document.getElementById('status-login').innerText = "Erro ao ler banco de dados."; 
+                console.log(e);
             }
+        }
+
+        // ==========================================
+        // 3. MOTOR FIREBASE (O NOVO "CÉREBRO")
+        // ==========================================
+        async function extrairDadosDoFirebase(emailLogado) {
+            let professores = []; let turmas = {}; let alunos = {}; let agendamentos = []; let todosArquivos = [];
+
+            // Dispara todas as buscas ao mesmo tempo para ser muito rápido
+            const [snapProf, snapTurma, snapAluno, snapAgend, snapArq] = await Promise.all([
+                db.collection('professores').get(),
+                db.collection('turmas').get(),
+                db.collection('alunos').get(),
+                db.collection('agendamentos').get(),
+                db.collection('arquivos').get()
+            ]);
+
+            snapProf.forEach(d => professores.push(d.id));
+            snapTurma.forEach(d => turmas[d.id] = d.data().professor);
+            snapAluno.forEach(d => alunos[d.id] = d.data().turmas || []);
+            snapAgend.forEach(d => agendamentos.push({id: d.id, ...d.data()}));
+            snapArq.forEach(d => todosArquivos.push({idFb: d.id, ...d.data()}));
+
+            // Determina a Função
+            let role = "aluno";
+            if(ADMIN_EMAILS.includes(emailLogado)) role = "admin";
+            else if(professores.includes(emailLogado)) role = "professor";
+
+            // Monta as Listas (Idêntico ao que o Apps Script fazia, mas agora instantâneo no Front)
+            let materiais = []; let envios = []; let visaoGeralAdmin = []; let visaoGeral = []; let alunosDoProf = []; let minhasTurmas = [];
+
+            if(role === "admin") {
+                Object.keys(turmas).forEach(t => {
+                    let mats = todosArquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t);
+                    let ents = todosArquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
+                    if(mats.length > 0 || ents.length > 0) {
+                        visaoGeralAdmin.push({ turma: t, professor: turmas[t], materiais: mats, entregas: ents });
+                    }
+                });
+            }
+            else if(role === "professor") {
+                let tProf = Object.keys(turmas).filter(t => turmas[t] === emailLogado);
+                for(let a in alunos) { alunos[a].forEach(ta => { if(tProf.includes(ta)) alunosDoProf.push({email: a, turma: ta}); }); }
+                tProf.forEach(t => {
+                    materiais.push(...todosArquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
+                    let ents = todosArquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
+                    let porAluno = {};
+                    ents.forEach(e => { if(!porAluno[e.autor]) porAluno[e.autor] = []; porAluno[e.autor].push(e); });
+                    for(let alu in porAluno) { visaoGeral.push({turma: t, aluno: alu, arquivos: porAluno[alu]}); }
+                });
+            }
+            else {
+                minhasTurmas = alunos[emailLogado] || [];
+                minhasTurmas.forEach(t => {
+                    materiais.push(...todosArquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
+                    envios.push(...todosArquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t && a.autor === emailLogado));
+                });
+            }
+
+            return { role, db: {professores, turmas, alunos}, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas, agendamentos };
+        }
+
+        async function recarregarTudo(msgElementId) {
+            let emailLogado = document.getElementById('email-oculto').innerText;
+            DADOS_SISTEMA = await extrairDadosDoFirebase(emailLogado);
+            await carregarCalendarioPublico();
+            configurarPainel(DADOS_SISTEMA, false);
+            if(msgElementId) {
+                let el = document.getElementById(msgElementId);
+                el.innerText = "Concluído!"; el.style.color = "#146c2e";
+                setTimeout(() => el.innerText = "", 3000);
+            }
+        }
+
+        // ==========================================
+        // 4. AÇÕES DE BANCO DE DADOS (AGORA ULTRA RÁPIDAS)
+        // ==========================================
+        async function adminAcao(acao) {
+            let el = document.getElementById('admin-status'); el.innerText = "Salvando..."; el.style.color = "#0b57d0";
+            try {
+                if (acao === 'admin_add_prof') { 
+                    let v = document.getElementById('admin-novo-prof').value.trim().toLowerCase();
+                    if(!v) return alert("Digite o e-mail");
+                    await db.collection('professores').doc(v).set({ativo: true});
+                    document.getElementById('admin-novo-prof').value = '';
+                }
+                if (acao === 'admin_add_turma') { 
+                    let t = document.getElementById('admin-nome-turma').value;
+                    let p = document.getElementById('admin-select-prof').value;
+                    if(!t || !p) return alert("Preencha turma e professor");
+                    await db.collection('turmas').doc(t).set({professor: p.trim().toLowerCase()});
+                    document.getElementById('admin-nome-turma').value = '';
+                }
+                if (acao === 'admin_add_aluno') { 
+                    let a = document.getElementById('admin-novo-aluno').value.trim().toLowerCase();
+                    let t = document.getElementById('admin-select-turma').value;
+                    if(!a || !t) return alert("Preencha aluno e turma");
+                    await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
+                    document.getElementById('admin-novo-aluno').value = '';
+                }
+                recarregarTudo('admin-status');
+            } catch(e) { el.innerText = "Erro."; el.style.color = "red"; }
+        }
+
+        async function adminExcluir(acao, alvo, msgId) {
+            if(!confirm(`Remover '${alvo}'?`)) return;
+            let el = document.getElementById(msgId); el.innerText = "Removendo..."; el.style.color = "#0b57d0";
+            if(acao === 'admin_del_prof') await db.collection('professores').doc(alvo).delete();
+            if(acao === 'admin_del_turma') {
+                // Quando exclui a turma, o correto seria tirar dos alunos também. Para manter rápido:
+                await db.collection('turmas').doc(alvo).delete();
+            }
+            recarregarTudo(msgId);
+        }
+
+        async function adminExcluirAluno(alvoEmail, turmaAlvo, msgId) { 
+            if(!confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) return;
+            let el = document.getElementById(msgId); el.innerText = "Removendo..."; el.style.color = "#0b57d0";
+            await db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) });
+            recarregarTudo(msgId);
+        }
+
+        async function profAddTurma() {
+            let t = document.getElementById('prof-nova-turma').value; if(!t) return alert("Digite o nome.");
+            let email = document.getElementById('email-oculto').innerText;
+            document.getElementById('prof-visao-status').innerText = "Criando...";
+            await db.collection('turmas').doc(t).set({professor: email});
+            document.getElementById('prof-nova-turma').value = '';
+            recarregarTudo('prof-visao-status');
+        }
+
+        async function profAddAluno() {
+            let a = document.getElementById('prof-novo-aluno').value.trim().toLowerCase();
+            let t = document.getElementById('prof-select-turma-add').value;
+            if(!a || !t) return alert("Preencha os campos.");
+            document.getElementById('prof-visao-status').innerText = "Adicionando...";
+            await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
+            document.getElementById('prof-novo-aluno').value = '';
+            recarregarTudo('prof-visao-status');
+        }
+
+        async function reservarLab() {
+            let dataR = document.getElementById('lab-data').value; let lab = document.getElementById('lab-numero').value;
+            let hor = document.getElementById('lab-horario').value; let t = document.getElementById('lab-turma').value;
+            let sem = parseInt(document.getElementById('lab-semanas').value, 10);
+            if(!dataR || !lab || !hor || !t) return alert("Preencha todos os campos do agendamento!");
+            
+            document.getElementById('geral-status').innerText = "Agendando...";
+            let email = document.getElementById('email-oculto').innerText;
+            let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
+            
+            let batch = db.batch();
+            for (let i = 0; i < sem; i++) { 
+                let dCalc = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate() + (i * 7)); 
+                let y = dCalc.getFullYear(); let m = String(dCalc.getMonth() + 1).padStart(2, '0'); let d = String(dCalc.getDate()).padStart(2, '0');
+                let strData = `${y}-${m}-${d}`;
+                
+                let docRef = db.collection('agendamentos').doc();
+                batch.set(docRef, { data: strData, lab: lab, horario: hor, turma: t, prof: email });
+            }
+            await batch.commit();
+            recarregarTudo('geral-status');
+        }
+
+        async function cancelarReserva(idFb) { 
+            if(confirm("Excluir esta reserva?")) {
+                document.getElementById('geral-status').innerText = "Excluindo...";
+                await db.collection('agendamentos').doc(idFb).delete();
+                recarregarTudo('geral-status');
+            }
+        }
+
+        // ==========================================
+        // 5. UPLOAD DE ARQUIVOS (DRIVE + FIREBASE)
+        // ==========================================
+        function upload(tipo) {
+            let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
+            let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
+            let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
+
+            if (input.files.length === 0 || !selectTurma.value) return alert("Selecione a turma e o arquivo.");
+            let arquivo = input.files[0]; let reader = new FileReader();
+            
+            status.innerText = "Enviando para a Nuvem..."; status.style.color = "#0b57d0";
+
+            reader.onload = async function(e) {
+                try {
+                    // 1. Manda o arquivo gordo pro Apps Script (Drive)
+                    let req = await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value }) });
+                    let res = await req.json();
+                    
+                    if(res.status === 'sucesso') {
+                        // 2. Salva apenas o link no Firebase (Ultra rápido)
+                        await db.collection('arquivos').add({
+                            tipo: tipo, turmaAlvo: selectTurma.value, nome: arquivo.name, link: res.link, idDrive: res.idDrive,
+                            autor: document.getElementById('email-oculto').innerText, data: new Date().toLocaleDateString('pt-BR')
+                        });
+                        input.value = '';
+                        recarregarTudo(tipo === 'professor' ? 'prof-status' : 'aluno-status');
+                    } else {
+                        status.innerText = "Erro no Drive: " + res.mensagem; status.style.color = "red";
+                    }
+                } catch(err) { status.innerText = "Erro de conexão"; status.style.color = "red"; }
+            };
+            reader.readAsDataURL(arquivo);
+        }
+
+        async function apagar(idDrive, idFb, msgElementId) {
+            if(!confirm("Apagar este arquivo da Nuvem?")) return;
+            let el = document.getElementById(msgElementId); el.innerText = "Apagando..."; el.style.color = "#0b57d0";
+            try {
+                // 1. Apaga do Drive via Apps Script
+                await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})});
+                // 2. Apaga a referência do Firebase
+                await db.collection('arquivos').doc(idFb).delete();
+                recarregarTudo(msgElementId);
+            } catch(e) { el.innerText = "Erro ao apagar."; el.style.color = "red"; }
+        }
+
+        // ==========================================
+        // 6. INTERFACE E RENDERIZAÇÃO
+        // ==========================================
+        async function carregarCalendarioPublico() {
+            let snap = await db.collection('agendamentos').get();
+            AGENDAMENTOS_PUBLICOS = [];
+            snap.forEach(doc => AGENDAMENTOS_PUBLICOS.push({id: doc.id, ...doc.data()}));
+            renderCalendarioPublico();
+        }
+
+        function formatarTextoCompacto(texto) {
+            let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
+            if(t.includes('(')) { t = t.replace('(', '- ').replace(')', '').replace('às', 'até'); }
+            return t;
         }
 
         function renderCalendario() {
@@ -374,7 +597,7 @@
             let email = document.getElementById('email-oculto').innerText;
             let html = '';
             LISTA_SALAS.forEach(nome => {
-                let res = (DADOS_SISTEMA.agendamentos || []).filter(a => a.data === data && a.lab === nome);
+                let res = DADOS_SISTEMA.agendamentos.filter(a => a.data === data && a.lab === nome);
                 let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:6px; font-style:italic;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
@@ -386,71 +609,37 @@
             document.getElementById('grade-laboratorios').innerHTML = html;
         }
 
-        function reservarLab() {
-            let dataReserva = document.getElementById('lab-data').value;
-            let lab = document.getElementById('lab-numero').value;
-            let horario = document.getElementById('lab-horario').value;
-            let turma = document.getElementById('lab-turma').value;
-            
-            if(!dataReserva || !lab || !horario || !turma) return alert("Preencha todos os campos do agendamento!");
-            
-            let p = { 
-                action: 'add_agendamento', 
-                dataReserva: dataReserva, 
-                lab: lab, 
-                horario: horario, 
-                turma: turma, 
-                semanas: document.getElementById('lab-semanas').value, 
-                userEmail: document.getElementById('email-oculto').innerText 
-            };
-            fetchBanco(p, document.getElementById('geral-status'));
-        }
-
-        function cancelarReserva(id) { 
-            if(confirm("Excluir esta reserva?")) {
-                fetchBanco({ action: 'del_agendamento', idReserva: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById('geral-status')); 
-            }
-        }
-
         function renderMateriaisAluno() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
             let filtro = document.getElementById('aluno-filtro-turma').value;
             let mat = DADOS_SISTEMA.materiais;
-            if (filtro !== 'todas') mat = mat.filter(m => m.turma === filtro);
+            if (filtro !== 'todas') mat = mat.filter(m => m.turmaAlvo === filtro);
             let htmlMat = '';
             mat.forEach(m => {
-                let nickProf = (DADOS_SISTEMA.db.turmas[m.turma] || "").split('@')[0] || 'Prof';
-                htmlMat += `<li><span>📄 [${m.turma}] <a href="${m.link}" target="_blank">${m.nome}</a></span><span style="font-size: 11px; color: #747775;">(${nickProf})</span></li>`;
+                let nickProf = (DADOS_SISTEMA.db.turmas[m.turmaAlvo] || "").split('@')[0] || 'Prof';
+                htmlMat += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><span style="font-size: 11px; color: #747775;">(${nickProf})</span></li>`;
             });
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
         }
         
         function renderArquivosAdmin() {
-            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin' || !DADOS_SISTEMA.visaoGeralAdmin) return;
+            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin') return;
             let filtro = document.getElementById('admin-filtro-arquivos').value;
             let html = '';
             DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
                 if (filtro !== 'todas' && t.turma !== filtro) return;
-                
-                html += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t.turma} <span style="font-size:11px; color:#747775; font-weight: normal;">(Prof: ${t.professor})</span></li>`;
-                let nickProf = t.professor ? t.professor.split('@')[0] : 'Prof';
-                
-                t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><strong style="color:#0b57d0; font-size:11px;">[Material: ${nickProf}]</strong> <a href="${m.link}" target="_blank">📄 ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.id}', 'admin-status')">Apagar</button></li>`);
-                t.entregas.forEach(e => {
-                    let nickAluno = e.aluno.split('@')[0];
-                    html += `<li style="padding-left: 16px;"><span><strong style="color:#1f1f1f; font-size:11px;">[Entrega: ${nickAluno}]</strong> <a href="${e.link}" target="_blank">📄 ${e.nome}</a></span> <button class="btn-apagar" onclick="apagar('${e.id}', 'admin-status')">Apagar</button></li>`;
-                });
+                html += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t.turma} <span style="font-size:11px; color:#747775; font-weight: normal;">(Prof: ${t.professor.split('@')[0]})</span></li>`;
+                t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><strong style="color:#0b57d0; font-size:11px;">[Material]</strong> <a href="${m.link}" target="_blank">📄 ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}', 'admin-status')">Apagar</button></li>`);
+                t.entregas.forEach(e => html += `<li style="padding-left: 16px;"><span><strong style="color:#1f1f1f; font-size:11px;">[Entrega: ${e.autor.split('@')[0]}]</strong> <a href="${e.link}" target="_blank">📄 ${e.nome}</a></span> <button class="btn-apagar" onclick="apagar('${e.idDrive}', '${e.idFb}', 'admin-status')">Apagar</button></li>`);
             });
-            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#747775;">Nenhum arquivo encontrado na nuvem.</li>';
+            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#747775;">Nenhum arquivo encontrado.</li>';
         }
 
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
             let email = document.getElementById('email-oculto').innerText;
             
-            if(isInitial) {
-                 menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
-            }
+            if(isInitial) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
 
             if (dados.role === "admin") {
@@ -459,34 +648,22 @@
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 
                 let op = '<option value="Manutenção">⚠️ Manutenção</option>'; 
-                Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); 
-                document.getElementById('lab-turma').innerHTML = op;
+                Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); document.getElementById('lab-turma').innerHTML = op;
                 
-                let htmlProfs = ''; 
-                dados.db.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}', 'admin-status')">Excluir</button></li>`); 
+                let htmlProfs = ''; dados.db.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}', 'admin-status')">Excluir</button></li>`); 
                 document.getElementById('lista-admin-profs').innerHTML = htmlProfs || '<li>Sem professores.</li>';
-                
-                let htmlTurmas = ''; 
-                Object.keys(dados.db.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${dados.db.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}', 'admin-status')">Excluir</button></li>`); 
+                let htmlTurmas = ''; Object.keys(dados.db.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${dados.db.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}', 'admin-status')">Excluir</button></li>`); 
                 document.getElementById('lista-admin-turmas').innerHTML = htmlTurmas || '<li>Sem turmas.</li>';
-                
-                let htmlAlunos = ''; 
-                Object.keys(dados.db.alunos).forEach(a => {
-                    let turmasAluno = dados.db.alunos[a];
-                    turmasAluno.forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}', 'admin-status')">Excluir</button></li>`);
-                });
+                let htmlAlunos = ''; Object.keys(dados.db.alunos).forEach(a => { dados.db.alunos[a].forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}', 'admin-status')">Excluir</button></li>`); });
                 document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li>Sem alunos.</li>';
 
                 let opProf = '<option value="">Prof Responsável</option>'; dados.db.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
                 let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
 
                 let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>';
-                if(dados.visaoGeralAdmin) {
-                    dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
-                }
+                if(dados.visaoGeralAdmin) dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
                 document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos;
                 renderArquivosAdmin();
-
                 if(isInitial) paginaInicial = 'pag-admin';
 
             } else if (dados.role === "professor") {
@@ -494,19 +671,11 @@
                 if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão Turmas</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 
-                let op = '<option value="">Qual a Turma?</option>'; 
-                Object.keys(dados.db.turmas).forEach(t => { if(dados.db.turmas[t] === email) op += `<option value="${t}">${t}</option>`; }); 
-                document.getElementById('lab-turma').innerHTML = op;
-                document.getElementById('prof-seleciona-turma').innerHTML = op;
-                document.getElementById('prof-select-turma-add').innerHTML = op;
+                let op = '<option value="">Qual a Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => { if(dados.db.turmas[t] === email) op += `<option value="${t}">${t}</option>`; }); 
+                document.getElementById('lab-turma').innerHTML = op; document.getElementById('prof-seleciona-turma').innerHTML = op; document.getElementById('prof-select-turma-add').innerHTML = op;
 
-                let matPorTurma = {};
-                dados.materiais.forEach(m => { if(!matPorTurma[m.turma]) matPorTurma[m.turma] = []; matPorTurma[m.turma].push(m); });
-                let htmlMat = '';
-                for(let t in matPorTurma) {
-                    htmlMat += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t}</li>`;
-                    matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.id}', 'prof-status')">Apagar</button></li>`);
-                }
+                let matPorTurma = {}; dados.materiais.forEach(m => { if(!matPorTurma[m.turmaAlvo]) matPorTurma[m.turmaAlvo] = []; matPorTurma[m.turmaAlvo].push(m); });
+                let htmlMat = ''; for(let t in matPorTurma) { htmlMat += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t}</li>`; matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}', 'prof-status')">Apagar</button></li>`); }
                 document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
 
                 let htmlVisao = '';
@@ -514,18 +683,14 @@
                     dados.visaoGeral.forEach(aluno => {
                         htmlVisao += `<li style="flex-direction:column; align-items:flex-start; background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:8px; border: 1px solid #e3e3e3;">
                         <strong style="font-size:13px; color:#1f1f1f; margin-bottom:6px;">👤 ${aluno.aluno.split('@')[0]} <span style="font-size:11px; color:#747775; font-weight:400;">(${aluno.turma})</span></strong><ul style="list-style:none; padding:0; width:100%; margin:0;">`;
-                        aluno.arquivos.forEach(arq => htmlVisao += `<li style="display:flex; justify-content:space-between; border:none; padding:4px 0;"><span><a href="${arq.link}" target="_blank">📄 ${arq.nome}</a> <span style="font-size:10px; color:#747775;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.id}', 'prof-visao-status')">X</button></li>`);
+                        aluno.arquivos.forEach(arq => htmlVisao += `<li style="display:flex; justify-content:space-between; border:none; padding:4px 0;"><span><a href="${arq.link}" target="_blank">📄 ${arq.nome}</a> <span style="font-size:10px; color:#747775;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.idDrive}', '${arq.idFb}', 'prof-visao-status')">X</button></li>`);
                         htmlVisao += `</ul></li>`;
                     });
                 }
                 document.getElementById('lista-visao-geral').innerHTML = htmlVisao || '<li>Nenhuma entrega recebida.</li>';
 
-                let htmlAlunosProf = '';
-                if (dados.alunosDoProf) {
-                     dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>🎓 ${a.email} <span style="font-size:11px; color:#747775;">(${a.turma})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Excluir</button></li>`);
-                }
+                let htmlAlunosProf = ''; if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>🎓 ${a.email} <span style="font-size:11px; color:#747775;">(${a.turma})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a.email}', '${a.turma}', 'prof-visao-status')">Excluir</button></li>`); }
                 document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li>Sem alunos matriculados.</li>';
-
                 if(isInitial) paginaInicial = 'pag-prof';
 
             } else { 
@@ -534,16 +699,12 @@
                     document.getElementById('badge-funcao').innerText = `Aluno (${turmas.length} Turmas)`; 
                     if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minha Sala</button>`; 
                     
-                    let optsFiltro = '<option value="todas">Todas as Turmas</option>';
-                    let optsUpload = '<option value="">Qual Turma?</option>';
+                    let optsFiltro = '<option value="todas">Todas as Turmas</option>'; let optsUpload = '<option value="">Qual Turma?</option>';
                     turmas.forEach(t => { optsFiltro += `<option value="${t}">${t}</option>`; optsUpload += `<option value="${t}">${t}</option>`; });
-                    document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro;
-                    document.getElementById('aluno-select-turma').innerHTML = optsUpload;
-                    
+                    document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro; document.getElementById('aluno-select-turma').innerHTML = optsUpload;
                     renderMateriaisAluno();
                     
-                    let htmlEnv = '';
-                    dados.envios.forEach(m => htmlEnv += `<li><span>📄 [${m.turma}] <a href="${m.link}" target="_blank">${m.nome}</a></span><button class="btn-apagar" onclick="apagar('${m.id}', 'aluno-status')">Desfazer</button></li>`);
+                    let htmlEnv = ''; dados.envios.forEach(m => htmlEnv += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}', 'aluno-status')">Desfazer</button></li>`);
                     document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li>Nenhum arquivo enviado.</li>';
                 } else {
                     document.getElementById('badge-funcao').innerText = "Pendente";
@@ -556,117 +717,9 @@
             if(isInitial) {
                  document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
                  document.getElementById(paginaInicial).style.display = 'flex';
-                 menu.querySelectorAll('.nav-btn').forEach(b => { 
-                     if(b.getAttribute('onclick').includes(paginaInicial)) b.classList.add('active'); 
-                 });
+                 menu.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes(paginaInicial)) b.classList.add('active'); });
             }
             renderCalendario();
-        }
-
-        async function fetchBanco(payload, msgElement) { 
-            if (msgElement) { msgElement.innerText = "Processando..."; msgElement.style.color = "#0b57d0"; }
-            try { 
-                let req = await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type': 'text/plain'}}); 
-                let res = await req.json();
-                
-                if(res.status === "erro") {
-                    if(msgElement) { msgElement.innerText = "Falhou."; msgElement.style.color = "#d32f2f"; }
-                    alert("Erro do Servidor: " + res.mensagem);
-                    return;
-                }
-                
-                if (msgElement) { msgElement.innerText = "Concluído!"; msgElement.style.color = "#146c2e"; }
-                
-                let emailLogado = document.getElementById('email-oculto').innerText;
-                let resUser = await fetch(`${URL_DO_SCRIPT}?email=${encodeURIComponent(emailLogado)}`);
-                DADOS_SISTEMA = await resUser.json();
-                
-                let resPub = await fetch(`${URL_DO_SCRIPT}?action=get_public_schedule`);
-                let jsonPub = await resPub.json();
-                AGENDAMENTOS_PUBLICOS = jsonPub.agendamentos || [];
-
-                configurarPainel(DADOS_SISTEMA, false); 
-                if(msgElement) setTimeout(() => { msgElement.innerText = ""; }, 3500);
-                
-            } catch(e) { 
-                if (msgElement) { msgElement.innerText = "Erro de rede."; msgElement.style.color = "#d32f2f"; }
-            } 
-        }
-
-        function adminAcao(acao) {
-            let payload = { action: acao, userEmail: document.getElementById('email-oculto').innerText };
-            
-            if (acao === 'admin_add_prof') { 
-                let campo = document.getElementById('admin-novo-prof');
-                if(!campo.value) return alert("Digite o e-mail");
-                payload.novoEmail = campo.value; 
-                campo.value = '';
-            }
-            if (acao === 'admin_add_turma') { 
-                let campoT = document.getElementById('admin-nome-turma');
-                let campoP = document.getElementById('admin-select-prof');
-                if(!campoT.value || !campoP.value) return alert("Preencha turma e professor");
-                payload.nomeTurma = campoT.value; payload.profResp = campoP.value; 
-                campoT.value = ''; campoP.value = '';
-            }
-            if (acao === 'admin_add_aluno') { 
-                let campoA = document.getElementById('admin-novo-aluno');
-                let campoT = document.getElementById('admin-select-turma');
-                if(!campoA.value || !campoT.value) return alert("Preencha aluno e turma");
-                payload.alunoEmail = campoA.value; payload.turmaDestino = campoT.value; 
-                campoA.value = ''; campoT.value = '';
-            }
-            fetchBanco(payload, document.getElementById('admin-status'));
-        }
-
-        function adminExcluir(acao, alvo, msgId) {
-            if(confirm(`Tem certeza que deseja remover '${alvo}'?`)) {
-                fetchBanco({ action: acao, userEmail: document.getElementById('email-oculto').innerText, alvo: alvo }, document.getElementById(msgId));
-            }
-        }
-
-        function adminExcluirAluno(alvoEmail, turmaAlvo, msgId) { 
-            if(confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) {
-                fetchBanco({ action: 'del_aluno', userEmail: document.getElementById('email-oculto').innerText, alvo: alvoEmail, turmaAlvo: turmaAlvo }, document.getElementById(msgId)); 
-            }
-        }
-
-        function profAddTurma() {
-            let campo = document.getElementById('prof-nova-turma');
-            if(!campo.value) return alert("Digite o nome da turma.");
-            fetchBanco({ action: 'prof_add_turma', userEmail: document.getElementById('email-oculto').innerText, nomeTurma: campo.value }, document.getElementById('prof-visao-status'));
-            campo.value = '';
-        }
-
-        function profAddAluno() {
-            let emailAluno = document.getElementById('prof-novo-aluno').value;
-            let turma = document.getElementById('prof-select-turma-add').value;
-            if(!emailAluno || !turma) return alert("Preencha os campos.");
-            fetchBanco({ action: 'prof_add_aluno', userEmail: document.getElementById('email-oculto').innerText, alunoEmail: emailAluno, turmaDestino: turma }, document.getElementById('prof-visao-status'));
-            document.getElementById('prof-novo-aluno').value = '';
-        }
-
-        function upload(tipo) {
-            let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
-            let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
-            let status = document.getElementById(tipo === 'professor' ? 'prof-status' : 'aluno-status');
-
-            if (input.files.length === 0 || !selectTurma.value) return alert("Selecione a turma e o arquivo.");
-
-            let arquivo = input.files[0];
-            let reader = new FileReader();
-            status.innerText = "Enviando para a Nuvem..."; status.style.color = "#0b57d0";
-
-            reader.onload = async function(e) {
-                await fetchBanco({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: document.getElementById('email-oculto').innerText, turmaAlvo: selectTurma.value }, status);
-                input.value = '';
-            };
-            reader.readAsDataURL(arquivo);
-        }
-
-        async function apagar(id, msgElementId) {
-            if(!confirm("Apagar este arquivo do Google Drive?")) return;
-            await fetchBanco({ action: 'delete_arquivo', fileId: id, userEmail: document.getElementById('email-oculto').innerText }, document.getElementById(msgElementId));
         }
 
         function abrirPagina(id, btn) { 
@@ -676,16 +729,13 @@
             btn.classList.add('active'); 
         }
         
-        function fazerLogout() { 
-            localStorage.removeItem("epblab_user"); 
-            localStorage.clear(); sessionStorage.clear(); 
-            location.reload(); 
-        }
+        function fazerLogout() { localStorage.removeItem("epblab_user"); localStorage.clear(); sessionStorage.clear(); location.reload(); }
 
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
         for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
         document.getElementById('admin-filtro-arquivos')?.addEventListener('change', renderArquivosAdmin);
+        document.getElementById('aluno-filtro-turma')?.addEventListener('change', renderMateriaisAluno);
     </script>
 </body>
 </html>
