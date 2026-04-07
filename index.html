@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPBLAB</title>
+    <title>Portal EPB</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
@@ -52,7 +52,7 @@
 
         /* --- FORMULÁRIOS --- */
         input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Inter', sans-serif;}
-        button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif;}
+        button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif; transition: 0.2s;}
         button.action-btn:hover { background: #0842a0;}
         
         /* --- LISTAS E CARDS --- */
@@ -72,6 +72,18 @@
         /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
+
+        /* --- MODAL DE EXCLUSÃO INTELIGENTE --- */
+        #modal-exclusao { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 3000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .modal-box { background: white; padding: 32px; border-radius: 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .modal-box h3 { margin: 0 0 12px 0; font-size: 20px; color: #1f1f1f; font-weight: 600;}
+        .modal-box p { color: #444746; font-size: 14px; margin-bottom: 24px; line-height: 1.5;}
+        .btn-modal-dia { background: #f0f4f9; color: #0b57d0; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-modal-dia:hover { background: #d3e3fd; }
+        .btn-modal-serie { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-modal-serie:hover { background: #b32626; }
+        .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
+        .btn-modal-cancelar:hover { color: #1f1f1f; }
     </style>
 </head>
 <body>
@@ -105,6 +117,16 @@
     </nav>
 
     <div id="toast-msg">Mensagem</div>
+
+    <div id="modal-exclusao">
+        <div class="modal-box">
+            <h3>⚠️ Excluir Reserva</h3>
+            <p>Esta reserva faz parte de uma <strong>série contínua</strong> (mensal ou semestral). Como você deseja excluir?</p>
+            <button class="btn-modal-dia" onclick="confirmarExclusao('dia')">Excluir APENAS o dia</button>
+            <button class="btn-modal-serie" onclick="confirmarExclusao('serie')">Excluir TODA a série</button>
+            <button class="btn-modal-cancelar" onclick="fecharModalExclusao()">Cancelar</button>
+        </div>
+    </div>
 
     <div id="area-publica">
         <div class="container-calendario">
@@ -283,6 +305,9 @@
         let DADOS_SISTEMA = null; 
         let AGENDAMENTOS_PUBLICOS = [];
         let USER_EMAIL = '';
+        
+        // Variável para guardar qual reserva está sendo excluída no Modal
+        let reservaExclusaoAlvo = { idFb: null, groupId: null };
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
@@ -434,7 +459,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS E BLOQUEIO DE CONFLITOS
+        // 4. AÇÕES DE BANCO DE DADOS E BLOQUEIO
         // ==========================================
         async function adminAcao(acao) {
             showStatus("Salvando...", "processando");
@@ -493,7 +518,6 @@
             let sem = parseInt(document.getElementById('lab-semanas').value, 10);
             if(!dataR || !lab || !hor || !t) return showStatus("Preencha todos os campos!", "erro");
             
-            // --- 1. PREPARA AS DATAS ---
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             let datasParaAgendar = [];
             for (let i = 0; i < sem; i++) { 
@@ -502,16 +526,14 @@
                 datasParaAgendar.push(`${y}-${m}-${d}`);
             }
 
-            // --- 2. TRAVA ANTI-CONFLITO ---
             let conflito = AGENDAMENTOS_PUBLICOS.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
             if (conflito) {
                 let dataBr = conflito.data.split('-').reverse().join('/');
                 return alert(`⚠️ BLOQUEADO!\n\nO ${lab} já está reservado no dia ${dataBr} para este horário.\nPor favor, escolha outro laboratório ou horário.`);
             }
 
-            // --- 3. GRAVAÇÃO COM GROUP ID ---
             showStatus("Agendando Sala...", "processando");
-            let groupId = "GRP_" + new Date().getTime(); // Identificador único da série
+            let groupId = "GRP_" + new Date().getTime(); 
             let batch = db.batch();
             
             for (let i = 0; i < datasParaAgendar.length; i++) {
@@ -521,32 +543,40 @@
             await batch.commit(); recarregarTudo();
         }
 
-        async function cancelarReserva(idFb, groupId) { 
+        // --- SISTEMA DE EXCLUSÃO COM MODAL ---
+        function cancelarReserva(idFb, groupId) { 
             if(!groupId || groupId === 'undefined') {
-                // Para reservas antigas que foram feitas antes dessa atualização
                 if(confirm("Excluir esta reserva?")) {
                     showStatus("Excluindo...", "processando");
-                    await db.collection('agendamentos').doc(idFb).delete(); recarregarTudo();
+                    db.collection('agendamentos').doc(idFb).delete().then(() => recarregarTudo());
                 }
                 return;
             }
+            // Abastece a variável global e abre o Modal bonito
+            reservaExclusaoAlvo = { idFb, groupId };
+            document.getElementById('modal-exclusao').style.display = 'flex';
+        }
 
-            // Para reservas novas em série (Mensal ou Semestral)
-            let opcao = prompt("Esta reserva faz parte de uma série.\nComo você deseja excluir?\n\nDigite 1 - Excluir APENAS esta aula (Dia)\nDigite 2 - Excluir TODA A SÉRIE");
-            
-            if (opcao === "1") {
+        function fecharModalExclusao() {
+            document.getElementById('modal-exclusao').style.display = 'none';
+            reservaExclusaoAlvo = { idFb: null, groupId: null };
+        }
+
+        async function confirmarExclusao(tipo) {
+            fecharModalExclusao();
+            let { idFb, groupId } = reservaExclusaoAlvo;
+
+            if (tipo === 'dia') {
                 showStatus("Excluindo o dia...", "processando");
                 await db.collection('agendamentos').doc(idFb).delete();
                 recarregarTudo();
-            } else if (opcao === "2") {
+            } else if (tipo === 'serie') {
                 showStatus("Excluindo a série inteira...", "processando");
                 let snap = await db.collection('agendamentos').where("groupId", "==", groupId).get();
                 let batch = db.batch();
                 snap.forEach(doc => { batch.delete(doc.ref); });
                 await batch.commit();
                 recarregarTudo();
-            } else if (opcao !== null) {
-                alert("Opção inválida. Nenhuma reserva foi excluída.");
             }
         }
 
@@ -595,7 +625,6 @@
                 let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
-                    // Passando o groupId para a função de exclusão
                     let btn = (DADOS_SISTEMA.role === 'admin' || r.prof === USER_EMAIL) ? `<button class="btn-apagar" onclick="cancelarReserva('${r.id}', '${r.groupId || ''}')">Excluir</button>` : '';
                     cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div>${btn}</div>`;
                 });
