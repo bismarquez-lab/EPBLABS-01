@@ -464,7 +464,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS (AGORA REATIVAS, SEM RECARREGAR A TELA)
+        // 4. AÇÕES DE BANCO DE DADOS (AGORA REATIVAS)
         // ==========================================
         async function adminAcao(acao) {
             showStatus("Salvando na Nuvem...", "processando");
@@ -562,7 +562,7 @@
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO ---
+        // --- SISTEMA DE EXCLUSÃO CORRIGIDO ---
         function cancelarReserva(idFb, groupId) { 
             if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
                 if(confirm("Deseja excluir esta reserva?")) {
@@ -573,6 +573,7 @@
                 }
                 return;
             }
+            
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
             document.getElementById('modal-exclusao').style.display = 'flex';
         }
@@ -583,15 +584,18 @@
         }
 
         async function confirmarExclusao(tipo) {
+            // 1. SALVAR AS VARIÁVEIS ANTES DE FECHAR O MODAL
+            let { idFb, groupId } = reservaExclusaoAlvo;
+            
+            // 2. FECHAR E LIMPAR A MEMÓRIA
             fecharModalExclusao();
+            
             showStatus("Processando exclusão...", "processando");
 
-            // Trava para destravar a tela se a rede falhar
+            // Trava para avisar em caso de internet lenta
             let seguranca = setTimeout(() => { showStatus("Demora na rede, mas comando enviado.", "erro"); }, 5000);
 
             try {
-                let { idFb, groupId } = reservaExclusaoAlvo;
-
                 if (tipo === 'dia') {
                     await db.collection('agendamentos').doc(idFb).delete();
                 } else if (tipo === 'serie') {
