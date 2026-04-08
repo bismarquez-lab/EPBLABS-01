@@ -302,7 +302,7 @@
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"];
 
-        // NOVA ESTRUTURA DE ESTADO GLOBAL (O "Cérebro" Local)
+        // Cérebro Reativo do Sistema
         let STATE = { professores: [], turmas: {}, alunos: {}, agendamentos: [], arquivos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = '';
@@ -324,13 +324,30 @@
         }
 
         // ==========================================
-        // 2. INICIALIZAÇÃO, LOGIN E ESCUTA ATIVA
+        // 2. SISTEMA DE INATIVIDADE (TIMEOUT DE 30 MIN)
         // ==========================================
+        let tempoOcioso;
+        function resetarTempo() {
+            clearTimeout(tempoOcioso);
+            // 30 minutos de inatividade (30 * 60 * 1000 milissegundos)
+            tempoOcioso = setTimeout(() => {
+                if(localStorage.getItem("epblab_user")) {
+                    alert("Sessão encerrada por inatividade. Por segurança, você foi desconectado.");
+                    fazerLogout();
+                }
+            }, 1800000); 
+        }
+
         window.onload = function() {
             setTimeout(() => document.getElementById('txt-acesso').style.display = 'inline-block', 1000);
             
-            // INICIA OS "OUVINTES" DO FIREBASE UMA ÚNICA VEZ
+            // Inicia as escutas do Firebase e os rastreadores de movimento
             iniciarEscutasEmTempoReal();
+            document.onmousemove = resetarTempo;
+            document.onkeypress = resetarTempo;
+            document.onclick = resetarTempo;
+            document.onscroll = resetarTempo;
+            resetarTempo();
 
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
@@ -363,61 +380,45 @@
             document.getElementById('area-privada').style.display = 'block';
             document.getElementById('menu-dinamico').style.display = 'flex';
             
-            if(!isAutoLogin) showStatus("Login Concluído! Preparando painel...", "processando");
-            atualizarInterface(); // Constrói a tela com os dados que já chegaram da escuta
+            if(!isAutoLogin) showStatus("Login Concluído! Sincronizando...", "processando");
+            atualizarInterface(); // Força a atualização com os dados locais
         }
 
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (CUSTO QUASE ZERO)
+        // 3. MOTOR FIREBASE REAL-TIME
         // ==========================================
         function iniciarEscutasEmTempoReal() {
-            // Escuta 1: Professores
             db.collection('professores').onSnapshot(snap => {
-                STATE.professores = [];
-                snap.forEach(d => STATE.professores.push(d.id));
-                atualizarInterface();
+                STATE.professores = []; snap.forEach(d => STATE.professores.push(d.id)); atualizarInterface();
             });
 
-            // Escuta 2: Turmas
             db.collection('turmas').onSnapshot(snap => {
-                STATE.turmas = {};
-                snap.forEach(d => STATE.turmas[d.id] = d.data().professor);
-                atualizarInterface();
+                STATE.turmas = {}; snap.forEach(d => STATE.turmas[d.id] = d.data().professor); atualizarInterface();
             });
 
-            // Escuta 3: Alunos
             db.collection('alunos').onSnapshot(snap => {
-                STATE.alunos = {};
-                snap.forEach(d => STATE.alunos[d.id] = d.data().turmas || []);
-                atualizarInterface();
+                STATE.alunos = {}; snap.forEach(d => STATE.alunos[d.id] = d.data().turmas || []); atualizarInterface();
             });
 
-            // Escuta 4: Agendamentos (O mais pesado, agora otimizado)
             db.collection('agendamentos').onSnapshot(snap => {
                 STATE.agendamentos = [];
                 snap.forEach(doc => STATE.agendamentos.push({id: doc.id, ...doc.data()}));
-                
-                // A agenda pública sempre atualiza, logado ou não
                 renderCalendarioPublico(); 
                 atualizarInterface();
             });
 
-            // Escuta 5: Arquivos
             db.collection('arquivos').onSnapshot(snap => {
-                STATE.arquivos = [];
-                snap.forEach(d => STATE.arquivos.push({idFb: d.id, ...d.data()}));
-                atualizarInterface();
+                STATE.arquivos = []; snap.forEach(d => STATE.arquivos.push({idFb: d.id, ...d.data()})); atualizarInterface();
             });
         }
 
-        // Função que atua como "Muralha". Ela junta o STATE bruto e transforma em DADOS_SISTEMA pro usuário logado
         let debounceTimer;
         function atualizarInterface() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                if (!USER_EMAIL) return; // Só calcula painéis internos se estiver logado
+                if (!USER_EMAIL) return; // Só calcula para logados
 
                 let role = "aluno";
                 if(ADMIN_EMAILS.includes(USER_EMAIL)) role = "admin";
@@ -456,14 +457,14 @@
                 renderCalendario();
                 
                 if(isInitialLoad) {
-                    showStatus("Sessão Sincronizada com Sucesso!");
+                    showStatus("Sessão Sincronizada!");
                     isInitialLoad = false;
                 }
-            }, 150); // Aguarda 150ms para juntar várias leituras do Firebase em 1 única atualização de tela
+            }, 100); 
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS (SEM RECARREGAR A TELA MANUALMENTE)
+        // 4. AÇÕES DE BANCO DE DADOS (AGORA REATIVAS, SEM RECARREGAR A TELA)
         // ==========================================
         async function adminAcao(acao) {
             showStatus("Salvando na Nuvem...", "processando");
@@ -501,7 +502,7 @@
             showStatus("Removendo...", "processando");
             try {
                 await db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) });
-                showStatus("Aluno removido!");
+                showStatus("Removido!");
             } catch(e) { console.error(e); showStatus("Erro ao remover aluno", "erro"); }
         }
 
@@ -511,7 +512,7 @@
             try {
                 await db.collection('turmas').doc(t).set({professor: USER_EMAIL});
                 document.getElementById('prof-nova-turma').value = ''; 
-                showStatus("Turma criada!");
+                showStatus("Turma Criada!");
             } catch(e) { console.error(e); showStatus("Erro ao criar turma", "erro"); }
         }
 
@@ -522,7 +523,7 @@
             try {
                 await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
                 document.getElementById('prof-novo-aluno').value = ''; 
-                showStatus("Aluno matriculado!");
+                showStatus("Aluno Matriculado!");
             } catch(e) { console.error(e); showStatus("Erro ao adicionar aluno", "erro"); }
         }
 
@@ -557,14 +558,14 @@
                 }
                 await batch.commit(); 
                 showStatus("Agendamento concluído!");
-                document.getElementById('lab-semanas').value = "1"; // Reseta o form
+                document.getElementById('lab-semanas').value = "1";
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO COM MODAL OTMIZADO (Custo de Leitura Zero) ---
+        // --- SISTEMA DE EXCLUSÃO ---
         function cancelarReserva(idFb, groupId) { 
-            if(!groupId || groupId === 'undefined' || groupId === 'null' || groupId === '') {
-                if(confirm("Excluir esta reserva antiga?")) {
+            if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
+                if(confirm("Deseja excluir esta reserva?")) {
                     showStatus("Excluindo...", "processando");
                     db.collection('agendamentos').doc(idFb).delete()
                         .then(() => showStatus("Reserva excluída!"))
@@ -585,25 +586,31 @@
             fecharModalExclusao();
             showStatus("Processando exclusão...", "processando");
 
+            // Trava para destravar a tela se a rede falhar
+            let seguranca = setTimeout(() => { showStatus("Demora na rede, mas comando enviado.", "erro"); }, 5000);
+
             try {
                 let { idFb, groupId } = reservaExclusaoAlvo;
 
                 if (tipo === 'dia') {
                     await db.collection('agendamentos').doc(idFb).delete();
                 } else if (tipo === 'serie') {
-                    // A mágica: Usamos a memória local (STATE) para achar os IDs. Firebase não cobra essa busca!
                     let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupId);
-                    let batch = db.batch();
-                    reservasDaSerie.forEach(reserva => {
-                        let ref = db.collection('agendamentos').doc(reserva.id);
-                        batch.delete(ref);
-                    });
-                    if(reservasDaSerie.length > 0) await batch.commit();
+                    if (reservasDaSerie.length > 0) {
+                        let batch = db.batch();
+                        reservasDaSerie.forEach(reserva => {
+                            let ref = db.collection('agendamentos').doc(reserva.id);
+                            batch.delete(ref);
+                        });
+                        await batch.commit();
+                    }
                 }
+                clearTimeout(seguranca);
                 showStatus("Excluído com sucesso!");
             } catch (erro) {
+                clearTimeout(seguranca);
                 console.error("ERRO AO EXCLUIR:", erro);
-                showStatus("Erro ao excluir.", "erro");
+                showStatus("Falha ao excluir.", "erro");
             }
         }
 
@@ -637,7 +644,7 @@
             try {
                 await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})});
                 await db.collection('arquivos').doc(idFb).delete(); 
-                showStatus("Arquivo deletado!");
+                showStatus("Arquivo apagado!");
             } catch(e) { console.error(e); showStatus("Erro ao apagar arquivo", "erro"); }
         }
 
