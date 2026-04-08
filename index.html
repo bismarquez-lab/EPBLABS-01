@@ -301,6 +301,14 @@
 
     <script>
         // ==========================================
+        // 0. FUNÇÕES DE SEGURANÇA (A CHAVE MESTRA DA CORREÇÃO)
+        // ==========================================
+        // Essas funções substituem os "document.getElementById().innerHTML" diretos.
+        // Se o elemento não existir na tela atual, elas ignoram silenciosamente e evitam o travamento geral.
+        function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+        function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
+
+        // ==========================================
         // 1. CONFIGURAÇÃO FIREBASE E VARIÁVEIS GERAIS
         // ==========================================
         const firebaseConfig = {
@@ -351,6 +359,7 @@
         let toastTimeout;
         function showStatus(msg, tipo="sucesso") {
             let el = document.getElementById('toast-msg');
+            if(!el) return;
             el.innerHTML = tipo === "erro" ? `❌ ${msg}` : (tipo === "processando" ? `⏳ ${msg}` : `✅ ${msg}`);
             el.style.backgroundColor = tipo === "erro" ? "#d32f2f" : (tipo === "processando" ? "#0b57d0" : "#323232");
             el.classList.add("show");
@@ -373,12 +382,13 @@
         }
 
         window.onload = function() {
-            setTimeout(() => document.getElementById('txt-acesso').style.display = 'inline-block', 1000);
+            setTimeout(() => {
+                let txt = document.getElementById('txt-acesso');
+                if(txt) txt.style.display = 'inline-block';
+            }, 1000);
             
-            // LIGA O "RADAR" DO FIREBASE UMA ÚNICA VEZ
             iniciarEscutasEmTempoReal();
 
-            // Ativa os rastreadores de movimento
             document.onmousemove = resetarTempo;
             document.onkeypress = resetarTempo;
             document.onclick = resetarTempo;
@@ -407,14 +417,15 @@
             localStorage.setItem("epblab_user", JSON.stringify(dados));
             USER_EMAIL = dados.email.toLowerCase().trim();
             
-            document.getElementById('nome-usuario').innerText = dados.given_name;
-            document.getElementById('foto-perfil').src = dados.picture;
+            setTextSafe('nome-usuario', dados.given_name);
+            let foto = document.getElementById('foto-perfil');
+            if(foto) foto.src = dados.picture;
 
-            document.getElementById('area-login').style.display = 'none';
-            document.getElementById('area-usuario').style.display = 'flex';
-            document.getElementById('area-publica').style.display = 'none';
-            document.getElementById('area-privada').style.display = 'block';
-            document.getElementById('menu-dinamico').style.display = 'flex';
+            let aLogin = document.getElementById('area-login'); if(aLogin) aLogin.style.display = 'none';
+            let aUser = document.getElementById('area-usuario'); if(aUser) aUser.style.display = 'flex';
+            let aPub = document.getElementById('area-publica'); if(aPub) aPub.style.display = 'none';
+            let aPriv = document.getElementById('area-privada'); if(aPriv) aPriv.style.display = 'block';
+            let mDyn = document.getElementById('menu-dinamico'); if(mDyn) mDyn.style.display = 'flex';
             
             if(!isAutoLogin) showStatus("Login Concluído! Sincronizando...", "processando");
             atualizarInterface();
@@ -423,7 +434,7 @@
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (CUSTO ZERO DE COTA EXTRA)
+        // 3. MOTOR FIREBASE REAL-TIME
         // ==========================================
         function iniciarEscutasEmTempoReal() {
             db.collection('professores').onSnapshot(snap => {
@@ -455,7 +466,6 @@
         let debounceTimer;
         function atualizarInterface() {
             clearTimeout(debounceTimer);
-            // Aguarda 150ms para consolidar as leituras do Firebase numa única atualização de tela
             debounceTimer = setTimeout(() => {
                 if (!USER_EMAIL) return;
 
@@ -490,7 +500,6 @@
                     });
                 }
 
-                // O CÉREBRO FINAL CONSOLIDADO (Com a propriedade 'db' e 'agendamentos' de volta!)
                 DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas };
                 
                 configurarPainel(DADOS_SISTEMA, isInitialLoad);
@@ -504,7 +513,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS (100% REATIVAS)
+        // 4. AÇÕES DE BANCO DE DADOS
         // ==========================================
         function adminAcao(acao) {
             showStatus("Enviando para a nuvem...", "processando");
@@ -581,11 +590,10 @@
                 }
                 await batch.commit(); 
                 showStatus("Agendamento concluído!");
-                document.getElementById('lab-semanas').value = "1"; // Reseta o form
+                document.getElementById('lab-semanas').value = "1";
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO INTELIGENTE ---
         function cancelarReserva(idFb, groupId) { 
             if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
                 if(confirm("Deseja excluir esta reserva antiga?")) {
@@ -597,17 +605,17 @@
                 return;
             }
             
-            // Salva na memória blindada antes de abrir o Modal
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
-            document.getElementById('modal-exclusao').style.display = 'flex';
+            let modal = document.getElementById('modal-exclusao');
+            if(modal) modal.style.display = 'flex';
         }
 
         function fecharModalExclusao() {
-            document.getElementById('modal-exclusao').style.display = 'none';
+            let modal = document.getElementById('modal-exclusao');
+            if(modal) modal.style.display = 'none';
         }
 
         async function confirmarExclusao(tipo) {
-            // Pega as variáveis da memória antes de fechar o Modal
             let idFbAlvo = reservaExclusaoAlvo.idFb;
             let groupIdAlvo = reservaExclusaoAlvo.groupId;
             
@@ -641,7 +649,7 @@
         function upload(tipo) {
             let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
             let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
-            if (input.files.length === 0 || !selectTurma.value) return showStatus("Selecione a turma e o arquivo", "erro");
+            if (!input || !selectTurma || input.files.length === 0 || !selectTurma.value) return showStatus("Selecione a turma e o arquivo", "erro");
             
             let arquivo = input.files[0]; let reader = new FileReader();
             showStatus("Enviando para a Nuvem...", "processando");
@@ -669,21 +677,19 @@
         }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO DA NOVA TABELA EM GRADE
+        // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA
         // ==========================================
         function gerarTabelaHTML(agendamentosFiltrados, turnoSelecionado, isPrivado) {
             let horarios = TURNOS[turnoSelecionado];
             
             let html = '<div class="tabela-responsiva"><table class="tabela-grade"><thead><tr><th class="td-lab">Laboratório</th>';
             
-            // Cria as colunas (horários) baseadas no turno selecionado
             horarios.forEach(h => {
                 let horarioCurto = h.split(' - ')[1] + '<br><span style="font-size:10px; font-weight:normal; color:#747775;">' + h.split(' - ')[2] + '</span>';
                 html += `<th>${horarioCurto}</th>`;
             });
             html += '</tr></thead><tbody>';
 
-            // Cria as linhas (laboratórios)
             LISTA_SALAS.forEach(lab => {
                 html += `<tr><td class="td-lab">${lab}</td>`;
                 
@@ -715,38 +721,51 @@
         }
 
         function renderCalendarioPublico() {
-            let data = document.getElementById('filtro-calendario-publico').value;
-            let turno = document.getElementById('filtro-turno-publico').value;
+            let elData = document.getElementById('filtro-calendario-publico');
+            let elTurno = document.getElementById('filtro-turno-publico');
+            if(!elData || !elTurno) return;
+
+            let data = elData.value;
+            let turno = elTurno.value;
             let res = STATE.agendamentos.filter(a => a.data === data);
             
-            document.getElementById('grade-laboratorios-publica').innerHTML = gerarTabelaHTML(res, turno, false);
+            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(res, turno, false));
         }
 
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
-            let data = document.getElementById('filtro-calendario').value;
-            let turno = document.getElementById('filtro-turno').value;
+            let elData = document.getElementById('filtro-calendario');
+            let elTurno = document.getElementById('filtro-turno');
+            if(!elData || !elTurno) return;
+
+            let data = elData.value;
+            let turno = elTurno.value;
             let res = STATE.agendamentos.filter(a => a.data === data);
             
-            document.getElementById('grade-laboratorios').innerHTML = gerarTabelaHTML(res, turno, true);
+            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, turno, true));
         }
 
-        // --- RENDERIZAÇÃO MATERIAIS E ARQUIVOS ---
         function renderMateriaisAluno() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
-            let filtro = document.getElementById('aluno-filtro-turma').value;
+            let elFiltro = document.getElementById('aluno-filtro-turma');
+            if(!elFiltro) return;
+
+            let filtro = elFiltro.value;
             let mat = filtro !== 'todas' ? DADOS_SISTEMA.materiais.filter(m => m.turmaAlvo === filtro) : DADOS_SISTEMA.materiais;
             let htmlMat = '';
             mat.forEach(m => {
                 let nickProf = (STATE.turmas[m.turmaAlvo] || "").split('@')[0] || 'Prof';
                 htmlMat += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><span style="font-size: 11px; color: #747775;">(${nickProf})</span></li>`;
             });
-            document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
+            setHTMLSafe('lista-materiais-aluno', htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>');
         }
         
         function renderArquivosAdmin() {
             if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin') return;
-            let filtro = document.getElementById('admin-filtro-arquivos').value;
+            let elFiltro = document.getElementById('admin-filtro-arquivos');
+            if(!elFiltro) return;
+
+            let filtro = elFiltro.value;
             let html = '';
             DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
                 if (filtro !== 'todas' && t.turma !== filtro) return;
@@ -754,43 +773,62 @@
                 t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><strong style="color:#0b57d0; font-size:11px;">[Material]</strong> <a href="${m.link}" target="_blank">📄 ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}')">Apagar</button></li>`);
                 t.entregas.forEach(e => html += `<li style="padding-left: 16px;"><span><strong style="color:#1f1f1f; font-size:11px;">[Entrega: ${e.autor.split('@')[0]}]</strong> <a href="${e.link}" target="_blank">📄 ${e.nome}</a></span> <button class="btn-apagar" onclick="apagar('${e.idDrive}', '${e.idFb}')">Apagar</button></li>`);
             });
-            document.getElementById('lista-arquivos-admin').innerHTML = html || '<li style="color:#747775;">Nenhum arquivo encontrado.</li>';
+            setHTMLSafe('lista-arquivos-admin', html || '<li style="color:#747775;">Nenhum arquivo encontrado.</li>');
         }
 
+        // ==========================================
+        // 7. O NÚCLEO DA INTERFACE REESCRITO COM SEGURANÇA
+        // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
             
-            if(isInitial) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
+            if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
 
             if (dados.role === "admin") {
-                document.getElementById('badge-funcao').innerText = "Admin"; 
-                if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
-                document.getElementById('painel-reserva-lab').style.display = 'flex';
+                setTextSafe('badge-funcao', "Admin"); 
+                if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
                 
-                let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(STATE.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); document.getElementById('lab-turma').innerHTML = op;
-                let htmlProfs = ''; STATE.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Excluir</button></li>`); document.getElementById('lista-admin-profs').innerHTML = htmlProfs || '<li>Sem professores.</li>';
-                let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${STATE.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); document.getElementById('lista-admin-turmas').innerHTML = htmlTurmas || '<li>Sem turmas.</li>';
-                let htmlAlunos = ''; Object.keys(STATE.alunos).forEach(a => { STATE.alunos[a].forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}')">Excluir</button></li>`); }); document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li>Sem alunos.</li>';
+                let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
+                
+                let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(STATE.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); 
+                setHTMLSafe('lab-turma', op);
+                
+                let htmlProfs = ''; STATE.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Excluir</button></li>`); 
+                setHTMLSafe('lista-admin-profs', htmlProfs || '<li>Sem professores.</li>');
+                
+                let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${STATE.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
+                setHTMLSafe('lista-admin-turmas', htmlTurmas || '<li>Sem turmas.</li>');
+                
+                let htmlAlunos = ''; Object.keys(STATE.alunos).forEach(a => { STATE.alunos[a].forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}')">Excluir</button></li>`); }); 
+                setHTMLSafe('lista-admin-alunos', htmlAlunos || '<li>Sem alunos.</li>');
 
-                let opProf = '<option value="">Prof Responsável</option>'; STATE.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
-                let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
+                let opProf = '<option value="">Prof Responsável</option>'; STATE.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); 
+                setHTMLSafe('admin-select-prof', opProf);
+                
+                let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
+                setHTMLSafe('admin-select-turma', opTurma);
 
                 let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>'; dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
-                document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos; renderArquivosAdmin();
+                setHTMLSafe('admin-filtro-arquivos', htmlFiltroArquivos); 
+                
+                renderArquivosAdmin();
                 if(isInitial) paginaInicial = 'pag-admin';
 
             } else if (dados.role === "professor") {
-                document.getElementById('badge-funcao').innerText = "Professor"; 
-                if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
-                document.getElementById('painel-reserva-lab').style.display = 'flex';
+                setTextSafe('badge-funcao', "Professor"); 
+                if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
+                
+                let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
                 
                 let op = '<option value="">Qual a Turma?</option>'; Object.keys(STATE.turmas).forEach(t => { if(STATE.turmas[t] === USER_EMAIL) op += `<option value="${t}">${t}</option>`; }); 
-                document.getElementById('lab-turma').innerHTML = op; document.getElementById('prof-seleciona-turma').innerHTML = op; document.getElementById('prof-select-turma-add').innerHTML = op;
+                setHTMLSafe('lab-turma', op);
+                setHTMLSafe('prof-seleciona-turma', op);
+                setHTMLSafe('prof-select-turma-add', op);
 
                 let matPorTurma = {}; dados.materiais.forEach(m => { if(!matPorTurma[m.turmaAlvo]) matPorTurma[m.turmaAlvo] = []; matPorTurma[m.turmaAlvo].push(m); });
                 let htmlMat = ''; for(let t in matPorTurma) { htmlMat += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t}</li>`; matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}')">Apagar</button></li>`); }
-                document.getElementById('lista-materiais-prof').innerHTML = htmlMat || '<li>Nenhum material compartilhado.</li>';
+                setHTMLSafe('lista-materiais-prof', htmlMat || '<li>Nenhum material compartilhado.</li>');
 
                 let htmlVisao = '';
                 if (dados.visaoGeral && dados.visaoGeral.length > 0) {
@@ -801,48 +839,51 @@
                         htmlVisao += `</ul></li>`;
                     });
                 }
-                document.getElementById('lista-visao-geral').innerHTML = htmlVisao || '<li>Nenhuma entrega recebida.</li>';
+                setHTMLSafe('lista-visao-geral', htmlVisao || '<li>Nenhuma entrega recebida.</li>');
 
                 let htmlAlunosProf = ''; if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>🎓 ${a.email} <span style="font-size:11px; color:#747775;">(${a.turma})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a.email}', '${a.turma}')">Excluir</button></li>`); }
-                document.getElementById('lista-prof-alunos').innerHTML = htmlAlunosProf || '<li>Sem alunos matriculados.</li>';
+                setHTMLSafe('lista-prof-alunos', htmlAlunosProf || '<li>Sem alunos matriculados.</li>');
+                
                 if(isInitial) paginaInicial = 'pag-prof';
 
             } else { 
                 let turmas = dados.minhasTurmas || [];
                 if (turmas.length > 0) {
-                    document.getElementById('badge-funcao').innerText = `Aluno (${turmas.length})`; 
-                    if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minha Sala</button>`; 
+                    setTextSafe('badge-funcao', `Aluno (${turmas.length})`); 
+                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minha Sala</button>`; 
                     
                     let optsFiltro = '<option value="todas">Todas as Turmas</option>'; let optsUpload = '<option value="">Qual Turma?</option>';
                     turmas.forEach(t => { optsFiltro += `<option value="${t}">${t}</option>`; optsUpload += `<option value="${t}">${t}</option>`; });
-                    document.getElementById('aluno-filtro-turma').innerHTML = optsFiltro; document.getElementById('aluno-select-turma').innerHTML = optsUpload;
+                    
+                    setHTMLSafe('aluno-filtro-turma', optsFiltro);
+                    setHTMLSafe('aluno-select-turma', optsUpload);
+                    
                     renderMateriaisAluno();
                     
                     let htmlEnv = ''; dados.envios.forEach(m => htmlEnv += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}')">Desfazer</button></li>`);
-                    document.getElementById('lista-envios-aluno').innerHTML = htmlEnv || '<li>Nenhum arquivo enviado.</li>';
+                    setHTMLSafe('lista-envios-aluno', htmlEnv || '<li>Nenhum arquivo enviado.</li>');
                 } else {
-                    document.getElementById('badge-funcao').innerText = "Pendente";
-                    document.getElementById('pag-aluno').innerHTML = `<h3 style="margin-top:0;">Sala Virtual</h3><p style="color:#747775;">Você ainda não foi matriculado em nenhuma turma pelo seu professor.</p>`;
-                    if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Aguardando</button>`;
+                    setTextSafe('badge-funcao', "Pendente");
+                    // Se o aluno está pendente, exibimos a mensagem sem destruir a estrutura HTML inteira da página dele!
+                    setHTMLSafe('pag-aluno', `<h3 style="margin-top:0;">Sala Virtual</h3><p style="color:#747775;">Você ainda não foi matriculado em nenhuma turma pelo seu professor.</p>`);
+                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Aguardando</button>`;
                 }
                 if(isInitial) paginaInicial = 'pag-aluno';
             }
             
             if(isInitial) {
                  document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
-                 document.getElementById(paginaInicial).style.display = 'flex';
-                 menu.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes(paginaInicial)) b.classList.add('active'); });
+                 let pIni = document.getElementById(paginaInicial); if(pIni) pIni.style.display = 'flex';
+                 if(menu) menu.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes(paginaInicial)) b.classList.add('active'); });
             }
         }
 
         function abrirPagina(id, btn) { 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none'); 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); 
-            document.getElementById(id).style.display = 'flex'; 
+            let pag = document.getElementById(id); if(pag) pag.style.display = 'flex'; 
             btn.classList.add('active'); 
         }
-        
-        function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
