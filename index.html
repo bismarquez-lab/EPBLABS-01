@@ -302,7 +302,7 @@
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"];
 
-        // Cérebro Reativo do Sistema
+        // O CÉREBRO DO SISTEMA (100% REATIVO)
         let STATE = { professores: [], turmas: {}, alunos: {}, agendamentos: [], arquivos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = '';
@@ -324,7 +324,7 @@
         }
 
         // ==========================================
-        // 2. SISTEMA DE INATIVIDADE (TIMEOUT DE 30 MIN)
+        // 2. SISTEMA DE INATIVIDADE (30 MIN) E LOGIN
         // ==========================================
         let tempoOcioso;
         function resetarTempo() {
@@ -341,8 +341,10 @@
         window.onload = function() {
             setTimeout(() => document.getElementById('txt-acesso').style.display = 'inline-block', 1000);
             
-            // Inicia as escutas do Firebase e os rastreadores de movimento
+            // LIGA O "RADAR" DO FIREBASE UMA ÚNICA VEZ
             iniciarEscutasEmTempoReal();
+
+            // Ativa os rastreadores de movimento
             document.onmousemove = resetarTempo;
             document.onkeypress = resetarTempo;
             document.onclick = resetarTempo;
@@ -381,13 +383,13 @@
             document.getElementById('menu-dinamico').style.display = 'flex';
             
             if(!isAutoLogin) showStatus("Login Concluído! Sincronizando...", "processando");
-            atualizarInterface(); // Força a atualização com os dados locais
+            atualizarInterface();
         }
 
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME
+        // 3. MOTOR FIREBASE REAL-TIME (CUSTO ZERO DE COTA EXTRA)
         // ==========================================
         function iniciarEscutasEmTempoReal() {
             db.collection('professores').onSnapshot(snap => {
@@ -410,15 +412,18 @@
             });
 
             db.collection('arquivos').onSnapshot(snap => {
-                STATE.arquivos = []; snap.forEach(d => STATE.arquivos.push({idFb: d.id, ...d.data()})); atualizarInterface();
+                STATE.arquivos = [];
+                snap.forEach(d => STATE.arquivos.push({idFb: d.id, ...d.data()}));
+                atualizarInterface();
             });
         }
 
         let debounceTimer;
         function atualizarInterface() {
             clearTimeout(debounceTimer);
+            // Aguarda 150ms para consolidar as leituras do Firebase numa única atualização de tela
             debounceTimer = setTimeout(() => {
-                if (!USER_EMAIL) return; // Só calcula para logados
+                if (!USER_EMAIL) return;
 
                 let role = "aluno";
                 if(ADMIN_EMAILS.includes(USER_EMAIL)) role = "admin";
@@ -451,80 +456,63 @@
                     });
                 }
 
-                DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas };
+                DADOS_SISTEMA = { role, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas };
                 
                 configurarPainel(DADOS_SISTEMA, isInitialLoad);
                 renderCalendario();
                 
-                if(isInitialLoad) {
+                if(isInitialLoad && STATE.agendamentos.length > 0) {
                     showStatus("Sessão Sincronizada!");
                     isInitialLoad = false;
                 }
-            }, 100); 
+            }, 150); 
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS (AGORA REATIVAS)
+        // 4. AÇÕES DE BANCO DE DADOS (100% REATIVAS)
         // ==========================================
-        async function adminAcao(acao) {
-            showStatus("Salvando na Nuvem...", "processando");
-            try {
-                if (acao === 'admin_add_prof') { 
-                    let v = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); if(!v) return showStatus("Digite o e-mail", "erro");
-                    await db.collection('professores').doc(v).set({ativo: true}); document.getElementById('admin-novo-prof').value = '';
-                }
-                if (acao === 'admin_add_turma') { 
-                    let t = document.getElementById('admin-nome-turma').value; let p = document.getElementById('admin-select-prof').value;
-                    if(!t || !p) return showStatus("Preencha turma e professor", "erro");
-                    await db.collection('turmas').doc(t).set({professor: p.trim().toLowerCase()}); document.getElementById('admin-nome-turma').value = '';
-                }
-                if (acao === 'admin_add_aluno') { 
-                    let a = document.getElementById('admin-novo-aluno').value.trim().toLowerCase(); let t = document.getElementById('admin-select-turma').value;
-                    if(!a || !t) return showStatus("Preencha aluno e turma", "erro");
-                    await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true}); document.getElementById('admin-novo-aluno').value = '';
-                }
-                showStatus("Salvo com sucesso!");
-            } catch(e) { console.error(e); showStatus("Erro ao salvar", "erro"); }
+        function adminAcao(acao) {
+            showStatus("Enviando para a nuvem...", "processando");
+            if (acao === 'admin_add_prof') { 
+                let v = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); if(!v) return showStatus("Digite o e-mail", "erro");
+                db.collection('professores').doc(v).set({ativo: true}).then(() => { document.getElementById('admin-novo-prof').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
+            }
+            if (acao === 'admin_add_turma') { 
+                let t = document.getElementById('admin-nome-turma').value; let p = document.getElementById('admin-select-prof').value;
+                if(!t || !p) return showStatus("Preencha turma e professor", "erro");
+                db.collection('turmas').doc(t).set({professor: p.trim().toLowerCase()}).then(() => { document.getElementById('admin-nome-turma').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
+            }
+            if (acao === 'admin_add_aluno') { 
+                let a = document.getElementById('admin-novo-aluno').value.trim().toLowerCase(); let t = document.getElementById('admin-select-turma').value;
+                if(!a || !t) return showStatus("Preencha aluno e turma", "erro");
+                db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true}).then(() => { document.getElementById('admin-novo-aluno').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
+            }
         }
 
-        async function adminExcluir(acao, alvo) {
+        function adminExcluir(acao, alvo) {
             if(!confirm(`Remover '${alvo}'?`)) return;
             showStatus("Removendo...", "processando");
-            try {
-                if(acao === 'admin_del_prof') await db.collection('professores').doc(alvo).delete();
-                if(acao === 'admin_del_turma') await db.collection('turmas').doc(alvo).delete();
-                showStatus("Removido!");
-            } catch(e) { console.error(e); showStatus("Erro ao remover", "erro"); }
+            if(acao === 'admin_del_prof') db.collection('professores').doc(alvo).delete().then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
+            if(acao === 'admin_del_turma') db.collection('turmas').doc(alvo).delete().then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
         }
 
-        async function adminExcluirAluno(alvoEmail, turmaAlvo) { 
+        function adminExcluirAluno(alvoEmail, turmaAlvo) { 
             if(!confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) return;
             showStatus("Removendo...", "processando");
-            try {
-                await db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) });
-                showStatus("Removido!");
-            } catch(e) { console.error(e); showStatus("Erro ao remover aluno", "erro"); }
+            db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) }).then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
         }
 
-        async function profAddTurma() {
+        function profAddTurma() {
             let t = document.getElementById('prof-nova-turma').value; if(!t) return showStatus("Digite o nome da turma", "erro");
             showStatus("Criando...", "processando");
-            try {
-                await db.collection('turmas').doc(t).set({professor: USER_EMAIL});
-                document.getElementById('prof-nova-turma').value = ''; 
-                showStatus("Turma Criada!");
-            } catch(e) { console.error(e); showStatus("Erro ao criar turma", "erro"); }
+            db.collection('turmas').doc(t).set({professor: USER_EMAIL}).then(() => { document.getElementById('prof-nova-turma').value = ''; showStatus("Criado!"); }).catch(e => showStatus("Erro", "erro"));
         }
 
-        async function profAddAluno() {
+        function profAddAluno() {
             let a = document.getElementById('prof-novo-aluno').value.trim().toLowerCase(); let t = document.getElementById('prof-select-turma-add').value;
             if(!a || !t) return showStatus("Preencha os campos", "erro");
             showStatus("Adicionando...", "processando");
-            try {
-                await db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true});
-                document.getElementById('prof-novo-aluno').value = ''; 
-                showStatus("Aluno Matriculado!");
-            } catch(e) { console.error(e); showStatus("Erro ao adicionar aluno", "erro"); }
+            db.collection('alunos').doc(a).set({ turmas: firebase.firestore.FieldValue.arrayUnion(t) }, {merge: true}).then(() => { document.getElementById('prof-novo-aluno').value = ''; showStatus("Adicionado!"); }).catch(e => showStatus("Erro", "erro"));
         }
 
         async function reservarLab() {
@@ -562,7 +550,7 @@
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
-        // --- SISTEMA DE EXCLUSÃO CORRIGIDO ---
+        // --- SISTEMA DE EXCLUSÃO INTELIGENTE ---
         function cancelarReserva(idFb, groupId) { 
             if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
                 if(confirm("Deseja excluir esta reserva?")) {
@@ -574,32 +562,28 @@
                 return;
             }
             
+            // Salva na memória blindada antes de abrir o Modal
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
             document.getElementById('modal-exclusao').style.display = 'flex';
         }
 
         function fecharModalExclusao() {
             document.getElementById('modal-exclusao').style.display = 'none';
-            reservaExclusaoAlvo = { idFb: null, groupId: null };
         }
 
         async function confirmarExclusao(tipo) {
-            // 1. SALVAR AS VARIÁVEIS ANTES DE FECHAR O MODAL
-            let { idFb, groupId } = reservaExclusaoAlvo;
+            // Pega as variáveis da memória antes de fechar o Modal
+            let idFbAlvo = reservaExclusaoAlvo.idFb;
+            let groupIdAlvo = reservaExclusaoAlvo.groupId;
             
-            // 2. FECHAR E LIMPAR A MEMÓRIA
             fecharModalExclusao();
-            
             showStatus("Processando exclusão...", "processando");
-
-            // Trava para avisar em caso de internet lenta
-            let seguranca = setTimeout(() => { showStatus("Demora na rede, mas comando enviado.", "erro"); }, 5000);
 
             try {
                 if (tipo === 'dia') {
-                    await db.collection('agendamentos').doc(idFb).delete();
+                    await db.collection('agendamentos').doc(idFbAlvo).delete();
                 } else if (tipo === 'serie') {
-                    let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupId);
+                    let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupIdAlvo);
                     if (reservasDaSerie.length > 0) {
                         let batch = db.batch();
                         reservasDaSerie.forEach(reserva => {
@@ -609,10 +593,8 @@
                         await batch.commit();
                     }
                 }
-                clearTimeout(seguranca);
                 showStatus("Excluído com sucesso!");
             } catch (erro) {
-                clearTimeout(seguranca);
                 console.error("ERRO AO EXCLUIR:", erro);
                 showStatus("Falha ao excluir.", "erro");
             }
@@ -642,18 +624,17 @@
             reader.readAsDataURL(arquivo);
         }
 
-        async function apagar(idDrive, idFb) {
+        function apagar(idDrive, idFb) {
             if(!confirm("Apagar este arquivo da Nuvem?")) return;
             showStatus("Apagando arquivo...", "processando");
-            try {
-                await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})});
-                await db.collection('arquivos').doc(idFb).delete(); 
-                showStatus("Arquivo apagado!");
-            } catch(e) { console.error(e); showStatus("Erro ao apagar arquivo", "erro"); }
+            fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})})
+                .then(() => {
+                    db.collection('arquivos').doc(idFb).delete().then(() => showStatus("Arquivo apagado!")).catch(e => showStatus("Erro", "erro"));
+                }).catch(e => showStatus("Erro de conexão", "erro"));
         }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO DAS TELAS
+        // 6. RENDERIZAÇÃO DAS TELAS E PREENCHIMENTO
         // ==========================================
         function formatarTextoCompacto(texto) {
             let t = texto.replace('Manhã', 'Man.').replace('Tarde', 'Tar.').replace('Noite', 'Noi.');
@@ -666,7 +647,7 @@
             let html = '';
             LISTA_SALAS.forEach(nome => {
                 let res = STATE.agendamentos.filter(a => a.data === data && a.lab === nome);
-                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Disponível</div>';
+                let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
                     cont += `<div class="reserva-item"><div class="reserva-texto-container"><span class="texto-aula">${compact}</span><span class="texto-turma">${r.turma}</span></div></div>`;
@@ -681,7 +662,7 @@
             let data = document.getElementById('filtro-calendario').value;
             let html = '';
             LISTA_SALAS.forEach(nome => {
-                let res = DADOS_SISTEMA.agendamentos.filter(a => a.data === data && a.lab === nome);
+                let res = STATE.agendamentos.filter(a => a.data === data && a.lab === nome);
                 let cont = res.length > 0 ? '' : '<div style="color:#747775; font-size:12px; margin-top:8px; font-style:italic;">Livre</div>';
                 res.forEach(r => {
                     let compact = formatarTextoCompacto(r.horario);
@@ -699,7 +680,7 @@
             let mat = filtro !== 'todas' ? DADOS_SISTEMA.materiais.filter(m => m.turmaAlvo === filtro) : DADOS_SISTEMA.materiais;
             let htmlMat = '';
             mat.forEach(m => {
-                let nickProf = (DADOS_SISTEMA.db.turmas[m.turmaAlvo] || "").split('@')[0] || 'Prof';
+                let nickProf = (STATE.turmas[m.turmaAlvo] || "").split('@')[0] || 'Prof';
                 htmlMat += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><span style="font-size: 11px; color: #747775;">(${nickProf})</span></li>`;
             });
             document.getElementById('lista-materiais-aluno').innerHTML = htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>';
@@ -729,15 +710,15 @@
                 if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 
-                let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(dados.db.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); document.getElementById('lab-turma').innerHTML = op;
-                let htmlProfs = ''; dados.db.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Excluir</button></li>`); document.getElementById('lista-admin-profs').innerHTML = htmlProfs || '<li>Sem professores.</li>';
-                let htmlTurmas = ''; Object.keys(dados.db.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${dados.db.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); document.getElementById('lista-admin-turmas').innerHTML = htmlTurmas || '<li>Sem turmas.</li>';
-                let htmlAlunos = ''; Object.keys(dados.db.alunos).forEach(a => { dados.db.alunos[a].forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}')">Excluir</button></li>`); }); document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li>Sem alunos.</li>';
+                let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(STATE.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); document.getElementById('lab-turma').innerHTML = op;
+                let htmlProfs = ''; STATE.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Excluir</button></li>`); document.getElementById('lista-admin-profs').innerHTML = htmlProfs || '<li>Sem professores.</li>';
+                let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${STATE.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); document.getElementById('lista-admin-turmas').innerHTML = htmlTurmas || '<li>Sem turmas.</li>';
+                let htmlAlunos = ''; Object.keys(STATE.alunos).forEach(a => { STATE.alunos[a].forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}')">Excluir</button></li>`); }); document.getElementById('lista-admin-alunos').innerHTML = htmlAlunos || '<li>Sem alunos.</li>';
 
-                let opProf = '<option value="">Prof Responsável</option>'; dados.db.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
-                let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
+                let opProf = '<option value="">Prof Responsável</option>'; STATE.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); document.getElementById('admin-select-prof').innerHTML = opProf;
+                let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); document.getElementById('admin-select-turma').innerHTML = opTurma;
 
-                let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>'; if(dados.visaoGeralAdmin) dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
+                let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>'; dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
                 document.getElementById('admin-filtro-arquivos').innerHTML = htmlFiltroArquivos; renderArquivosAdmin();
                 if(isInitial) paginaInicial = 'pag-admin';
 
@@ -746,7 +727,7 @@
                 if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 document.getElementById('painel-reserva-lab').style.display = 'flex';
                 
-                let op = '<option value="">Qual a Turma?</option>'; Object.keys(dados.db.turmas).forEach(t => { if(dados.db.turmas[t] === USER_EMAIL) op += `<option value="${t}">${t}</option>`; }); 
+                let op = '<option value="">Qual a Turma?</option>'; Object.keys(STATE.turmas).forEach(t => { if(STATE.turmas[t] === USER_EMAIL) op += `<option value="${t}">${t}</option>`; }); 
                 document.getElementById('lab-turma').innerHTML = op; document.getElementById('prof-seleciona-turma').innerHTML = op; document.getElementById('prof-select-turma-add').innerHTML = op;
 
                 let matPorTurma = {}; dados.materiais.forEach(m => { if(!matPorTurma[m.turmaAlvo]) matPorTurma[m.turmaAlvo] = []; matPorTurma[m.turmaAlvo].push(m); });
