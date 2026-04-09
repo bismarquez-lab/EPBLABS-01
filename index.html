@@ -163,7 +163,15 @@
                         <input type="date" id="lab-data">
                         <select id="lab-numero">
                             <option value="">Selecione a Sala...</option>
-                            <option value="Laboratório 1">Laboratório 1</option><option value="Laboratório 2">Laboratório 2</option><option value="Laboratório 3">Laboratório 3</option><option value="Laboratório 4">Laboratório 4</option><option value="Laboratório 5">Laboratório 5</option><option value="Sala Maker">Sala Maker</option><option value="Laboratório 7">Laboratório 7</option><option value="Laboratório 8">Laboratório 8</option><option value="Laboratório 9">Laboratório 9</option>
+                            <option value="Laboratório 1">Laboratório 1</option>
+                            <option value="Laboratório 2">Laboratório 2</option>
+                            <option value="Laboratório 3">Laboratório 3</option>
+                            <option value="Laboratório 4">Laboratório 4</option>
+                            <option value="Laboratório 5">Laboratório 5</option>
+                            <option value="Laboratório 6">Laboratório 6</option>
+                            <option value="Laboratório 7">Laboratório 7</option>
+                            <option value="Sala Maker">Sala Maker</option>
+                            <option value="Laboratório 9">Laboratório 9</option>
                         </select>
                         <select id="lab-horario">
                             <option value="">Qual a Aula?</option>
@@ -323,7 +331,9 @@
 
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
-        const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Sala Maker", "Laboratório 7", "Laboratório 8", "Laboratório 9"];
+        
+        // ATUALIZADO AQUI COM LAB 6 E SALA MAKER
+        const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
         // DEFINIÇÃO DOS TURNOS E SEUS HORÁRIOS EXATOS
         const TURNOS = {
@@ -446,7 +456,6 @@
             db.collection('alunos').onSnapshot(snap => {
                 STATE.alunos = {}; 
                 snap.forEach(d => {
-                    // CORREÇÃO APLICADA AQUI: Forçando a chave do e-mail lida do Firebase para minúsculo
                     STATE.alunos[d.id.toLowerCase()] = d.data().turmas || []; 
                 });
                 atualizarInterface();
@@ -789,7 +798,7 @@
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
-            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); // CAPTURA A GRADE DA PÁGINA PERFIL
+            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
             
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
