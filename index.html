@@ -301,7 +301,7 @@
 
     <script>
         // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA (A CHAVE MESTRA DA CORREÇÃO)
+        // 0. FUNÇÕES DE SEGURANÇA HTML
         // ==========================================
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -343,7 +343,7 @@
             ]
         };
 
-        // O CÉREBRO DO SISTEMA (100% REATIVO)
+        // O CÉREBRO DO SISTEMA
         let STATE = { professores: [], turmas: {}, alunos: {}, agendamentos: [], arquivos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = '';
@@ -366,7 +366,7 @@
         }
 
         // ==========================================
-        // 2. SISTEMA DE INATIVIDADE (30 MIN) E LOGIN
+        // 2. SISTEMA DE INATIVIDADE E LOGIN
         // ==========================================
         let tempoOcioso;
         function resetarTempo() {
@@ -432,7 +432,7 @@
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME
+        // 3. MOTOR FIREBASE REAL-TIME (COM CORREÇÃO DE CASE SENSITIVITY)
         // ==========================================
         function iniciarEscutasEmTempoReal() {
             db.collection('professores').onSnapshot(snap => {
@@ -444,7 +444,12 @@
             });
 
             db.collection('alunos').onSnapshot(snap => {
-                STATE.alunos = {}; snap.forEach(d => STATE.alunos[d.id] = d.data().turmas || []); atualizarInterface();
+                STATE.alunos = {}; 
+                snap.forEach(d => {
+                    // CORREÇÃO APLICADA AQUI: Forçando a chave do e-mail lida do Firebase para minúsculo
+                    STATE.alunos[d.id.toLowerCase()] = d.data().turmas || []; 
+                });
+                atualizarInterface();
             });
 
             db.collection('agendamentos').onSnapshot(snap => {
@@ -784,7 +789,7 @@
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
-            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); // CAPTURA A GRADE DE LADO DA PÁGINA PERFIL
+            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); // CAPTURA A GRADE DA PÁGINA PERFIL
             
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
