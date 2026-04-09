@@ -303,8 +303,6 @@
         // ==========================================
         // 0. FUNÇÕES DE SEGURANÇA (A CHAVE MESTRA DA CORREÇÃO)
         // ==========================================
-        // Essas funções substituem os "document.getElementById().innerHTML" diretos.
-        // Se o elemento não existir na tela atual, elas ignoram silenciosamente e evitam o travamento geral.
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 
@@ -590,10 +588,11 @@
                 }
                 await batch.commit(); 
                 showStatus("Agendamento concluído!");
-                document.getElementById('lab-semanas').value = "1";
+                document.getElementById('lab-semanas').value = "1"; // Reseta o form
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
+        // --- SISTEMA DE EXCLUSÃO INTELIGENTE ---
         function cancelarReserva(idFb, groupId) { 
             if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
                 if(confirm("Deseja excluir esta reserva antiga?")) {
@@ -605,6 +604,7 @@
                 return;
             }
             
+            // Salva na memória blindada antes de abrir o Modal
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
             let modal = document.getElementById('modal-exclusao');
             if(modal) modal.style.display = 'flex';
@@ -616,6 +616,7 @@
         }
 
         async function confirmarExclusao(tipo) {
+            // Pega as variáveis da memória antes de fechar o Modal
             let idFbAlvo = reservaExclusaoAlvo.idFb;
             let groupIdAlvo = reservaExclusaoAlvo.groupId;
             
@@ -684,12 +685,14 @@
             
             let html = '<div class="tabela-responsiva"><table class="tabela-grade"><thead><tr><th class="td-lab">Laboratório</th>';
             
+            // Cria as colunas (horários)
             horarios.forEach(h => {
                 let horarioCurto = h.split(' - ')[1] + '<br><span style="font-size:10px; font-weight:normal; color:#747775;">' + h.split(' - ')[2] + '</span>';
                 html += `<th>${horarioCurto}</th>`;
             });
             html += '</tr></thead><tbody>';
 
+            // Cria as linhas (laboratórios)
             LISTA_SALAS.forEach(lab => {
                 html += `<tr><td class="td-lab">${lab}</td>`;
                 
@@ -777,15 +780,17 @@
         }
 
         // ==========================================
-        // 7. O NÚCLEO DA INTERFACE REESCRITO COM SEGURANÇA
+        // 7. O NÚCLEO DA INTERFACE REESCRITO COM SEGURANÇA E CORREÇÃO DE GRID
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
+            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); // CAPTURA A GRADE DE LADO DA PÁGINA PERFIL
             
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
 
             if (dados.role === "admin") {
+                if(gridLabs) gridLabs.style.gridTemplateColumns = '280px 1fr'; // ADMIN MANTÉM 2 COLUNAS
                 setTextSafe('badge-funcao', "Admin"); 
                 if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
                 
@@ -816,6 +821,7 @@
                 if(isInitial) paginaInicial = 'pag-admin';
 
             } else if (dados.role === "professor") {
+                if(gridLabs) gridLabs.style.gridTemplateColumns = '280px 1fr'; // PROFESSOR MANTÉM 2 COLUNAS
                 setTextSafe('badge-funcao', "Professor"); 
                 if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 
@@ -847,6 +853,7 @@
                 if(isInitial) paginaInicial = 'pag-prof';
 
             } else { 
+                if(gridLabs) gridLabs.style.gridTemplateColumns = '1fr'; // ALUNO FICA COM 1 COLUNA (CALENDÁRIO ESTICADO)
                 let turmas = dados.minhasTurmas || [];
                 if (turmas.length > 0) {
                     setTextSafe('badge-funcao', `Aluno (${turmas.length})`); 
@@ -864,7 +871,6 @@
                     setHTMLSafe('lista-envios-aluno', htmlEnv || '<li>Nenhum arquivo enviado.</li>');
                 } else {
                     setTextSafe('badge-funcao', "Pendente");
-                    // Se o aluno está pendente, exibimos a mensagem sem destruir a estrutura HTML inteira da página dele!
                     setHTMLSafe('pag-aluno', `<h3 style="margin-top:0;">Sala Virtual</h3><p style="color:#747775;">Você ainda não foi matriculado em nenhuma turma pelo seu professor.</p>`);
                     if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Aguardando</button>`;
                 }
