@@ -335,10 +335,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // ATIVAÇÃO DO CACHE OFFLINE PARA ECONOMIZAR COTA!
+        db.enablePersistence().catch(function(err) {
+            console.log("Persistência não ativada (múltiplas abas ou não suportado)", err);
+        });
+
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
         
-        // ATUALIZADO AQUI COM LAB 6 E SALA MAKER
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
         // DEFINIÇÃO DOS TURNOS E SEUS HORÁRIOS EXATOS
@@ -365,6 +369,7 @@
         let USER_EMAIL = '';
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
         let isInitialLoad = true;
+        let escutasPrivadasAtivas = false; // Controle para não gastar cota em dobro
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
@@ -401,7 +406,8 @@
                 if(txt) txt.style.display = 'inline-block';
             }, 1000);
             
-            iniciarEscutasEmTempoReal();
+            // CARREGA APENAS O PÚBLICO PRIMEIRO (ECONOMIZA 90% DA COTA)
+            iniciarEscutasPublicas();
 
             document.onmousemove = resetarTempo;
             document.onkeypress = resetarTempo;
@@ -429,7 +435,6 @@
 
         function iniciarPortal(dados, isAutoLogin = false) {
             localStorage.setItem("epblab_user", JSON.stringify(dados));
-            // PREVENÇÃO EXTRA AQUI: Garantindo minúsculo no login
             USER_EMAIL = (dados.email || "").toLowerCase().trim();
             
             setTextSafe('nome-usuario', dados.given_name);
@@ -443,25 +448,45 @@
             let mDyn = document.getElementById('menu-dinamico'); if(mDyn) mDyn.style.display = 'flex';
             
             if(!isAutoLogin) showStatus("Login Concluído! Sincronizando...", "processando");
-            atualizarInterface();
+            
+            // ATIVA O RESTO DO BANCO DE DADOS SÓ QUANDO LOGAR
+            if (!escutasPrivadasAtivas) {
+                iniciarEscutasPrivadas();
+                escutasPrivadasAtivas = true;
+            } else {
+                atualizarInterface();
+            }
         }
 
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (COM CORREÇÃO DE CASE SENSITIVITY)
+        // 3. MOTOR FIREBASE REAL-TIME OTIMIZADO
         // ==========================================
-        function iniciarEscutasEmTempoReal() {
+        function iniciarEscutasPublicas() {
+            // Carrega apenas os agendamentos para a tela inicial
+            db.collection('agendamentos').onSnapshot(snap => {
+                STATE.agendamentos = [];
+                snap.forEach(doc => {
+                    let data = doc.data();
+                    if(data.prof) data.prof = data.prof.toLowerCase(); 
+                    STATE.agendamentos.push({id: doc.id, ...data});
+                });
+                renderCalendarioPublico(); 
+                if(escutasPrivadasAtivas) atualizarInterface(); 
+            });
+        }
+
+        function iniciarEscutasPrivadas() {
+            // SÓ PAGA ESTA LEITURA SE O USUÁRIO ENTRAR NO SISTEMA!
             db.collection('professores').onSnapshot(snap => {
                 STATE.professores = []; 
-                // Força chave lida para minúsculo
                 snap.forEach(d => STATE.professores.push(d.id.toLowerCase())); 
                 atualizarInterface();
             });
 
             db.collection('turmas').onSnapshot(snap => {
                 STATE.turmas = {}; 
-                // Força chave lida para minúsculo
                 snap.forEach(d => STATE.turmas[d.id] = (d.data().professor || "").toLowerCase()); 
                 atualizarInterface();
             });
@@ -469,20 +494,8 @@
             db.collection('alunos').onSnapshot(snap => {
                 STATE.alunos = {}; 
                 snap.forEach(d => {
-                    // Força chave lida para minúsculo
                     STATE.alunos[d.id.toLowerCase()] = d.data().turmas || []; 
                 });
-                atualizarInterface();
-            });
-
-            db.collection('agendamentos').onSnapshot(snap => {
-                STATE.agendamentos = [];
-                snap.forEach(doc => {
-                    let data = doc.data();
-                    if(data.prof) data.prof = data.prof.toLowerCase(); // Força autor agendamento
-                    STATE.agendamentos.push({id: doc.id, ...data});
-                });
-                renderCalendarioPublico(); 
                 atualizarInterface();
             });
 
@@ -490,7 +503,7 @@
                 STATE.arquivos = [];
                 snap.forEach(d => {
                     let data = d.data();
-                    if(data.autor) data.autor = data.autor.toLowerCase(); // Força autor do arquivo
+                    if(data.autor) data.autor = data.autor.toLowerCase(); 
                     STATE.arquivos.push({idFb: d.id, ...data});
                 });
                 atualizarInterface();
@@ -820,13 +833,13 @@
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
-            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); // CORREÇÃO PARA A TELA DO ALUNO
+            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
             
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
 
             if (dados.role === "admin") {
-                if(gridLabs) gridLabs.style.gridTemplateColumns = '280px 1fr'; // ADMIN MANTÉM 2 COLUNAS
+                if(gridLabs) gridLabs.style.gridTemplateColumns = '280px 1fr'; 
                 setTextSafe('badge-funcao', "Admin"); 
                 if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
                 
@@ -857,7 +870,7 @@
                 if(isInitial) paginaInicial = 'pag-admin';
 
             } else if (dados.role === "professor") {
-                if(gridLabs) gridLabs.style.gridTemplateColumns = '280px 1fr'; // PROFESSOR MANTÉM 2 COLUNAS
+                if(gridLabs) gridLabs.style.gridTemplateColumns = '280px 1fr'; 
                 setTextSafe('badge-funcao', "Professor"); 
                 if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 
@@ -889,7 +902,7 @@
                 if(isInitial) paginaInicial = 'pag-prof';
 
             } else { 
-                if(gridLabs) gridLabs.style.gridTemplateColumns = '1fr'; // ALUNO FICA COM 1 COLUNA (CALENDÁRIO ESTICADO)
+                if(gridLabs) gridLabs.style.gridTemplateColumns = '1fr'; 
                 let turmas = dados.minhasTurmas || [];
                 if (turmas.length > 0) {
                     setTextSafe('badge-funcao', `Aluno (${turmas.length})`); 
