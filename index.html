@@ -216,21 +216,27 @@
                     <h4>Professores</h4>
                     <input type="email" id="admin-novo-prof" placeholder="E-mail do Professor">
                     <button class="action-btn" onclick="adminAcao('admin_add_prof')">Cadastrar Professor</button>
-                    <ul id="lista-admin-profs" class="lista-arq" style="margin-top:16px;"></ul>
+                    <div class="scroll-interno" style="margin-top: 16px;">
+                        <ul id="lista-admin-profs" class="lista-arq"></ul>
+                    </div>
                 </div>
                 <div class="box">
                     <h4>Turmas</h4>
                     <input type="text" id="admin-nome-turma" placeholder="Ex: 3º Ano A">
                     <select id="admin-select-prof"><option value="">Prof Responsável...</option></select>
                     <button class="action-btn" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
-                    <ul id="lista-admin-turmas" class="lista-arq" style="margin-top:16px;"></ul>
+                    <div class="scroll-interno" style="margin-top: 16px;">
+                        <ul id="lista-admin-turmas" class="lista-arq"></ul>
+                    </div>
                 </div>
                 <div class="box">
                     <h4>Alunos</h4>
                     <input type="email" id="admin-novo-aluno" placeholder="E-mail do Aluno">
                     <select id="admin-select-turma"><option value="">Qual Turma?</option></select>
                     <button class="action-btn" onclick="adminAcao('admin_add_aluno')">Matricular Aluno</button>
-                    <ul id="lista-admin-alunos" class="lista-arq" style="margin-top:16px;"></ul>
+                    <div class="scroll-interno" style="margin-top: 16px;">
+                        <ul id="lista-admin-alunos" class="lista-arq"></ul>
+                    </div>
                 </div>
                 <div class="box" style="grid-column: 1 / -1; background: #f8f9fa;">
                     <h4>Gestão Global de Arquivos (Nuvem)</h4>
@@ -332,7 +338,7 @@
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
         
-        // SALAS ATUALIZADAS (Lab 6 e Sala Maker)
+        // ATUALIZADO AQUI COM LAB 6 E SALA MAKER
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
         // DEFINIÇÃO DOS TURNOS E SEUS HORÁRIOS EXATOS
@@ -423,7 +429,7 @@
 
         function iniciarPortal(dados, isAutoLogin = false) {
             localStorage.setItem("epblab_user", JSON.stringify(dados));
-            // SEMPRE forçar o email de quem logou para minúsculo
+            // PREVENÇÃO EXTRA AQUI: Garantindo minúsculo no login
             USER_EMAIL = (dados.email || "").toLowerCase().trim();
             
             setTextSafe('nome-usuario', dados.given_name);
@@ -443,27 +449,27 @@
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (100% BLINDADO CONTRA MAIÚSCULAS)
+        // 3. MOTOR FIREBASE REAL-TIME (COM CORREÇÃO DE CASE SENSITIVITY)
         // ==========================================
         function iniciarEscutasEmTempoReal() {
             db.collection('professores').onSnapshot(snap => {
                 STATE.professores = []; 
-                // Força todos os professores lidos do banco para minúsculo
+                // Força chave lida para minúsculo
                 snap.forEach(d => STATE.professores.push(d.id.toLowerCase())); 
                 atualizarInterface();
             });
 
             db.collection('turmas').onSnapshot(snap => {
                 STATE.turmas = {}; 
-                // Força o e-mail do professor responsável pela turma para minúsculo
+                // Força chave lida para minúsculo
                 snap.forEach(d => STATE.turmas[d.id] = (d.data().professor || "").toLowerCase()); 
                 atualizarInterface();
             });
 
             db.collection('alunos').onSnapshot(snap => {
                 STATE.alunos = {}; 
-                // Força o ID do aluno lido do banco para minúsculo
                 snap.forEach(d => {
+                    // Força chave lida para minúsculo
                     STATE.alunos[d.id.toLowerCase()] = d.data().turmas || []; 
                 });
                 atualizarInterface();
@@ -473,8 +479,7 @@
                 STATE.agendamentos = [];
                 snap.forEach(doc => {
                     let data = doc.data();
-                    // Força o email do prof que agendou para minúsculo
-                    if(data.prof) data.prof = data.prof.toLowerCase();
+                    if(data.prof) data.prof = data.prof.toLowerCase(); // Força autor agendamento
                     STATE.agendamentos.push({id: doc.id, ...data});
                 });
                 renderCalendarioPublico(); 
@@ -485,8 +490,7 @@
                 STATE.arquivos = [];
                 snap.forEach(d => {
                     let data = d.data();
-                    // Força o email do autor do arquivo para minúsculo
-                    if(data.autor) data.autor = data.autor.toLowerCase();
+                    if(data.autor) data.autor = data.autor.toLowerCase(); // Força autor do arquivo
                     STATE.arquivos.push({idFb: d.id, ...data});
                 });
                 atualizarInterface();
@@ -573,7 +577,6 @@
         function adminExcluirAluno(alvoEmail, turmaAlvo) { 
             if(!confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) return;
             showStatus("Removendo...", "processando");
-            // A variável alvoEmail já vai estar minúscula pois veio do STATE
             db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) }).then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
         }
 
@@ -817,7 +820,7 @@
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
-            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
+            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); // CORREÇÃO PARA A TELA DO ALUNO
             
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
