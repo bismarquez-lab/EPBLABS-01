@@ -332,7 +332,7 @@
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         const ADMIN_EMAILS = ["bismarquez@gmail.com"];
         
-        // ATUALIZADO AQUI COM LAB 6 E SALA MAKER
+        // SALAS ATUALIZADAS (Lab 6 e Sala Maker)
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
         // DEFINIÇÃO DOS TURNOS E SEUS HORÁRIOS EXATOS
@@ -423,7 +423,8 @@
 
         function iniciarPortal(dados, isAutoLogin = false) {
             localStorage.setItem("epblab_user", JSON.stringify(dados));
-            USER_EMAIL = dados.email.toLowerCase().trim();
+            // SEMPRE forçar o email de quem logou para minúsculo
+            USER_EMAIL = (dados.email || "").toLowerCase().trim();
             
             setTextSafe('nome-usuario', dados.given_name);
             let foto = document.getElementById('foto-perfil');
@@ -442,19 +443,26 @@
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (COM CORREÇÃO DE CASE SENSITIVITY)
+        // 3. MOTOR FIREBASE REAL-TIME (100% BLINDADO CONTRA MAIÚSCULAS)
         // ==========================================
         function iniciarEscutasEmTempoReal() {
             db.collection('professores').onSnapshot(snap => {
-                STATE.professores = []; snap.forEach(d => STATE.professores.push(d.id)); atualizarInterface();
+                STATE.professores = []; 
+                // Força todos os professores lidos do banco para minúsculo
+                snap.forEach(d => STATE.professores.push(d.id.toLowerCase())); 
+                atualizarInterface();
             });
 
             db.collection('turmas').onSnapshot(snap => {
-                STATE.turmas = {}; snap.forEach(d => STATE.turmas[d.id] = d.data().professor); atualizarInterface();
+                STATE.turmas = {}; 
+                // Força o e-mail do professor responsável pela turma para minúsculo
+                snap.forEach(d => STATE.turmas[d.id] = (d.data().professor || "").toLowerCase()); 
+                atualizarInterface();
             });
 
             db.collection('alunos').onSnapshot(snap => {
                 STATE.alunos = {}; 
+                // Força o ID do aluno lido do banco para minúsculo
                 snap.forEach(d => {
                     STATE.alunos[d.id.toLowerCase()] = d.data().turmas || []; 
                 });
@@ -463,14 +471,24 @@
 
             db.collection('agendamentos').onSnapshot(snap => {
                 STATE.agendamentos = [];
-                snap.forEach(doc => STATE.agendamentos.push({id: doc.id, ...doc.data()}));
+                snap.forEach(doc => {
+                    let data = doc.data();
+                    // Força o email do prof que agendou para minúsculo
+                    if(data.prof) data.prof = data.prof.toLowerCase();
+                    STATE.agendamentos.push({id: doc.id, ...data});
+                });
                 renderCalendarioPublico(); 
                 atualizarInterface();
             });
 
             db.collection('arquivos').onSnapshot(snap => {
                 STATE.arquivos = [];
-                snap.forEach(d => STATE.arquivos.push({idFb: d.id, ...d.data()}));
+                snap.forEach(d => {
+                    let data = d.data();
+                    // Força o email do autor do arquivo para minúsculo
+                    if(data.autor) data.autor = data.autor.toLowerCase();
+                    STATE.arquivos.push({idFb: d.id, ...data});
+                });
                 atualizarInterface();
             });
         }
@@ -555,6 +573,7 @@
         function adminExcluirAluno(alvoEmail, turmaAlvo) { 
             if(!confirm(`Remover '${alvoEmail}' da turma ${turmaAlvo}?`)) return;
             showStatus("Removendo...", "processando");
+            // A variável alvoEmail já vai estar minúscula pois veio do STATE
             db.collection('alunos').doc(alvoEmail).update({ turmas: firebase.firestore.FieldValue.arrayRemove(turmaAlvo) }).then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
         }
 
