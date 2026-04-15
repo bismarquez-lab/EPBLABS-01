@@ -59,7 +59,7 @@
         .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
         .btn-pdf:hover { background: #f8f9fa; color: #1f1f1f; }
 
-        /* --- TABELA DE GRADE (GRID ESTILO EXCEL PROPORCIONAL) --- */
+        /* --- TABELA DE GRADE --- */
         .tabela-responsiva { width: 100%; flex-grow: 1; overflow-y: auto; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; }
         .tabela-grade { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 800px; height: 100%; }
         .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; position: sticky; top: 0; z-index: 2;}
@@ -67,16 +67,20 @@
         .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; position: sticky; left: 0; z-index: 1;}
         .celula-livre { background: #ffffff; color: #a8a8a8; font-style: italic; font-size: 12px; }
         
+        /* CORES DAS RESERVAS */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
         .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
+        
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
         .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.prof span { color: #137333; font-size: 11px;}
 
+        .comp-tag { font-size: 10px; opacity: 0.85; margin-top: 2px; font-style: italic;}
+
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: #fce8e6;}
+        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
@@ -112,14 +116,15 @@
             
             .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; font-size: 10px; margin-top: 10px; page-break-inside: avoid; }
             .pdf-tabela th { background: #f0f4f9; padding: 6px 4px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; }
-            .pdf-tabela td { padding: 4px; border: 1px solid #000; vertical-align: middle; height: 40px; }
+            .pdf-tabela td { padding: 4px; border: 1px solid #000; vertical-align: middle; height: 45px; }
             .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 120px; color: #1f1f1f; }
             
             .pdf-celula-admin { background-color: #d3e3fd !important; }
             .pdf-celula-prof { background-color: #e6f4ea !important; }
             
             .pdf-turma { font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px; }
-            .pdf-prof { display: block; font-size: 9px; color: #444746; }
+            .pdf-prof { display: block; font-size: 9px; color: #1f1f1f; font-weight: 600;}
+            .pdf-comp { display: block; font-size: 8px; color: #444746; font-style: italic; margin-top: 2px;}
         }
     </style>
 </head>
@@ -167,7 +172,7 @@
     <div id="modal-relatorio" class="modal-overlay">
         <div class="modal-box">
             <h3>📄 Relatório de Grade</h3>
-            <p style="font-size: 13px;">Gera um relatório completo invertido (Laboratórios nas colunas e Aulas nas linhas) para todos os dias do período.</p>
+            <p style="font-size: 13px;">Gera um relatório completo invertido para todos os dias do período.</p>
             <input type="date" id="relatorio-data" style="margin-bottom: 12px;">
             <select id="relatorio-periodo" style="margin-bottom: 24px;">
                 <option value="7">Próxima 1 Semana</option>
@@ -235,6 +240,9 @@
                         </select>
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
+                        
+                        <select id="lab-comp"><option value="">Componente...</option></select>
+                        
                         <select id="lab-semanas"></select>
                         <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px;">Agendar Sala</button>
                     </div>
@@ -258,7 +266,7 @@
 
         <div id="pag-admin" class="pagina">
             <h3 style="margin-top:0;">Painel de Controle</h3>
-            <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="grid-layout" style="grid-template-columns: repeat(4, 1fr);">
                 <div class="box">
                     <h4>Administradores</h4>
                     <input type="email" id="admin-novo-admin" placeholder="E-mail do Admin">
@@ -269,7 +277,7 @@
                 </div>
                 <div class="box">
                     <h4>Professores</h4>
-                    <input type="text" id="admin-nome-prof" placeholder="Nome do Professor (Ex: João Silva)">
+                    <input type="text" id="admin-nome-prof" placeholder="Nome (Ex: João Silva)">
                     <input type="email" id="admin-novo-prof" placeholder="E-mail (Opcional)">
                     <button class="action-btn" onclick="adminAcao('admin_add_prof')">Cadastrar Professor</button>
                     <div class="scroll-interno" style="margin-top: 16px;">
@@ -282,6 +290,14 @@
                     <button class="action-btn" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
                     <div class="scroll-interno" style="margin-top: 16px;">
                         <ul id="lista-admin-turmas" class="lista-arq"></ul>
+                    </div>
+                </div>
+                <div class="box">
+                    <h4>Componentes</h4>
+                    <input type="text" id="admin-nome-comp" placeholder="Ex: Banco de Dados">
+                    <button class="action-btn" onclick="adminAcao('admin_add_comp')">Criar Componente</button>
+                    <div class="scroll-interno" style="margin-top: 16px;">
+                        <ul id="lista-admin-comps" class="lista-arq"></ul>
                     </div>
                 </div>
             </div>
@@ -342,14 +358,14 @@
             ]
         };
 
-        // Arrays com apenas os identificadores de Aula (para a impressão)
         const AULAS_CURTAS = {
             'Manhã': ["07:30 - 08:20", "08:20 - 09:10", "09:10 - 10:00", "10:20 - 11:10", "11:10 - 12:00", "12:00 - 12:50"],
             'Tarde': ["13:30 - 14:20", "14:20 - 15:10", "15:10 - 16:00", "16:20 - 17:10", "17:10 - 18:00", "18:00 - 18:50"],
             'Noite': ["19:00 - 19:50", "19:50 - 20:40", "21:00 - 21:50", "21:50 - 22:45"]
         };
 
-        let STATE = { admins: [], professores: [], turmas: {}, agendamentos: [] };
+        // Adicionado 'componentes' no STATE central
+        let STATE = { admins: [], professores: [], turmas: {}, componentes: [], agendamentos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = ''; let USER_NOME = '';
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
@@ -461,6 +477,9 @@
             db.collection('admins').onSnapshot(snap => { STATE.admins = []; snap.forEach(d => STATE.admins.push(d.id.toLowerCase())); atualizarInterface(); });
             db.collection('professores').onSnapshot(snap => { STATE.professores = []; snap.forEach(d => { STATE.professores.push({ nome: d.id, email: (d.data().email || "").toLowerCase() }); }); atualizarInterface(); });
             db.collection('turmas').onSnapshot(snap => { STATE.turmas = {}; snap.forEach(d => STATE.turmas[d.id] = true); atualizarInterface(); });
+            
+            // NOVA ESCUTA PARA OS COMPONENTES CURRICULARES
+            db.collection('componentes').onSnapshot(snap => { STATE.componentes = []; snap.forEach(d => STATE.componentes.push(d.id)); atualizarInterface(); });
         }
 
         let debounceTimer;
@@ -498,6 +517,11 @@
                 let t = document.getElementById('admin-nome-turma').value.trim(); if(!t) return showStatus("Preencha o nome da turma", "erro");
                 db.collection('turmas').doc(t).set({ativo: true}).then(() => { document.getElementById('admin-nome-turma').value = ''; showStatus("Turma Criada!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
+            // NOVA AÇÃO DE CADASTRO DE COMPONENTE
+            if (acao === 'admin_add_comp') { 
+                let c = document.getElementById('admin-nome-comp').value.trim(); if(!c) return showStatus("Preencha o nome do componente", "erro");
+                db.collection('componentes').doc(c).set({ativo: true}).then(() => { document.getElementById('admin-nome-comp').value = ''; showStatus("Componente Criado!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
+            }
         }
 
         function adminExcluir(acao, alvo) {
@@ -506,15 +530,18 @@
             if(acao === 'admin_del_admin') db.collection('admins').doc(alvo).delete().then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
             if(acao === 'admin_del_prof') db.collection('professores').doc(alvo).delete().then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
             if(acao === 'admin_del_turma') db.collection('turmas').doc(alvo).delete().then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
+            if(acao === 'admin_del_comp') db.collection('componentes').doc(alvo).delete().then(() => showStatus("Removido!")).catch(e => showStatus("Erro", "erro"));
         }
 
         async function reservarLab() {
             let dataR = document.getElementById('lab-data').value; let lab = document.getElementById('lab-numero').value;
             let hor = document.getElementById('lab-horario').value; let t = document.getElementById('lab-turma').value;
-            let p = document.getElementById('lab-prof').value; let sem = parseInt(document.getElementById('lab-semanas').value, 10);
+            let p = document.getElementById('lab-prof').value; 
+            let c = document.getElementById('lab-comp').value; // Pega o Componente selecionado
+            let sem = parseInt(document.getElementById('lab-semanas').value, 10);
             
             if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { sem = 1; }
-            if(!dataR || !lab || !hor || !t || !p) return showStatus("Preencha todos os campos!", "erro");
+            if(!dataR || !lab || !hor || !t || !p || !c) return showStatus("Preencha todos os campos!", "erro"); // Valida Componente
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             let datasParaAgendar = [];
@@ -536,7 +563,8 @@
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
                     let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
-                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, groupId: String(groupId), criadoPorRole: tagCriador });
+                    // SALVA O COMPONENTE JUNTO COM A RESERVA
+                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, comp: c, groupId: String(groupId), criadoPorRole: tagCriador });
                 }
                 await batch.commit(); showStatus("Agendamento concluído!"); document.getElementById('lab-semanas').value = "1"; 
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
@@ -589,7 +617,6 @@
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             dataFim.setDate(dataFim.getDate() + dias);
 
-            // Filtra os agendamentos no período
             let reservasFiltradas = STATE.agendamentos.filter(a => {
                 let d = new Date(a.data + "T00:00:00");
                 return d >= dataInicio && d <= dataFim;
@@ -601,7 +628,6 @@
                 return;
             }
 
-            // Agrupa por DATA (Pois a impressão agrupa todos os turnos de 1 dia na mesma página/tabela)
             let agrupadoData = {};
             reservasFiltradas.forEach(r => {
                 if(!agrupadoData[r.data]) agrupadoData[r.data] = [];
@@ -611,11 +637,9 @@
             let chavesOrdenadas = Object.keys(agrupadoData).sort((a, b) => new Date(a) - new Date(b));
             let htmlFinal = '';
 
-            // Função interna para construir a matriz invertida
             function construirTabelaInvertida(dataBr, resDoDia) {
                 let tabelas = '';
                 
-                // Para cada turno, cria uma tabela (se houver agendamento naquele turno)
                 ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
                     let aulasTurno = AULAS_CURTAS[turno];
                     let resTurno = resDoDia.filter(r => r.horario.startsWith(turno));
@@ -629,27 +653,27 @@
                                     <tr>
                                         <th style="width: 100px;">Horário</th>`;
                         
-                        // CABEÇALHO = LABORATÓRIOS
                         LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
                         
                         tabelas += `        </tr>
                                 </thead>
                                 <tbody>`;
                                 
-                        // LINHAS = AULAS DO TURNO
                         aulasTurno.forEach((aulaHorario, index) => {
                             let aulaNum = index + 1;
                             tabelas += `<tr>
                                             <td class="pdf-col-horario">${aulaNum}ª Aula<br><span style="font-size:8px; font-weight:normal;">${aulaHorario}</span></td>`;
                             
-                            // COLUNAS DA LINHA = PROCURAR SE O LAB TÁ RESERVADO NESSA AULA
                             LISTA_SALAS.forEach(lab => {
                                 let res = resTurno.find(a => a.lab === lab && a.horario.includes(aulaHorario.split(' - ')[0]));
                                 if (res) {
                                     let classeCor = (res.criadoPorRole === 'professor') ? 'pdf-celula-prof' : 'pdf-celula-admin';
+                                    let compName = res.comp || ''; // Mostra o componente no PDF se existir
+                                    
                                     tabelas += `<td class="${classeCor}">
                                                     <span class="pdf-turma">${res.turma}</span>
                                                     <span class="pdf-prof">${res.prof}</span>
+                                                    <span class="pdf-comp">${compName}</span>
                                                 </td>`;
                                 } else {
                                     tabelas += `<td style="color: #a8a8a8; font-style: italic;">Livre</td>`;
@@ -663,7 +687,6 @@
                 return tabelas;
             }
 
-            // Monta as páginas do PDF
             chavesOrdenadas.forEach((dataChave, index) => {
                 let dataBr = dataChave.split('-').reverse().join('/');
                 let resDoDia = agrupadoData[dataChave];
@@ -689,7 +712,6 @@
             document.getElementById('print-area').innerHTML = htmlFinal;
             document.getElementById('modal-relatorio').style.display = 'none';
 
-            // Aguarda o HTML injetar na tela invisível antes de chamar a impressão
             setTimeout(() => { window.print(); }, 500);
         }
 
@@ -715,6 +737,8 @@
                     
                     if (res) {
                         let profName = res.prof; 
+                        let compName = res.comp || ''; // Puxa a matéria (componente) se existir
+
                         let podeApagar = false;
                         if (isPrivado) {
                             if (DADOS_SISTEMA.role === 'admin') podeApagar = true;
@@ -728,6 +752,7 @@
                                     <div class="celula-ocupada ${classeCor}">
                                         <strong>${res.turma}</strong>
                                         <span>${profName}</span>
+                                        <span class="comp-tag">${compName}</span>
                                         ${btnExcluir}
                                     </div>
                                  </td>`;
@@ -795,6 +820,11 @@
                 Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
                 setHTMLSafe('lab-turma', opTurma);
 
+                // PREENCHE A CAIXA DE COMPONENTES CURRICULARES (NOVA RESERVA)
+                let opComp = '<option value="">Componente...</option>'; 
+                STATE.componentes.forEach(c => opComp += `<option value="${c}">${c}</option>`); 
+                setHTMLSafe('lab-comp', opComp);
+
                 if (dados.role === "admin") {
                     let opProf = '<option value="">Selecione o Professor...</option>'; 
                     STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
@@ -813,11 +843,17 @@
                     let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-turmas', htmlTurmas || '<li>Sem turmas.</li>');
                     
+                    let htmlComps = ''; STATE.componentes.forEach(c => htmlComps += `<li><span>📘 ${c}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_comp', '${c}')">Excluir</button></li>`); 
+                    setHTMLSafe('lista-admin-comps', htmlComps || '<li>Sem componentes.</li>');
+                    
                 } else {
                     setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
                     setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option>');
                 }
-            } else { fazerLogout(); }
+
+            } else { 
+                fazerLogout();
+            }
             
             if(isInitial) {
                  document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
