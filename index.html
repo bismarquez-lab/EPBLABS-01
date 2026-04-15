@@ -53,24 +53,37 @@
         button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif; transition: 0.2s;}
         button.action-btn:hover { background: #0842a0;}
         
-        /* --- TABELA DE GRADE (GRID ESTILO EXCEL PROPORCIONAL) --- */
+        .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
+        .btn-pdf:hover { background: #f8f9fa; color: #1f1f1f; }
+
+        /* --- TABELA DE GRADE --- */
         .tabela-responsiva { width: 100%; flex-grow: 1; overflow-y: auto; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; }
         .tabela-grade { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 800px; height: 100%; }
         .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; position: sticky; top: 0; z-index: 2;}
         .tabela-grade td { padding: 4px; border: 1px solid #e3e3e3; height: 6.5vh; min-height: 45px; vertical-align: middle; }
         .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; position: sticky; left: 0; z-index: 1;}
         .celula-livre { background: #ffffff; color: #a8a8a8; font-style: italic; font-size: 12px; }
-        .celula-ocupada { background: #d3e3fd; border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #a8c7fa; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
-        .celula-ocupada strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
-        .celula-ocupada span { color: #0b57d0; font-size: 11px;}
+        
+        /* CORES DAS RESERVAS */
+        .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+        
+        /* Azul = Admin */
+        .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
+        .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
+        .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
+        
+        /* Verde = Professor */
+        .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
+        .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px;}
+        .celula-ocupada.prof span { color: #137333; font-size: 11px;}
+
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: #fce8e6;}
+        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
-        .lista-arq a { color: #0b57d0; text-decoration: none; font-weight: 500; word-break: break-all;} 
-
+        
         /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
@@ -80,14 +93,29 @@
         .modal-box { background: white; padding: 32px; border-radius: 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
         .modal-box h3 { margin: 0 0 12px 0; font-size: 20px; color: #1f1f1f; font-weight: 600;}
         .modal-box p { color: #444746; font-size: 14px; margin-bottom: 24px; line-height: 1.5;}
-        .btn-modal-dia { background: #f0f4f9; color: #0b57d0; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-modal-dia { background: #f0f4f9; color: #0b57d0; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px;}
         .btn-modal-dia:hover { background: #d3e3fd; }
-        .btn-modal-serie { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-modal-serie { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px;}
         .btn-modal-serie:hover { background: #b32626; }
         .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
         .btn-modal-cancelar:hover { color: #1f1f1f; }
         
         .box-calendario { grid-column: 1 / -1; }
+
+        /* --- CONFIGURAÇÃO PARA GERAR PDF (IMPRESSÃO) --- */
+        @media print {
+            @page { size: landscape; margin: 10mm; }
+            body { background: #fff !important; margin: 0; padding: 0; }
+            canvas, #navbar, #painel-reserva-lab, #menu-dinamico, .btn-apagar, .btn-pdf, .action-btn, .auth-area { display: none !important; }
+            #area-privada, #area-publica { margin-top: 0 !important; width: 100% !important; transform: none !important; left: 0 !important; height: auto !important; padding: 0 !important;}
+            .container-calendario, .pagina { display: block !important; border: none !important; box-shadow: none !important; height: auto !important; padding: 0 !important; }
+            #grid-perfil { display: block !important; }
+            .box { border: none !important; padding: 0 !important; }
+            .tabela-grade { min-width: 100% !important; }
+            .tabela-grade td { height: auto !important; padding: 12px 4px !important; }
+            /* Força as cores de fundo aparecerem no PDF */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -134,8 +162,8 @@
         <div class="container-calendario" style="display: flex; flex-direction: column; height: 85vh;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px;">
                 <div>
-                    <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600;">Agenda dos Laboratórios de Informática</h1>
-                    <p style="margin: 0; color: #747775; font-size: 14px;">Professor para agendamentos avulsos, utilize seu e-mail institucional..</p>
+                    <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600;">Agenda dos Laboratórios</h1>
+                    <p style="margin: 0; color: #747775; font-size: 14px;">Acompanhe a disponibilidade das salas em tempo real.</p>
                 </div>
                 <div style="display: flex; gap: 12px;">
                     <select id="filtro-turno-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
@@ -144,6 +172,7 @@
                         <option value="Noite">Noite</option>
                     </select>
                     <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
+                    <button class="btn-pdf" onclick="window.print()">📄 Gerar PDF</button>
                 </div>
             </div>
             <div id="grade-laboratorios-publica" class="scroll-interno" style="display: flex; flex-direction: column;">
@@ -184,7 +213,6 @@
                                 <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option><option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
-                        
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         <select id="lab-semanas"></select>
@@ -201,6 +229,7 @@
                                 <option value="Noite">Noite</option>
                             </select>
                             <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
+                            <button class="btn-pdf" onclick="window.print()">📄 Gerar PDF</button>
                         </div>
                     </div>
                     <div class="scroll-interno" id="grade-laboratorios" style="display: flex; flex-direction: column;"></div>
@@ -358,7 +387,7 @@
 
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
-                iniciarPortal(JSON.parse(usuarioSalvo), true); // Auto-login invisível
+                iniciarPortal(JSON.parse(usuarioSalvo), true);
             }
         };
 
@@ -368,42 +397,35 @@
         async function loginMicrosoft() { 
             try { 
                 const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); 
-                // Dispara o iniciarPortal passando os dados da Microsoft
                 iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); 
             } catch(e) { showStatus("Erro Microsoft", "erro"); } 
         }
 
-        // AGORA É ASYNC PARA PODER BATER NA PORTA DO FIREBASE ANTES DE ABRIR A TELA!
         async function iniciarPortal(dados, isAutoLogin = false) {
             let emailTentativa = (dados.email || "").toLowerCase().trim();
             
             if(!isAutoLogin) showStatus("Validando permissões...", "processando");
 
             try {
-                // 1. CHECAGEM DE VIP NO FIREBASE
                 let docAdmin = await db.collection('admins').doc(emailTentativa).get();
                 let isAdmin = docAdmin.exists;
 
-                // Busca o professor pelo e-mail
                 let profQuery = await db.collection('professores').where('email', '==', emailTentativa).get();
                 let isProf = !profQuery.empty;
 
-                // 2. PORTA FECHADA PARA QUEM NÃO É VIP (EX: ALUNO)
                 if (!isAdmin && !isProf) {
-                    localStorage.removeItem("epblab_user"); // Remove vestígios da memória
+                    localStorage.removeItem("epblab_user"); 
                     
                     if (!isAutoLogin) {
                         alert(`⚠️ ACESSO NEGADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, peça para a coordenação vincular o seu e-mail ao seu nome no Painel de Controle.`);
-                        location.reload(); // Recarrega para voltar o layout original
+                        location.reload(); 
                     }
-                    return; // Para a função aqui. Não deixa carregar o painel!
+                    return; 
                 }
 
-                // 3. PORTA ABERTA! (Libera o layout e salva a sessão)
                 localStorage.setItem("epblab_user", JSON.stringify(dados));
                 USER_EMAIL = emailTentativa;
                 
-                // Se for prof, puxa o NOME OFICIAL do banco de dados, senão usa o nome da Microsoft
                 if (isProf) {
                     USER_NOME = profQuery.docs[0].id; 
                 } else {
@@ -482,7 +504,7 @@
             debounceTimer = setTimeout(() => {
                 if (!USER_EMAIL) return;
 
-                let role = "aluno"; // Valor de fallback
+                let role = "aluno";
                 
                 if(STATE.admins.includes(USER_EMAIL)) {
                     role = "admin";
@@ -581,7 +603,9 @@
                 
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
-                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, groupId: String(groupId) });
+                    // NOVO: Grava a tag de quem criou para a cor da tabela!
+                    let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
+                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, groupId: String(groupId), criadoPorRole: tagCriador });
                 }
                 await batch.commit(); 
                 showStatus("Agendamento concluído!");
@@ -669,8 +693,11 @@
 
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
                         
+                        // LÓGICA DE CORES
+                        let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
+                        
                         html += `<td>
-                                    <div class="celula-ocupada">
+                                    <div class="celula-ocupada ${classeCor}">
                                         <strong>${res.turma}</strong>
                                         <span>${profName}</span>
                                         ${btnExcluir}
@@ -767,7 +794,6 @@
                 }
 
             } else { 
-                // Isso nunca deveria acontecer agora por conta do bloqueio, mas se acontecer, joga o cara pra fora!
                 fazerLogout();
             }
             
