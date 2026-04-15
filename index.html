@@ -34,6 +34,9 @@
         .btn-sair-nav:hover { background: #fce8e6; border-color: #fce8e6; }
 
         /* --- ÁREAS DE CONTEÚDO E BOXES --- */
+        #app-wrapper { display: block; } /* Envolve o site inteiro para podermos esconder no PDF */
+        #print-area { display: none; } /* Onde o PDF vai ser desenhado de forma limpa */
+
         #area-publica { position: relative; z-index: 10; margin-top: 90px; width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px;}
         .container-calendario { background: #ffffff; border-radius: 24px; padding: 24px 32px; width: 95%; max-width: 1400px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid #e3e3e3;}
         
@@ -48,7 +51,7 @@
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
 
-        /* --- FORMULÁRIOS --- */
+        /* --- FORMULÁRIOS E BOTÕES --- */
         input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Inter', sans-serif;}
         button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif; transition: 0.2s;}
         button.action-btn:hover { background: #0842a0;}
@@ -56,7 +59,7 @@
         .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
         .btn-pdf:hover { background: #f8f9fa; color: #1f1f1f; }
 
-        /* --- TABELA DE GRADE --- */
+        /* --- TABELA DE GRADE (GRID ESTILO EXCEL PROPORCIONAL) --- */
         .tabela-responsiva { width: 100%; flex-grow: 1; overflow-y: auto; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; }
         .tabela-grade { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 800px; height: 100%; }
         .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; position: sticky; top: 0; z-index: 2;}
@@ -66,60 +69,55 @@
         
         /* CORES DAS RESERVAS */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
-        
-        /* Azul = Admin */
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
         .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
-        
-        /* Verde = Professor */
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
         .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.prof span { color: #137333; font-size: 11px;}
 
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
+        .btn-apagar:hover { background: #fce8e6;}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
-        
+        .lista-arq a { color: #0b57d0; text-decoration: none; font-weight: 500; word-break: break-all;} 
+
         /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
 
-        /* --- MODAL DE EXCLUSÃO INTELIGENTE --- */
-        #modal-exclusao { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 3000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        /* --- MODAIS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 3000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
         .modal-box { background: white; padding: 32px; border-radius: 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
         .modal-box h3 { margin: 0 0 12px 0; font-size: 20px; color: #1f1f1f; font-weight: 600;}
         .modal-box p { color: #444746; font-size: 14px; margin-bottom: 24px; line-height: 1.5;}
-        .btn-modal-dia { background: #f0f4f9; color: #0b57d0; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px;}
+        
+        .btn-modal-dia, .btn-modal-serie { color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        .btn-modal-dia { background: #f0f4f9; color: #0b57d0; }
         .btn-modal-dia:hover { background: #d3e3fd; }
-        .btn-modal-serie { background: #d32f2f; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px;}
-        .btn-modal-serie:hover { background: #b32626; }
+        .btn-modal-serie { background: #0b57d0; }
+        .btn-modal-serie:hover { background: #0842a0; }
         .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
         .btn-modal-cancelar:hover { color: #1f1f1f; }
         
         .box-calendario { grid-column: 1 / -1; }
 
-        /* --- CONFIGURAÇÃO PARA GERAR PDF (IMPRESSÃO) --- */
+        /* --- CONFIGURAÇÃO MAGICA DO PDF (IMPRESSÃO) --- */
         @media print {
-            @page { size: landscape; margin: 10mm; }
+            @page { size: portrait; margin: 15mm; }
             body { background: #fff !important; margin: 0; padding: 0; }
-            canvas, #navbar, #painel-reserva-lab, #menu-dinamico, .btn-apagar, .btn-pdf, .action-btn, .auth-area { display: none !important; }
-            #area-privada, #area-publica { margin-top: 0 !important; width: 100% !important; transform: none !important; left: 0 !important; height: auto !important; padding: 0 !important;}
-            .container-calendario, .pagina { display: block !important; border: none !important; box-shadow: none !important; height: auto !important; padding: 0 !important; }
-            #grid-perfil { display: block !important; }
-            .box { border: none !important; padding: 0 !important; }
-            .tabela-grade { min-width: 100% !important; }
-            .tabela-grade td { height: auto !important; padding: 12px 4px !important; }
-            /* Força as cores de fundo aparecerem no PDF */
+            #app-wrapper, canvas { display: none !important; }
+            #print-area { display: block !important; }
+            /* Garante que as cores de fundo apareçam no PDF (Azul e Verde) */
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
 <body>
 
+<div id="app-wrapper">
     <canvas id="meuCanvas"></canvas>
 
     <nav id="navbar">
@@ -148,13 +146,28 @@
 
     <div id="toast-msg">Mensagem</div>
 
-    <div id="modal-exclusao">
+    <div id="modal-exclusao" class="modal-overlay">
         <div class="modal-box">
             <h3>⚠️ Excluir Reserva</h3>
             <p>Esta reserva faz parte de uma <strong>série contínua</strong> (mensal ou semestral). Como você deseja excluir?</p>
             <button class="btn-modal-dia" onclick="confirmarExclusao('dia')">Excluir APENAS o dia</button>
-            <button class="btn-modal-serie" onclick="confirmarExclusao('serie')">Excluir TODA a série</button>
+            <button class="btn-modal-serie" style="background:#d32f2f;" onclick="confirmarExclusao('serie')">Excluir TODA a série</button>
             <button class="btn-modal-cancelar" onclick="fecharModalExclusao()">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modal-relatorio" class="modal-overlay">
+        <div class="modal-box">
+            <h3>📄 Gerar Relatório</h3>
+            <p>Selecione o período para gerar um relatório em lista com todas as reservas.</p>
+            <input type="date" id="relatorio-data" style="margin-bottom: 12px;">
+            <select id="relatorio-periodo" style="margin-bottom: 24px;">
+                <option value="7">Próxima 1 Semana</option>
+                <option value="30">Próximo 1 Mês</option>
+                <option value="180">Próximo 1 Semestre</option>
+            </select>
+            <button class="btn-modal-serie" onclick="gerarEImprimirRelatorio()">Gerar PDF e Imprimir</button>
+            <button class="btn-modal-cancelar" onclick="document.getElementById('modal-relatorio').style.display='none'">Cancelar</button>
         </div>
     </div>
 
@@ -172,7 +185,6 @@
                         <option value="Noite">Noite</option>
                     </select>
                     <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
-                    <button class="btn-pdf" onclick="window.print()">📄 Gerar PDF</button>
                 </div>
             </div>
             <div id="grade-laboratorios-publica" class="scroll-interno" style="display: flex; flex-direction: column;">
@@ -182,7 +194,6 @@
     </div>
 
     <div id="area-privada">
-        
         <div id="pag-perfil" class="pagina">
             <div class="grid-layout" id="grid-perfil" style="grid-template-columns: 280px 1fr;">
                 <div class="box" id="painel-reserva-lab" style="display: none; background: #f8f9fa;">
@@ -222,15 +233,14 @@
                 <div class="box" id="box-calendario-container">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                         <h4 style="border:none; margin:0;">Agenda do Dia</h4>
-                        <div style="display: flex; gap: 8px;">
+                        <div id="filtros-agenda-privada" style="display: flex; gap: 8px;">
                             <select id="filtro-turno" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
                                 <option value="Manhã">Manhã</option>
                                 <option value="Tarde">Tarde</option>
                                 <option value="Noite">Noite</option>
                             </select>
                             <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
-                            <button class="btn-pdf" onclick="window.print()">📄 Gerar PDF</button>
-                        </div>
+                            </div>
                     </div>
                     <div class="scroll-interno" id="grade-laboratorios" style="display: flex; flex-direction: column;"></div>
                 </div>
@@ -269,6 +279,7 @@
         </div>
 
     </div>
+</div> <div id="print-area"></div>
 
     <script>
         // ==========================================
@@ -343,6 +354,7 @@
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
+        document.getElementById('relatorio-data').valueAsDate = new Date(); // Para o modal
 
         let toastTimeout;
         function showStatus(msg, tipo="sucesso") {
@@ -603,7 +615,7 @@
                 
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
-                    // NOVO: Grava a tag de quem criou para a cor da tabela!
+                    // GRAVA A COR DA RESERVA NO BANCO (ADMIN OU PROF)
                     let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
                     batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, groupId: String(groupId), criadoPorRole: tagCriador });
                 }
@@ -663,6 +675,90 @@
         }
 
         // ==========================================
+        // 5. GERAÇÃO DE RELATÓRIO PDF DINÂMICO
+        // ==========================================
+        function abrirModalRelatorio() {
+            document.getElementById('modal-relatorio').style.display = 'flex';
+        }
+
+        function gerarEImprimirRelatorio() {
+            let dataInicioStr = document.getElementById('relatorio-data').value;
+            let dias = parseInt(document.getElementById('relatorio-periodo').value);
+            
+            if(!dataInicioStr) return showStatus("Selecione a data inicial", "erro");
+
+            // Define a janela de tempo
+            let dataInicio = new Date(dataInicioStr + "T00:00:00");
+            let dataFim = new Date(dataInicioStr + "T00:00:00");
+            dataFim.setDate(dataFim.getDate() + dias);
+
+            // Filtra os agendamentos que caem dentro desse período
+            let reservasFiltradas = STATE.agendamentos.filter(a => {
+                let d = new Date(a.data + "T00:00:00");
+                return d >= dataInicio && d <= dataFim;
+            });
+
+            // Ordena primeiro por data, depois por turno, depois por sala
+            reservasFiltradas.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            // Monta o cabeçalho do PDF
+            let html = `
+                <div style="font-family: 'Inter', sans-serif; color: #1f1f1f; padding: 20px;">
+                    <div style="border-bottom: 2px solid #0b57d0; margin-bottom: 20px; padding-bottom: 10px;">
+                        <h2 style="margin: 0; font-size: 22px;">🎓 Etec Parque Belém - Relatório de Laboratórios</h2>
+                        <p style="margin: 5px 0 0 0; color: #444746; font-size: 14px;">
+                            <strong>Período:</strong> ${dataInicio.toLocaleDateString('pt-BR')} até ${dataFim.toLocaleDateString('pt-BR')} <br>
+                            <strong>Gerado por:</strong> ${USER_NOME} (${DADOS_SISTEMA.role})
+                        </p>
+                    </div>
+            `;
+
+            // Preenche os dados
+            if(reservasFiltradas.length === 0) {
+                html += `<p style="font-style:italic; color:#747775;">Nenhuma reserva encontrada para o período selecionado.</p>`;
+            } else {
+                html += `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                        <thead>
+                            <tr style="background-color: #f0f4f9; border-bottom: 2px solid #dadce0;">
+                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Data</th>
+                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Laboratório</th>
+                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Horário</th>
+                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Turma</th>
+                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Professor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                reservasFiltradas.forEach(r => {
+                    let dataBr = r.data.split('-').reverse().join('/');
+                    // Aplica as cores no PDF
+                    let corFundo = (r.criadoPorRole === 'professor') ? '#e6f4ea' : '#d3e3fd'; 
+                    let corTexto = (r.criadoPorRole === 'professor') ? '#0d652d' : '#041e49'; 
+
+                    html += `
+                        <tr style="border-bottom: 1px solid #e3e3e3;">
+                            <td style="padding: 8px; border: 1px solid #e3e3e3; font-weight: 600;">${dataBr}</td>
+                            <td style="padding: 8px; border: 1px solid #e3e3e3;">${r.lab}</td>
+                            <td style="padding: 8px; border: 1px solid #e3e3e3;">${r.horario}</td>
+                            <td style="padding: 8px; border: 1px solid #e3e3e3; background-color: ${corFundo}; color: ${corTexto}; font-weight: 600;">${r.turma}</td>
+                            <td style="padding: 8px; border: 1px solid #e3e3e3; background-color: ${corFundo}; color: ${corTexto};">${r.prof}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `</tbody></table>`;
+            }
+            html += `</div>`;
+
+            // Joga o HTML pro container invisível e chama a impressão do sistema!
+            document.getElementById('print-area').innerHTML = html;
+            document.getElementById('modal-relatorio').style.display = 'none';
+            window.print();
+        }
+
+        // ==========================================
         // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA
         // ==========================================
         function gerarTabelaHTML(agendamentosFiltrados, turnoSelecionado, isPrivado) {
@@ -693,7 +789,7 @@
 
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
                         
-                        // LÓGICA DE CORES
+                        // LÓGICA DE CORES NA TELA (Admin = Azul, Prof = Verde)
                         let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
                         
                         html += `<td>
@@ -753,6 +849,12 @@
                 if(gridLabs) {
                     gridLabs.style.gridTemplateColumns = '280px 1fr';
                     document.getElementById('box-calendario-container').classList.remove('box-calendario');
+                }
+                
+                // INJETA O BOTÃO DE RELATÓRIO PARA ADMINS E PROFS
+                let divFiltrosPrivada = document.getElementById('filtros-agenda-privada');
+                if(divFiltrosPrivada && !document.getElementById('btn-abrir-relatorio')) {
+                    divFiltrosPrivada.innerHTML += `<button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()" style="margin-left: 8px;">📄 Relatório PDF</button>`;
                 }
                 
                 if (dados.role === "admin") {
