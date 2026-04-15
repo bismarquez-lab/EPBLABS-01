@@ -34,8 +34,8 @@
         .btn-sair-nav:hover { background: #fce8e6; border-color: #fce8e6; }
 
         /* --- ÁREAS DE CONTEÚDO E BOXES --- */
-        #app-wrapper { display: block; } /* Envolve o site inteiro para ocultar na impressão */
-        #print-area { display: none; } /* Camada invisível onde o PDF é desenhado */
+        #app-wrapper { display: block; } 
+        #print-area { display: none; } 
 
         #area-publica { position: relative; z-index: 10; margin-top: 90px; width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px;}
         .container-calendario { background: #ffffff; border-radius: 24px; padding: 24px 32px; width: 95%; max-width: 1400px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid #e3e3e3;}
@@ -67,21 +67,16 @@
         .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; position: sticky; left: 0; z-index: 1;}
         .celula-livre { background: #ffffff; color: #a8a8a8; font-style: italic; font-size: 12px; }
         
-        /* CORES DAS RESERVAS */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
-        
-        /* Azul = Admin */
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
         .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
-        
-        /* Verde = Professor */
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
         .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.prof span { color: #137333; font-size: 11px;}
 
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
+        .btn-apagar:hover { background: #fce8e6;}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
@@ -107,22 +102,24 @@
         
         .box-calendario { grid-column: 1 / -1; }
 
-        /* --- CONFIGURAÇÃO MAGICA DO PDF (IMPRESSÃO VISUAL COMPLETA) --- */
+        /* --- CONFIGURAÇÃO MAGICA DO PDF (MODELO INVERTIDO) --- */
         @media print {
             @page { size: landscape; margin: 10mm; }
-            body { background: #fff !important; margin: 0; padding: 0; }
+            body { background: #fff !important; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
             #app-wrapper, canvas { display: none !important; }
             #print-area { display: block !important; width: 100% !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            /* Ajustes para a grade caber e ficar linda no papel */
-            .tabela-responsiva { overflow: visible !important; border: none !important; margin-top: 10px !important; }
-            .tabela-grade { min-width: 100% !important; border-collapse: collapse !important;}
-            .tabela-grade th, .tabela-grade td { height: auto !important; padding: 8px 4px !important; font-size: 11px !important; }
-            .td-lab { width: 110px !important; }
-            .celula-ocupada { padding: 6px !important; }
-            .celula-ocupada strong { font-size: 11px !important; }
-            .celula-ocupada span { font-size: 10px !important; }
+            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; font-size: 10px; margin-top: 10px; page-break-inside: avoid; }
+            .pdf-tabela th { background: #f0f4f9; padding: 6px 4px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; }
+            .pdf-tabela td { padding: 4px; border: 1px solid #000; vertical-align: middle; height: 40px; }
+            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 120px; color: #1f1f1f; }
+            
+            .pdf-celula-admin { background-color: #d3e3fd !important; }
+            .pdf-celula-prof { background-color: #e6f4ea !important; }
+            
+            .pdf-turma { font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px; }
+            .pdf-prof { display: block; font-size: 9px; color: #444746; }
         }
     </style>
 </head>
@@ -169,15 +166,15 @@
 
     <div id="modal-relatorio" class="modal-overlay">
         <div class="modal-box">
-            <h3>📄 Relatório Visual</h3>
-            <p style="font-size: 13px;">O sistema irá gerar páginas contendo a grade colorida para todos os dias e turnos que possuam agendamentos no período.</p>
+            <h3>📄 Relatório de Grade</h3>
+            <p style="font-size: 13px;">Gera um relatório completo invertido (Laboratórios nas colunas e Aulas nas linhas) para todos os dias do período.</p>
             <input type="date" id="relatorio-data" style="margin-bottom: 12px;">
             <select id="relatorio-periodo" style="margin-bottom: 24px;">
                 <option value="7">Próxima 1 Semana</option>
                 <option value="30">Próximo 1 Mês</option>
                 <option value="180">Próximo 1 Semestre</option>
             </select>
-            <button class="btn-modal-serie" onclick="gerarRelatorioVisual()">Gerar Grades e Imprimir</button>
+            <button class="btn-modal-serie" onclick="gerarRelatorioVisual()">Gerar PDF e Imprimir</button>
             <button class="btn-modal-cancelar" onclick="document.getElementById('modal-relatorio').style.display='none'">Cancelar</button>
         </div>
     </div>
@@ -236,7 +233,6 @@
                                 <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option><option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
-                        
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         <select id="lab-semanas"></select>
@@ -346,6 +342,13 @@
             ]
         };
 
+        // Arrays com apenas os identificadores de Aula (para a impressão)
+        const AULAS_CURTAS = {
+            'Manhã': ["07:30 - 08:20", "08:20 - 09:10", "09:10 - 10:00", "10:20 - 11:10", "11:10 - 12:00", "12:00 - 12:50"],
+            'Tarde': ["13:30 - 14:20", "14:20 - 15:10", "15:10 - 16:00", "16:20 - 17:10", "17:10 - 18:00", "18:00 - 18:50"],
+            'Noite': ["19:00 - 19:50", "19:50 - 20:40", "21:00 - 21:50", "21:50 - 22:45"]
+        };
+
         let STATE = { admins: [], professores: [], turmas: {}, agendamentos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = ''; let USER_NOME = '';
@@ -369,7 +372,7 @@
         }
 
         // ==========================================
-        // 2. PORTARIA VIP (LOGIN E CHECAGEM)
+        // 2. PORTARIA VIP E LOGIN
         // ==========================================
         let tempoOcioso;
         function resetarTempo() {
@@ -478,7 +481,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS 
+        // 4. AÇÕES DE BANCO DE DADOS E RESERVAS
         // ==========================================
         function adminAcao(acao) {
             showStatus("Enviando para a nuvem...", "processando");
@@ -570,7 +573,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
+        // 5. GERAÇÃO DE RELATÓRIO PDF (MATRIZ INVERTIDA)
         // ==========================================
         function abrirModalRelatorio() {
             document.getElementById('modal-relatorio').style.display = 'flex';
@@ -582,12 +585,11 @@
             
             if(!dataInicioStr) return showStatus("Selecione a data inicial", "erro");
 
-            // Define o período
             let dataInicio = new Date(dataInicioStr + "T00:00:00");
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             dataFim.setDate(dataFim.getDate() + dias);
 
-            // Filtra as reservas desse período
+            // Filtra os agendamentos no período
             let reservasFiltradas = STATE.agendamentos.filter(a => {
                 let d = new Date(a.data + "T00:00:00");
                 return d >= dataInicio && d <= dataFim;
@@ -599,65 +601,100 @@
                 return;
             }
 
-            // Agrupa por DATA e TURNO (Ex: "2026-04-15|Manhã")
-            let agrupado = {};
+            // Agrupa por DATA (Pois a impressão agrupa todos os turnos de 1 dia na mesma página/tabela)
+            let agrupadoData = {};
             reservasFiltradas.forEach(r => {
-                let turno = r.horario.split(' - ')[0]; // Pega "Manhã", "Tarde" ou "Noite"
-                let chave = r.data + "|" + turno;
-                if(!agrupado[chave]) agrupado[chave] = [];
-                agrupado[chave].push(r);
+                if(!agrupadoData[r.data]) agrupadoData[r.data] = [];
+                agrupadoData[r.data].push(r);
             });
 
-            // Ordena cronologicamente
-            let chavesOrdenadas = Object.keys(agrupado).sort((a, b) => {
-                let [dataA, turnoA] = a.split('|'); let [dataB, turnoB] = b.split('|');
-                if(dataA !== dataB) return new Date(dataA) - new Date(dataB);
-                const ordemTurno = { 'Manhã': 1, 'Tarde': 2, 'Noite': 3 };
-                return ordemTurno[turnoA] - ordemTurno[turnoB];
-            });
-
+            let chavesOrdenadas = Object.keys(agrupadoData).sort((a, b) => new Date(a) - new Date(b));
             let htmlFinal = '';
 
-            // Monta uma grade por página
-            chavesOrdenadas.forEach((chave, index) => {
-                let [dataBase, turno] = chave.split('|');
-                let dataBr = dataBase.split('-').reverse().join('/');
-                let resDoTurno = agrupado[chave];
+            // Função interna para construir a matriz invertida
+            function construirTabelaInvertida(dataBr, resDoDia) {
+                let tabelas = '';
+                
+                // Para cada turno, cria uma tabela (se houver agendamento naquele turno)
+                ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
+                    let aulasTurno = AULAS_CURTAS[turno];
+                    let resTurno = resDoDia.filter(r => r.horario.startsWith(turno));
+                    
+                    if (resTurno.length > 0) {
+                        tabelas += `
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;">▶ Turno: ${turno}</h3>
+                            <table class="pdf-tabela">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 100px;">Horário</th>`;
+                        
+                        // CABEÇALHO = LABORATÓRIOS
+                        LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
+                        
+                        tabelas += `        </tr>
+                                </thead>
+                                <tbody>`;
+                                
+                        // LINHAS = AULAS DO TURNO
+                        aulasTurno.forEach((aulaHorario, index) => {
+                            let aulaNum = index + 1;
+                            tabelas += `<tr>
+                                            <td class="pdf-col-horario">${aulaNum}ª Aula<br><span style="font-size:8px; font-weight:normal;">${aulaHorario}</span></td>`;
+                            
+                            // COLUNAS DA LINHA = PROCURAR SE O LAB TÁ RESERVADO NESSA AULA
+                            LISTA_SALAS.forEach(lab => {
+                                let res = resTurno.find(a => a.lab === lab && a.horario.includes(aulaHorario.split(' - ')[0]));
+                                if (res) {
+                                    let classeCor = (res.criadoPorRole === 'professor') ? 'pdf-celula-prof' : 'pdf-celula-admin';
+                                    tabelas += `<td class="${classeCor}">
+                                                    <span class="pdf-turma">${res.turma}</span>
+                                                    <span class="pdf-prof">${res.prof}</span>
+                                                </td>`;
+                                } else {
+                                    tabelas += `<td style="color: #a8a8a8; font-style: italic;">Livre</td>`;
+                                }
+                            });
+                            tabelas += `</tr>`;
+                        });
+                        tabelas += `</tbody></table></div>`;
+                    }
+                });
+                return tabelas;
+            }
 
-                // Gera o HTML da grade limpa (isPrivado = false, sem botão apagar)
-                let tabelaHTML = gerarTabelaHTML(resDoTurno, turno, false); 
-
-                // Quebra de página
+            // Monta as páginas do PDF
+            chavesOrdenadas.forEach((dataChave, index) => {
+                let dataBr = dataChave.split('-').reverse().join('/');
+                let resDoDia = agrupadoData[dataChave];
+                
                 let pageBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
 
                 htmlFinal += `
-                    <div style="font-family: 'Inter', sans-serif; color: #1f1f1f; padding: 10px; width: 100%; box-sizing: border-box; ${pageBreak}">
-                        <div style="border-bottom: 2px solid #0b57d0; margin-bottom: 16px; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="width: 100%; box-sizing: border-box; ${pageBreak}">
+                        <div style="border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: flex-end;">
                             <div>
-                                <h2 style="margin: 0; font-size: 20px;">🎓 Etec Parque Belém - Grade de Laboratórios</h2>
-                                <p style="margin: 4px 0 0 0; color: #444746; font-size: 14px;">
-                                    <strong>Data:</strong> ${dataBr} | <strong>Turno:</strong> ${turno}
-                                </p>
+                                <h2 style="margin: 0; font-size: 16px;">Etec Parque Belém - Relatório de Ocupação de Laboratórios</h2>
+                                <p style="margin: 2px 0 0 0; font-size: 12px; font-weight: bold;">Data: ${dataBr}</p>
                             </div>
-                            <div style="text-align: right; font-size: 12px; color: #747775;">
+                            <div style="text-align: right; font-size: 10px; color: #444;">
                                 Impresso em: ${new Date().toLocaleDateString('pt-BR')} por ${USER_NOME}
                             </div>
                         </div>
-                        ${tabelaHTML}
+                        ${construirTabelaInvertida(dataBr, resDoDia)}
                     </div>
                 `;
             });
 
-            // Escreve na camada invisível e chama a impressora!
             document.getElementById('print-area').innerHTML = htmlFinal;
             document.getElementById('modal-relatorio').style.display = 'none';
 
-            // Aguarda meio segundo pro navegador renderizar antes de imprimir
+            // Aguarda o HTML injetar na tela invisível antes de chamar a impressão
             setTimeout(() => { window.print(); }, 500);
         }
 
         // ==========================================
-        // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA
+        // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA (TELA DO SISTEMA)
         // ==========================================
         function gerarTabelaHTML(agendamentosFiltrados, turnoSelecionado, isPrivado) {
             let horarios = TURNOS[turnoSelecionado];
@@ -678,7 +715,6 @@
                     
                     if (res) {
                         let profName = res.prof; 
-                        
                         let podeApagar = false;
                         if (isPrivado) {
                             if (DADOS_SISTEMA.role === 'admin') podeApagar = true;
@@ -686,7 +722,6 @@
                         }
 
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
-                        
                         let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
                         
                         html += `<td>
@@ -740,7 +775,6 @@
                     document.getElementById('box-calendario-container').classList.remove('box-calendario');
                 }
                 
-                // INJETA O BOTÃO DE RELATÓRIO PARA ADMINS E PROFS (Area Privada)
                 let divFiltrosPrivada = document.getElementById('filtros-agenda-privada');
                 if(divFiltrosPrivada && !document.getElementById('btn-abrir-relatorio')) {
                     divFiltrosPrivada.innerHTML += `<button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()" style="margin-left: 8px;">📄 Relatório PDF</button>`;
@@ -783,10 +817,7 @@
                     setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
                     setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option>');
                 }
-
-            } else { 
-                fazerLogout();
-            }
+            } else { fazerLogout(); }
             
             if(isInitial) {
                  document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
