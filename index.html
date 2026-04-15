@@ -213,8 +213,8 @@
         </div>
 
         <div id="pag-admin" class="pagina">
-            <h3 style="margin-top:0;">Painel de Gestão</h3>
-            <div class="grid-layout">
+            <h3 style="margin-top:0;">Painel de Controle</h3>
+            <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="box">
                     <h4>Administradores</h4>
                     <input type="email" id="admin-novo-admin" placeholder="E-mail do Admin">
@@ -249,37 +249,12 @@
                         <ul id="lista-admin-alunos" class="lista-arq"></ul>
                     </div>
                 </div>
-                <div class="box" style="grid-column: 1 / -1; background: #f8f9fa;">
-                    <h4>Gestão Global de Arquivos (Nuvem)</h4>
-                    <select id="admin-filtro-arquivos" style="background: #fff;" onchange="renderArquivosAdmin()">
-                        <option value="todas">Carregando Nuvem...</option>
-                    </select>
-                    <div class="scroll-interno" style="max-height: 250px; background: #fff; padding: 16px; border-radius: 12px; border: 1px solid #e3e3e3;">
-                        <ul class="lista-arq" id="lista-arquivos-admin"></ul>
-                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div id="pag-prof" class="pagina">
-            <h3 style="margin-top:0;">Compartilhar Materiais</h3>
-            <div class="grid-layout" style="grid-template-columns: 1fr 2fr;">
-                <div class="box" style="background: #f8f9fa;">
-                    <h4>Fazer Upload</h4>
-                    <select id="prof-seleciona-turma" style="background:#fff;"></select>
-                    <input type="file" id="prof-file" style="background:#fff;">
-                    <button class="action-btn" onclick="upload('professor')">Enviar para Turma</button>
-                </div>
-                <div class="box">
-                    <h4>Arquivos Ativos (Por Turma)</h4>
-                    <div class="scroll-interno"><ul class="lista-arq" id="lista-materiais-prof"></ul></div>
-                </div>
-            </div>
         </div>
 
         <div id="pag-visao-prof" class="pagina">
-            <h3 style="margin-top:0;">Minhas Turmas</h3>
-            <div class="grid-layout" style="grid-template-columns: repeat(4, 1fr);">
+            <h3 style="margin-top:0;">Gestão de Turmas</h3>
+            <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="box" style="background: #f8f9fa;">
                     <h4>Criar Turma Extra</h4>
                     <input id="prof-nova-turma" style="background:#fff;" placeholder="Ex: Reforço Tarde">
@@ -295,34 +270,10 @@
                     <h4>Alunos Matriculados</h4>
                     <div class="scroll-interno"><ul class="lista-arq" id="lista-prof-alunos"></ul></div>
                 </div>
-                <div class="box">
-                    <h4>Entregas Recebidas</h4>
-                    <div class="scroll-interno"><ul class="lista-arq" id="lista-visao-geral"></ul></div>
                 </div>
-            </div>
         </div>
 
-        <div id="pag-aluno" class="pagina">
-            <h3 style="margin-top:0;">Minha Sala Virtual</h3>
-            <div class="grid-layout" style="grid-template-columns: 1fr 1fr 1fr;">
-                <div class="box" style="background: #f8f9fa;">
-                    <h4>Entregar Trabalho</h4>
-                    <select id="aluno-select-turma" style="background:#fff;"></select>
-                    <input type="file" id="aluno-file" style="background:#fff;">
-                    <button class="action-btn" onclick="upload('aluno')">Enviar Arquivo</button>
-                </div>
-                <div class="box">
-                    <h4>Materiais da Aula</h4>
-                    <select id="aluno-filtro-turma"></select>
-                    <div class="scroll-interno" style="margin-top: 16px;"><ul class="lista-arq" id="lista-materiais-aluno"></ul></div>
-                </div>
-                <div class="box">
-                    <h4>Meus Envios Confirmados</h4>
-                    <div class="scroll-interno"><ul class="lista-arq" id="lista-envios-aluno"></ul></div>
-                </div>
-            </div>
         </div>
-    </div>
 
     <script>
         // ==========================================
@@ -351,9 +302,9 @@
             console.log("Persistência não ativada (múltiplas abas ou não suportado)", err);
         });
 
+        // FASE 1: URL DO SCRIPT GOOGLE MANTIDA, PORÉM SEM USO NESTA FASE
         const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         
-        // SALAS ATUALIZADAS
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
         // DEFINIÇÃO DOS TURNOS E SEUS HORÁRIOS EXATOS
@@ -486,7 +437,6 @@
         }
 
         function iniciarEscutasPrivadas() {
-            // ESCUTA DOS ADMINS
             db.collection('admins').onSnapshot(snap => {
                 STATE.admins = []; 
                 snap.forEach(d => STATE.admins.push(d.id.toLowerCase())); 
@@ -513,6 +463,8 @@
                 atualizarInterface();
             });
 
+            // FASE 1 TEMPORÁRIO: Leitura de arquivos desligada para economizar cota
+            /*
             db.collection('arquivos').onSnapshot(snap => {
                 STATE.arquivos = [];
                 snap.forEach(d => {
@@ -522,6 +474,7 @@
                 });
                 atualizarInterface();
             });
+            */
         }
 
         let debounceTimer;
@@ -531,12 +484,13 @@
                 if (!USER_EMAIL) return;
 
                 let role = "aluno";
-                // AGORA COMPARA COM O FIREBASE E NÃO COM LISTA FIXA!
                 if(STATE.admins.includes(USER_EMAIL)) role = "admin";
                 else if(STATE.professores.includes(USER_EMAIL)) role = "professor";
 
                 let materiais = []; let envios = []; let visaoGeralAdmin = []; let visaoGeral = []; let alunosDoProf = []; let minhasTurmas = [];
 
+                // FASE 1 TEMPORÁRIO: Lógica de separação de arquivos comentada
+                /*
                 if(role === "admin") {
                     Object.keys(STATE.turmas).forEach(t => {
                         let mats = STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t);
@@ -560,6 +514,15 @@
                         materiais.push(...STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
                         envios.push(...STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t && a.autor === USER_EMAIL));
                     });
+                }
+                */
+
+                // FASE 1: Adaptação para continuar preenchendo as turmas do prof e do aluno, mesmo sem arquivos
+                if(role === "professor") {
+                    let tProf = Object.keys(STATE.turmas).filter(t => STATE.turmas[t] === USER_EMAIL);
+                    for(let a in STATE.alunos) { STATE.alunos[a].forEach(ta => { if(tProf.includes(ta)) alunosDoProf.push({email: a, turma: ta}); }); }
+                } else if(role === "aluno") {
+                    minhasTurmas = STATE.alunos[USER_EMAIL] || [];
                 }
 
                 DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas };
@@ -673,7 +636,6 @@
                 return;
             }
             
-            // Salva na memória blindada antes de abrir o Modal
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
             let modal = document.getElementById('modal-exclusao');
             if(modal) modal.style.display = 'flex';
@@ -685,7 +647,6 @@
         }
 
         async function confirmarExclusao(tipo) {
-            // Pega as variáveis da memória antes de fechar o Modal
             let idFbAlvo = reservaExclusaoAlvo.idFb;
             let groupIdAlvo = reservaExclusaoAlvo.groupId;
             
@@ -714,37 +675,14 @@
         }
 
         // ==========================================
-        // 5. UPLOAD DE ARQUIVOS E DRIVE
+        // 5. FUNÇÕES DE ARQUIVOS OCULTAS TEMPORARIAMENTE (FASE 1)
         // ==========================================
-        function upload(tipo) {
-            let input = document.getElementById(tipo === 'professor' ? 'prof-file' : 'aluno-file');
-            let selectTurma = document.getElementById(tipo === 'professor' ? 'prof-seleciona-turma' : 'aluno-select-turma');
-            if (!input || !selectTurma || input.files.length === 0 || !selectTurma.value) return showStatus("Selecione a turma e o arquivo", "erro");
-            
-            let arquivo = input.files[0]; let reader = new FileReader();
-            showStatus("Enviando para a Nuvem...", "processando");
-
-            reader.onload = async function(e) {
-                try {
-                    let req = await fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({ action: `upload_${tipo}`, fileName: arquivo.name, mimeType: arquivo.type, base64: e.target.result.split(',')[1], userEmail: USER_EMAIL, turmaAlvo: selectTurma.value }) });
-                    let res = await req.json();
-                    if(res.status === 'sucesso') {
-                        await db.collection('arquivos').add({ tipo: tipo, turmaAlvo: selectTurma.value, nome: arquivo.name, link: res.link, idDrive: res.idDrive, autor: USER_EMAIL, data: new Date().toLocaleDateString('pt-BR')});
-                        input.value = ''; showStatus("Arquivo Enviado!");
-                    } else { showStatus("Erro no Drive: " + res.mensagem, "erro"); }
-                } catch(err) { console.error(err); showStatus("Erro de conexão com Drive", "erro"); }
-            };
-            reader.readAsDataURL(arquivo);
-        }
-
-        function apagar(idDrive, idFb) {
-            if(!confirm("Apagar este arquivo da Nuvem?")) return;
-            showStatus("Apagando arquivo...", "processando");
-            fetch(URL_DO_SCRIPT, { method: 'POST', body: JSON.stringify({action: 'delete_arquivo', fileId: idDrive})})
-                .then(() => {
-                    db.collection('arquivos').doc(idFb).delete().then(() => showStatus("Arquivo apagado!")).catch(e => showStatus("Erro", "erro"));
-                }).catch(e => showStatus("Erro de conexão", "erro"));
-        }
+        /*
+        function upload(tipo) { ... }
+        function apagar(idDrive, idFb) { ... }
+        function renderMateriaisAluno() { ... }
+        function renderArquivosAdmin() { ... }
+        */
 
         // ==========================================
         // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA
@@ -815,44 +753,14 @@
             setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, turno, true));
         }
 
-        function renderMateriaisAluno() {
-            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'aluno') return;
-            let elFiltro = document.getElementById('aluno-filtro-turma');
-            if(!elFiltro) return;
-
-            let filtro = elFiltro.value;
-            let mat = filtro !== 'todas' ? DADOS_SISTEMA.materiais.filter(m => m.turmaAlvo === filtro) : DADOS_SISTEMA.materiais;
-            let htmlMat = '';
-            mat.forEach(m => {
-                let nickProf = (STATE.turmas[m.turmaAlvo] || "").split('@')[0] || 'Prof';
-                htmlMat += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><span style="font-size: 11px; color: #747775;">(${nickProf})</span></li>`;
-            });
-            setHTMLSafe('lista-materiais-aluno', htmlMat || '<li style="color:#747775;">Nenhum material disponível.</li>');
-        }
-        
-        function renderArquivosAdmin() {
-            if (!DADOS_SISTEMA || DADOS_SISTEMA.role !== 'admin') return;
-            let elFiltro = document.getElementById('admin-filtro-arquivos');
-            if(!elFiltro) return;
-
-            let filtro = elFiltro.value;
-            let html = '';
-            DADOS_SISTEMA.visaoGeralAdmin.forEach(t => {
-                if (filtro !== 'todas' && t.turma !== filtro) return;
-                html += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t.turma} <span style="font-size:11px; color:#747775; font-weight: normal;">(Prof: ${t.professor.split('@')[0]})</span></li>`;
-                t.materiais.forEach(m => html += `<li style="padding-left: 16px;"><span><strong style="color:#0b57d0; font-size:11px;">[Material]</strong> <a href="${m.link}" target="_blank">📄 ${m.nome}</a></span> <button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}')">Apagar</button></li>`);
-                t.entregas.forEach(e => html += `<li style="padding-left: 16px;"><span><strong style="color:#1f1f1f; font-size:11px;">[Entrega: ${e.autor.split('@')[0]}]</strong> <a href="${e.link}" target="_blank">📄 ${e.nome}</a></span> <button class="btn-apagar" onclick="apagar('${e.idDrive}', '${e.idFb}')">Apagar</button></li>`);
-            });
-            setHTMLSafe('lista-arquivos-admin', html || '<li style="color:#747775;">Nenhum arquivo encontrado.</li>');
-        }
-
         // ==========================================
-        // 7. O NÚCLEO DA INTERFACE 
+        // 7. O NÚCLEO DA INTERFACE (ADAPTADO FASE 1)
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
             let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
             
+            // TODOS TÊM ACESSO À ABA DE LABORATÓRIOS
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
 
@@ -869,7 +777,6 @@
                 let op = '<option value="Manutenção">⚠️ Manutenção</option>'; Object.keys(STATE.turmas).forEach(t => op += `<option value="${t}">${t}</option>`); 
                 setHTMLSafe('lab-turma', op);
                 
-                // RENDERIZA ADMINS
                 let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                 setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
 
@@ -887,11 +794,7 @@
                 
                 let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
                 setHTMLSafe('admin-select-turma', opTurma);
-
-                let htmlFiltroArquivos = '<option value="todas">Todas as Turmas</option>'; dados.visaoGeralAdmin.forEach(t => htmlFiltroArquivos += `<option value="${t.turma}">${t.turma}</option>`);
-                setHTMLSafe('admin-filtro-arquivos', htmlFiltroArquivos); 
                 
-                renderArquivosAdmin();
                 if(isInitial) paginaInicial = 'pag-admin';
 
             } else if (dados.role === "professor") {
@@ -900,61 +803,35 @@
                     document.getElementById('box-calendario-container').classList.remove('box-calendario');
                 }
                 setTextSafe('badge-funcao', "Professor"); 
-                if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-prof', this)">Materiais</button><button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
+                // FASE 1: Removido botão de "Materiais", mantido botão de "Gestão"
+                if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 
                 let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
                 
                 let op = '<option value="">Qual a Turma?</option>'; Object.keys(STATE.turmas).forEach(t => { if(STATE.turmas[t] === USER_EMAIL) op += `<option value="${t}">${t}</option>`; }); 
                 setHTMLSafe('lab-turma', op);
-                setHTMLSafe('prof-seleciona-turma', op);
                 setHTMLSafe('prof-select-turma-add', op);
-
-                let matPorTurma = {}; dados.materiais.forEach(m => { if(!matPorTurma[m.turmaAlvo]) matPorTurma[m.turmaAlvo] = []; matPorTurma[m.turmaAlvo].push(m); });
-                let htmlMat = ''; for(let t in matPorTurma) { htmlMat += `<li style="background:#f0f4f9; padding:6px 12px; border-radius:6px; font-weight:600; margin-top:8px;">🏫 ${t}</li>`; matPorTurma[t].forEach(m => htmlMat += `<li><a href="${m.link}" target="_blank">📄 ${m.nome}</a> <button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}')">Apagar</button></li>`); }
-                setHTMLSafe('lista-materiais-prof', htmlMat || '<li>Nenhum material compartilhado.</li>');
-
-                let htmlVisao = '';
-                if (dados.visaoGeral && dados.visaoGeral.length > 0) {
-                    dados.visaoGeral.forEach(aluno => {
-                        htmlVisao += `<li style="flex-direction:column; align-items:flex-start; background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:8px; border: 1px solid #e3e3e3;">
-                        <strong style="font-size:13px; color:#1f1f1f; margin-bottom:6px;">👤 ${aluno.aluno.split('@')[0]} <span style="font-size:11px; color:#747775; font-weight:400;">(${aluno.turma})</span></strong><ul style="list-style:none; padding:0; width:100%; margin:0;">`;
-                        aluno.arquivos.forEach(arq => htmlVisao += `<li style="display:flex; justify-content:space-between; border:none; padding:4px 0;"><span><a href="${arq.link}" target="_blank">📄 ${arq.nome}</a> <span style="font-size:10px; color:#747775;">(${arq.data})</span></span> <button class="btn-apagar" onclick="apagar('${arq.idDrive}', '${arq.idFb}')">X</button></li>`);
-                        htmlVisao += `</ul></li>`;
-                    });
-                }
-                setHTMLSafe('lista-visao-geral', htmlVisao || '<li>Nenhuma entrega recebida.</li>');
 
                 let htmlAlunosProf = ''; if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>🎓 ${a.email} <span style="font-size:11px; color:#747775;">(${a.turma})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a.email}', '${a.turma}')">Excluir</button></li>`); }
                 setHTMLSafe('lista-prof-alunos', htmlAlunosProf || '<li>Sem alunos matriculados.</li>');
                 
-                if(isInitial) paginaInicial = 'pag-prof';
+                // FASE 1: Professor pode focar nos laboratórios primeiro
+                if(isInitial) paginaInicial = 'pag-perfil';
 
             } else { 
+                // FASE 1: ALUNO SÓ VÊ O CALENDÁRIO ESTICADO
                 if(gridLabs) {
                     gridLabs.style.gridTemplateColumns = '1fr'; 
-                    document.getElementById('box-calendario-container').classList.add('box-calendario'); // ESTICA O CALENDÁRIO
+                    document.getElementById('box-calendario-container').classList.add('box-calendario');
                 }
                 let turmas = dados.minhasTurmas || [];
                 if (turmas.length > 0) {
                     setTextSafe('badge-funcao', `Aluno (${turmas.length})`); 
-                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Minha Sala</button>`; 
-                    
-                    let optsFiltro = '<option value="todas">Todas as Turmas</option>'; let optsUpload = '<option value="">Qual Turma?</option>';
-                    turmas.forEach(t => { optsFiltro += `<option value="${t}">${t}</option>`; optsUpload += `<option value="${t}">${t}</option>`; });
-                    
-                    setHTMLSafe('aluno-filtro-turma', optsFiltro);
-                    setHTMLSafe('aluno-select-turma', optsUpload);
-                    
-                    renderMateriaisAluno();
-                    
-                    let htmlEnv = ''; dados.envios.forEach(m => htmlEnv += `<li><span>📄 [${m.turmaAlvo}] <a href="${m.link}" target="_blank">${m.nome}</a></span><button class="btn-apagar" onclick="apagar('${m.idDrive}', '${m.idFb}')">Desfazer</button></li>`);
-                    setHTMLSafe('lista-envios-aluno', htmlEnv || '<li>Nenhum arquivo enviado.</li>');
                 } else {
                     setTextSafe('badge-funcao', "Pendente");
-                    setHTMLSafe('pag-aluno', `<h3 style="margin-top:0;">Sala Virtual</h3><p style="color:#747775;">Você ainda não foi matriculado em nenhuma turma pelo seu professor.</p>`);
-                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-aluno', this)">Aguardando</button>`;
                 }
-                if(isInitial) paginaInicial = 'pag-aluno';
+                
+                if(isInitial) paginaInicial = 'pag-perfil'; // Força o aluno a cair direto no calendário
             }
             
             if(isInitial) {
@@ -975,8 +852,6 @@
         let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
         for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
         
-        document.getElementById('admin-filtro-arquivos')?.addEventListener('change', renderArquivosAdmin);
-        document.getElementById('aluno-filtro-turma')?.addEventListener('change', renderMateriaisAluno);
     </script>
 </body>
 </html>
