@@ -77,8 +77,10 @@
         .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px; text-align: center;}
         .celula-ocupada.prof span { color: #137333; font-size: 11px;}
 
+        .comp-tag { font-size: 10px; opacity: 0.85; margin-top: 2px; font-style: italic;}
+
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: #fce8e6;}
+        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
@@ -112,13 +114,10 @@
             #print-area { display: block !important; width: 100% !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            /* O container precisa ter no máximo a altura da folha (98vh pra margem de segurança) e flex para distribuir a tabela */
             .pdf-container-dia { width: 100%; height: 98vh; box-sizing: border-box; page-break-after: always; padding: 0; display: flex; flex-direction: column;}
             
-            /* Tabela fluida, ocupa o espaço mas sem margin-top para poupar espaço */
             .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; }
             
-            /* Encolhendo o padding e removendo height fixa para o navegador espremer o conteúdo */
             .pdf-tabela th { background: #f0f4f9; padding: 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 9px; height: auto;}
             .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1.1; height: auto;} 
             
@@ -316,14 +315,29 @@
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 
-        function definirTurnoAtual() {
-            let hora = new Date().getHours();
+        function configurarDataETurnoIniciais() {
+            // 1. Data atual no formato YYYY-MM-DD
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            const dataFormatada = `${ano}-${mes}-${dia}`;
+            
+            ['filtro-calendario-publico', 'filtro-calendario', 'lab-data', 'relatorio-data'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.value = dataFormatada;
+            });
+
+            // 2. Turno atual
+            let hora = hoje.getHours();
             let turnoAtual = "Manhã";
             if (hora >= 13 && hora < 18) { turnoAtual = "Tarde"; } 
             else if (hora >= 18 || hora < 5) { turnoAtual = "Noite"; }
             
-            let filtroPub = document.getElementById('filtro-turno-publico'); if(filtroPub) filtroPub.value = turnoAtual;
-            let filtroPriv = document.getElementById('filtro-turno'); if(filtroPriv) filtroPriv.value = turnoAtual;
+            ['filtro-turno-publico', 'filtro-turno'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.value = turnoAtual;
+            });
         }
 
         // ==========================================
@@ -373,11 +387,6 @@
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
         let isInitialLoad = true; let escutasPrivadasAtivas = false; 
 
-        document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
-        document.getElementById('filtro-calendario').valueAsDate = new Date();
-        document.getElementById('lab-data').valueAsDate = new Date();
-        document.getElementById('relatorio-data').valueAsDate = new Date();
-
         let toastTimeout;
         function showStatus(msg, tipo="sucesso") {
             let el = document.getElementById('toast-msg');
@@ -404,7 +413,7 @@
         }
 
         window.onload = function() {
-            definirTurnoAtual(); 
+            configurarDataETurnoIniciais(); 
             setTimeout(() => { let txt = document.getElementById('txt-acesso'); if(txt) txt.style.display = 'inline-block'; }, 1000);
             iniciarEscutasPublicas();
             document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
