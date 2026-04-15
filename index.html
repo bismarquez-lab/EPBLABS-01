@@ -101,7 +101,7 @@
         </div>
 
         <div id="area-login" class="auth-area">
-            <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesse com seu e-mail institucional:</span>
+            <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesso restrito a Professores:</span>
             <button class="btn-microsoft-nav" onclick="loginMicrosoft()">
                 <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
                 Microsoft
@@ -134,8 +134,8 @@
         <div class="container-calendario" style="display: flex; flex-direction: column; height: 85vh;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px;">
                 <div>
-                    <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600;">Agenda dos Laboratórios de Informática</h1>
-                    <p style="margin: 0; color: #747775; font-size: 14px;">Professor para agendamentos avulsos, utilize o e-mail institucional.</p>
+                    <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600;">Agenda dos Laboratórios</h1>
+                    <p style="margin: 0; color: #747775; font-size: 14px;">Acompanhe a disponibilidade das salas em tempo real.</p>
                 </div>
                 <div style="display: flex; gap: 12px;">
                     <select id="filtro-turno-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
@@ -184,6 +184,7 @@
                                 <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option><option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
+                        
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         <select id="lab-semanas"></select>
@@ -242,14 +243,11 @@
 
     <script>
         // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA HTML
+        // 0. FUNÇÕES DE SEGURANÇA E UX
         // ==========================================
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 
-        // ==========================================
-        // 0.1 AJUSTE INTELIGENTE DE TURNO (UX)
-        // ==========================================
         function definirTurnoAtual() {
             let hora = new Date().getHours();
             let turnoAtual = "Manhã";
@@ -329,7 +327,7 @@
         }
 
         // ==========================================
-        // 2. SISTEMA DE INATIVIDADE E LOGIN
+        // 2. PORTARIA VIP (LOGIN E CHECAGEM)
         // ==========================================
         let tempoOcioso;
         function resetarTempo() {
@@ -343,7 +341,7 @@
         }
 
         window.onload = function() {
-            definirTurnoAtual(); // Ativa a seleção automática do turno pelo relógio
+            definirTurnoAtual(); 
             
             setTimeout(() => {
                 let txt = document.getElementById('txt-acesso');
@@ -360,7 +358,7 @@
 
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) {
-                iniciarPortal(JSON.parse(usuarioSalvo), true);
+                iniciarPortal(JSON.parse(usuarioSalvo), true); // Auto-login invisível
             }
         };
 
@@ -370,32 +368,69 @@
         async function loginMicrosoft() { 
             try { 
                 const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); 
+                // Dispara o iniciarPortal passando os dados da Microsoft
                 iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); 
             } catch(e) { showStatus("Erro Microsoft", "erro"); } 
         }
 
-        function iniciarPortal(dados, isAutoLogin = false) {
-            localStorage.setItem("epblab_user", JSON.stringify(dados));
-            USER_EMAIL = (dados.email || "").toLowerCase().trim();
-            USER_NOME = (dados.given_name || "Usuário"); 
+        // AGORA É ASYNC PARA PODER BATER NA PORTA DO FIREBASE ANTES DE ABRIR A TELA!
+        async function iniciarPortal(dados, isAutoLogin = false) {
+            let emailTentativa = (dados.email || "").toLowerCase().trim();
             
-            setTextSafe('nome-usuario', USER_NOME);
-            let foto = document.getElementById('foto-perfil');
-            if(foto) foto.src = dados.picture;
+            if(!isAutoLogin) showStatus("Validando permissões...", "processando");
 
-            let aLogin = document.getElementById('area-login'); if(aLogin) aLogin.style.display = 'none';
-            let aUser = document.getElementById('area-usuario'); if(aUser) aUser.style.display = 'flex';
-            let aPub = document.getElementById('area-publica'); if(aPub) aPub.style.display = 'none';
-            let aPriv = document.getElementById('area-privada'); if(aPriv) aPriv.style.display = 'block';
-            let mDyn = document.getElementById('menu-dinamico'); if(mDyn) mDyn.style.display = 'flex';
-            
-            if(!isAutoLogin) showStatus("Login Concluído! Sincronizando...", "processando");
-            
-            if (!escutasPrivadasAtivas) {
-                iniciarEscutasPrivadas();
-                escutasPrivadasAtivas = true;
-            } else {
-                atualizarInterface();
+            try {
+                // 1. CHECAGEM DE VIP NO FIREBASE
+                let docAdmin = await db.collection('admins').doc(emailTentativa).get();
+                let isAdmin = docAdmin.exists;
+
+                // Busca o professor pelo e-mail
+                let profQuery = await db.collection('professores').where('email', '==', emailTentativa).get();
+                let isProf = !profQuery.empty;
+
+                // 2. PORTA FECHADA PARA QUEM NÃO É VIP (EX: ALUNO)
+                if (!isAdmin && !isProf) {
+                    localStorage.removeItem("epblab_user"); // Remove vestígios da memória
+                    
+                    if (!isAutoLogin) {
+                        alert(`⚠️ ACESSO NEGADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, peça para a coordenação vincular o seu e-mail ao seu nome no Painel de Controle.`);
+                        location.reload(); // Recarrega para voltar o layout original
+                    }
+                    return; // Para a função aqui. Não deixa carregar o painel!
+                }
+
+                // 3. PORTA ABERTA! (Libera o layout e salva a sessão)
+                localStorage.setItem("epblab_user", JSON.stringify(dados));
+                USER_EMAIL = emailTentativa;
+                
+                // Se for prof, puxa o NOME OFICIAL do banco de dados, senão usa o nome da Microsoft
+                if (isProf) {
+                    USER_NOME = profQuery.docs[0].id; 
+                } else {
+                    USER_NOME = (dados.given_name || "Admin");
+                }
+                
+                setTextSafe('nome-usuario', USER_NOME);
+                let foto = document.getElementById('foto-perfil');
+                if(foto) foto.src = dados.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(USER_NOME)}&background=e3e3e3&color=1f1f1f&size=120`;
+
+                let aLogin = document.getElementById('area-login'); if(aLogin) aLogin.style.display = 'none';
+                let aUser = document.getElementById('area-usuario'); if(aUser) aUser.style.display = 'flex';
+                let aPub = document.getElementById('area-publica'); if(aPub) aPub.style.display = 'none';
+                let aPriv = document.getElementById('area-privada'); if(aPriv) aPriv.style.display = 'block';
+                let mDyn = document.getElementById('menu-dinamico'); if(mDyn) mDyn.style.display = 'flex';
+                
+                if(!isAutoLogin) showStatus("Acesso Liberado! Sincronizando...", "sucesso");
+                
+                if (!escutasPrivadasAtivas) {
+                    iniciarEscutasPrivadas();
+                    escutasPrivadasAtivas = true;
+                } else {
+                    atualizarInterface();
+                }
+            } catch (e) {
+                console.error(e);
+                showStatus("Erro ao validar login", "erro");
             }
         }
 
@@ -447,7 +482,7 @@
             debounceTimer = setTimeout(() => {
                 if (!USER_EMAIL) return;
 
-                let role = "aluno";
+                let role = "aluno"; // Valor de fallback
                 
                 if(STATE.admins.includes(USER_EMAIL)) {
                     role = "admin";
@@ -732,12 +767,8 @@
                 }
 
             } else { 
-                if(gridLabs) {
-                    gridLabs.style.gridTemplateColumns = '1fr'; 
-                    document.getElementById('box-calendario-container').classList.add('box-calendario');
-                }
-                setTextSafe('badge-funcao', "Aluno");
-                paginaInicial = 'pag-perfil'; 
+                // Isso nunca deveria acontecer agora por conta do bloqueio, mas se acontecer, joga o cara pra fora!
+                fazerLogout();
             }
             
             if(isInitial) {
