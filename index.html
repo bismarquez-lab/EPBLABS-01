@@ -59,7 +59,7 @@
         .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
         .btn-pdf:hover { background: #f8f9fa; color: #1f1f1f; }
 
-        /* --- TABELA DE GRADE --- */
+        /* --- TABELA DE GRADE (TELA) --- */
         .tabela-responsiva { width: 100%; flex-grow: 1; overflow-y: auto; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; }
         .tabela-grade { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 800px; height: 100%; }
         .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; position: sticky; top: 0; z-index: 2;}
@@ -67,20 +67,18 @@
         .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; position: sticky; left: 0; z-index: 1;}
         .celula-livre { background: #ffffff; color: #a8a8a8; font-style: italic; font-size: 12px; }
         
-        /* CORES DAS RESERVAS */
+        /* CORES DAS RESERVAS NA TELA */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
-        .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
+        .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px; text-align: center;}
         .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
         
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
-        .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px;}
+        .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px; text-align: center;}
         .celula-ocupada.prof span { color: #137333; font-size: 11px;}
 
-        .comp-tag { font-size: 10px; opacity: 0.85; margin-top: 2px; font-style: italic;}
-
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
+        .btn-apagar:hover { background: #fce8e6;}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
@@ -106,25 +104,28 @@
         
         .box-calendario { grid-column: 1 / -1; }
 
-        /* --- CONFIGURAÇÃO MAGICA DO PDF (MODELO INVERTIDO) --- */
+        /* --- CONFIGURAÇÃO MAGICA DO PDF (DIÁRIO, TUDO EM UMA PÁGINA) --- */
         @media print {
-            @page { size: landscape; margin: 10mm; }
+            @page { size: landscape; margin: 5mm; }
             body { background: #fff !important; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
             #app-wrapper, canvas { display: none !important; }
             #print-area { display: block !important; width: 100% !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; font-size: 10px; margin-top: 10px; page-break-inside: avoid; }
-            .pdf-tabela th { background: #f0f4f9; padding: 6px 4px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; }
-            .pdf-tabela td { padding: 4px; border: 1px solid #000; vertical-align: middle; height: 45px; }
-            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 120px; color: #1f1f1f; }
+            .pdf-container-dia { width: 100%; box-sizing: border-box; page-break-after: always; padding: 10px; }
+            
+            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; font-size: 9px; }
+            .pdf-tabela th { background: #f0f4f9; padding: 4px 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 10px;}
+            .pdf-tabela td { padding: 2px; border: 1px solid #000; vertical-align: middle; height: 35px; } /* Altura comprimida para caber tudo */
+            
+            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 100px; color: #1f1f1f; }
+            .pdf-turno-sep { background-color: #e3e3e3 !important; font-weight: bold; text-align: center; padding: 3px !important; letter-spacing: 1px; border: 1px solid #000;}
             
             .pdf-celula-admin { background-color: #d3e3fd !important; }
             .pdf-celula-prof { background-color: #e6f4ea !important; }
             
-            .pdf-turma { font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px; }
-            .pdf-prof { display: block; font-size: 9px; color: #1f1f1f; font-weight: 600;}
-            .pdf-comp { display: block; font-size: 8px; color: #444746; font-style: italic; margin-top: 2px;}
+            .pdf-turma { font-weight: 700; display: block; font-size: 8px; margin-bottom: 2px; word-break: break-word; line-height: 1.1;}
+            .pdf-prof { display: block; font-size: 7px; color: #1f1f1f; font-weight: 600; text-transform: uppercase;}
         }
     </style>
 </head>
@@ -171,8 +172,8 @@
 
     <div id="modal-relatorio" class="modal-overlay">
         <div class="modal-box">
-            <h3>📄 Relatório de Grade</h3>
-            <p style="font-size: 13px;">Gera um relatório completo invertido para todos os dias do período.</p>
+            <h3>📄 Relatório Diário Completo</h3>
+            <p style="font-size: 13px;">Gera um relatório organizando todos os turnos e laboratórios de um dia na mesma página A4 deitada.</p>
             <input type="date" id="relatorio-data" style="margin-bottom: 12px;">
             <select id="relatorio-periodo" style="margin-bottom: 24px;">
                 <option value="7">Próxima 1 Semana</option>
@@ -240,9 +241,7 @@
                         </select>
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
-                        
                         <select id="lab-comp"><option value="">Componente...</option></select>
-                        
                         <select id="lab-semanas"></select>
                         <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px;">Agendar Sala</button>
                     </div>
@@ -358,13 +357,6 @@
             ]
         };
 
-        const AULAS_CURTAS = {
-            'Manhã': ["07:30 - 08:20", "08:20 - 09:10", "09:10 - 10:00", "10:20 - 11:10", "11:10 - 12:00", "12:00 - 12:50"],
-            'Tarde': ["13:30 - 14:20", "14:20 - 15:10", "15:10 - 16:00", "16:20 - 17:10", "17:10 - 18:00", "18:00 - 18:50"],
-            'Noite': ["19:00 - 19:50", "19:50 - 20:40", "21:00 - 21:50", "21:50 - 22:45"]
-        };
-
-        // Adicionado 'componentes' no STATE central
         let STATE = { admins: [], professores: [], turmas: {}, componentes: [], agendamentos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = ''; let USER_NOME = '';
@@ -477,8 +469,6 @@
             db.collection('admins').onSnapshot(snap => { STATE.admins = []; snap.forEach(d => STATE.admins.push(d.id.toLowerCase())); atualizarInterface(); });
             db.collection('professores').onSnapshot(snap => { STATE.professores = []; snap.forEach(d => { STATE.professores.push({ nome: d.id, email: (d.data().email || "").toLowerCase() }); }); atualizarInterface(); });
             db.collection('turmas').onSnapshot(snap => { STATE.turmas = {}; snap.forEach(d => STATE.turmas[d.id] = true); atualizarInterface(); });
-            
-            // NOVA ESCUTA PARA OS COMPONENTES CURRICULARES
             db.collection('componentes').onSnapshot(snap => { STATE.componentes = []; snap.forEach(d => STATE.componentes.push(d.id)); atualizarInterface(); });
         }
 
@@ -517,7 +507,6 @@
                 let t = document.getElementById('admin-nome-turma').value.trim(); if(!t) return showStatus("Preencha o nome da turma", "erro");
                 db.collection('turmas').doc(t).set({ativo: true}).then(() => { document.getElementById('admin-nome-turma').value = ''; showStatus("Turma Criada!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
-            // NOVA AÇÃO DE CADASTRO DE COMPONENTE
             if (acao === 'admin_add_comp') { 
                 let c = document.getElementById('admin-nome-comp').value.trim(); if(!c) return showStatus("Preencha o nome do componente", "erro");
                 db.collection('componentes').doc(c).set({ativo: true}).then(() => { document.getElementById('admin-nome-comp').value = ''; showStatus("Componente Criado!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
@@ -536,12 +525,11 @@
         async function reservarLab() {
             let dataR = document.getElementById('lab-data').value; let lab = document.getElementById('lab-numero').value;
             let hor = document.getElementById('lab-horario').value; let t = document.getElementById('lab-turma').value;
-            let p = document.getElementById('lab-prof').value; 
-            let c = document.getElementById('lab-comp').value; // Pega o Componente selecionado
+            let p = document.getElementById('lab-prof').value; let c = document.getElementById('lab-comp').value;
             let sem = parseInt(document.getElementById('lab-semanas').value, 10);
             
             if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { sem = 1; }
-            if(!dataR || !lab || !hor || !t || !p || !c) return showStatus("Preencha todos os campos!", "erro"); // Valida Componente
+            if(!dataR || !lab || !hor || !t || !p || !c) return showStatus("Preencha todos os campos!", "erro"); 
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             let datasParaAgendar = [];
@@ -563,7 +551,6 @@
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
                     let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
-                    // SALVA O COMPONENTE JUNTO COM A RESERVA
                     batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, comp: c, groupId: String(groupId), criadoPorRole: tagCriador });
                 }
                 await batch.commit(); showStatus("Agendamento concluído!"); document.getElementById('lab-semanas').value = "1"; 
@@ -601,7 +588,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF (MATRIZ INVERTIDA)
+        // 5. GERAÇÃO DE RELATÓRIO PDF (COMPLETO POR DIA)
         // ==========================================
         function abrirModalRelatorio() {
             document.getElementById('modal-relatorio').style.display = 'flex';
@@ -628,6 +615,7 @@
                 return;
             }
 
+            // Agrupa todas as reservas de um mesmo dia
             let agrupadoData = {};
             reservasFiltradas.forEach(r => {
                 if(!agrupadoData[r.data]) agrupadoData[r.data] = [];
@@ -637,43 +625,48 @@
             let chavesOrdenadas = Object.keys(agrupadoData).sort((a, b) => new Date(a) - new Date(b));
             let htmlFinal = '';
 
-            function construirTabelaInvertida(dataBr, resDoDia) {
-                let tabelas = '';
+            function construirTabelaInvertida(resDoDia) {
+                let tabelas = `
+                    <table class="pdf-tabela">
+                        <thead>
+                            <tr>
+                                <th style="width: 90px;">Horário</th>`;
                 
+                // Cabeçalho com os Labs
+                LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
+                
+                tabelas += `        </tr>
+                        </thead>
+                        <tbody>`;
+
+                // Percorre todos os Turnos e Aulas do dia para colocar na mesma tabela
                 ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
-                    let aulasTurno = AULAS_CURTAS[turno];
-                    let resTurno = resDoDia.filter(r => r.horario.startsWith(turno));
+                    let aulasTurno = TURNOS[turno]; // Pega a lista completa de horários do turno
                     
-                    if (resTurno.length > 0) {
-                        tabelas += `
-                        <div style="margin-bottom: 20px;">
-                            <h3 style="margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;">▶ Turno: ${turno}</h3>
-                            <table class="pdf-tabela">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 100px;">Horário</th>`;
-                        
-                        LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
-                        
-                        tabelas += `        </tr>
-                                </thead>
-                                <tbody>`;
-                                
-                        aulasTurno.forEach((aulaHorario, index) => {
-                            let aulaNum = index + 1;
-                            tabelas += `<tr>
-                                            <td class="pdf-col-horario">${aulaNum}ª Aula<br><span style="font-size:8px; font-weight:normal;">${aulaHorario}</span></td>`;
+                    // Verifica se tem alguma aula reservada nesse turno inteiro para não imprimir tabela em branco
+                    let temReservaNoTurno = resDoDia.some(r => r.horario.startsWith(turno));
+                    
+                    if (temReservaNoTurno) {
+                        // Linha separadora do Turno
+                        tabelas += `<tr><td colspan="${LISTA_SALAS.length + 1}" class="pdf-turno-sep">${turno.toUpperCase()}</td></tr>`;
+
+                        aulasTurno.forEach((horarioCompleto) => {
+                            // Quebra "Manhã - 1ª Aula - 07:30 até 08:20" para exibir só "1ª Aula <br> 07:30 até 08:20"
+                            let partes = horarioCompleto.split(' - '); 
+                            let textoHorario = `${partes[1]}<br><span style="font-size:6px; font-weight:normal;">${partes[2]}</span>`;
+
+                            tabelas += `<tr><td class="pdf-col-horario">${textoHorario}</td>`;
                             
                             LISTA_SALAS.forEach(lab => {
-                                let res = resTurno.find(a => a.lab === lab && a.horario.includes(aulaHorario.split(' - ')[0]));
+                                let res = resDoDia.find(a => a.lab === lab && a.horario === horarioCompleto);
                                 if (res) {
                                     let classeCor = (res.criadoPorRole === 'professor') ? 'pdf-celula-prof' : 'pdf-celula-admin';
-                                    let compName = res.comp || ''; // Mostra o componente no PDF se existir
+                                    let compName = res.comp || ''; 
+                                    let headerText = compName ? `${res.turma} - ${compName}` : res.turma;
                                     
                                     tabelas += `<td class="${classeCor}">
-                                                    <span class="pdf-turma">${res.turma}</span>
+                                                    <span class="pdf-turma">${headerText}</span>
                                                     <span class="pdf-prof">${res.prof}</span>
-                                                    <span class="pdf-comp">${compName}</span>
                                                 </td>`;
                                 } else {
                                     tabelas += `<td style="color: #a8a8a8; font-style: italic;">Livre</td>`;
@@ -681,30 +674,33 @@
                             });
                             tabelas += `</tr>`;
                         });
-                        tabelas += `</tbody></table></div>`;
                     }
                 });
+                
+                tabelas += `</tbody></table>`;
                 return tabelas;
             }
 
+            // Monta as páginas do PDF (1 Página = 1 Dia completo)
             chavesOrdenadas.forEach((dataChave, index) => {
                 let dataBr = dataChave.split('-').reverse().join('/');
                 let resDoDia = agrupadoData[dataChave];
                 
-                let pageBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
+                // Força a quebra de página se não for o último dia
+                let cssBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
 
                 htmlFinal += `
-                    <div style="width: 100%; box-sizing: border-box; ${pageBreak}">
-                        <div style="border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div class="pdf-container-dia" style="${cssBreak}">
+                        <div style="border-bottom: 2px solid #000; margin-bottom: 8px; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-end;">
                             <div>
                                 <h2 style="margin: 0; font-size: 16px;">Etec Parque Belém - Relatório de Ocupação de Laboratórios</h2>
                                 <p style="margin: 2px 0 0 0; font-size: 12px; font-weight: bold;">Data: ${dataBr}</p>
                             </div>
-                            <div style="text-align: right; font-size: 10px; color: #444;">
+                            <div style="text-align: right; font-size: 9px; color: #444;">
                                 Impresso em: ${new Date().toLocaleDateString('pt-BR')} por ${USER_NOME}
                             </div>
                         </div>
-                        ${construirTabelaInvertida(dataBr, resDoDia)}
+                        ${construirTabelaInvertida(resDoDia)}
                     </div>
                 `;
             });
@@ -737,7 +733,8 @@
                     
                     if (res) {
                         let profName = res.prof; 
-                        let compName = res.comp || ''; // Puxa a matéria (componente) se existir
+                        let compName = res.comp || ''; 
+                        let headerText = compName ? `${res.turma} - ${compName}` : res.turma;
 
                         let podeApagar = false;
                         if (isPrivado) {
@@ -748,11 +745,11 @@
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
                         let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
                         
+                        // NA TELA, UNIMOS A TURMA E COMPONENTE NA MESMA LINHA EM NEGRITO
                         html += `<td>
                                     <div class="celula-ocupada ${classeCor}">
-                                        <strong>${res.turma}</strong>
+                                        <strong>${headerText}</strong>
                                         <span>${profName}</span>
-                                        <span class="comp-tag">${compName}</span>
                                         ${btnExcluir}
                                     </div>
                                  </td>`;
@@ -820,7 +817,6 @@
                 Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
                 setHTMLSafe('lab-turma', opTurma);
 
-                // PREENCHE A CAIXA DE COMPONENTES CURRICULARES (NOVA RESERVA)
                 let opComp = '<option value="">Componente...</option>'; 
                 STATE.componentes.forEach(c => opComp += `<option value="${c}">${c}</option>`); 
                 setHTMLSafe('lab-comp', opComp);
