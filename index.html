@@ -41,11 +41,13 @@
         #area-privada { position: relative; z-index: 10; margin-top: 90px; left: 50%; transform: translateX(-50%); width: 96%; max-width: 1400px; height: calc(100vh - 120px); display: none; }
         .pagina { background: #ffffff; border: 1px solid #e3e3e3; border-radius: 24px; padding: 24px; display: none; height: 100%; box-sizing: border-box; overflow: hidden; flex-direction: column; }
         
-        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; flex-grow: 1; overflow: hidden; }
+        /* Grid base - agora o minmax foi removido de grids fixas para evitar que quebre de linha no print 2 */
+        .grid-layout { display: grid; gap: 20px; flex-grow: 1; overflow: hidden; }
         .box { background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #e3e3e3; display: flex; flex-direction: column; overflow: hidden; }
         .box h4 { margin: 0 0 12px 0; font-size: 15px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; color: #1f1f1f; font-weight: 600;}
         
-        .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 4px; }
+        /* O scroll interno agora cresce até o final da caixa, consertando o print 1 */
+        .scroll-interno { flex-grow: 1; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column;}
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
 
@@ -55,11 +57,12 @@
         button.action-btn:hover { background: #0842a0;}
         
         /* --- TABELA DE GRADE (GRID ESTILO EXCEL) --- */
-        .tabela-responsiva { width: 100%; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; }
+        /* A tabela agora flex-grow pra preencher toda a tela e evitar scrollbars cedo demais */
+        .tabela-responsiva { width: 100%; flex-grow: 1; overflow-y: auto; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; }
         .tabela-grade { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 800px; }
-        .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; }
+        .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; position: sticky; top: 0; z-index: 2;}
         .tabela-grade td { padding: 6px; border: 1px solid #e3e3e3; height: 60px; vertical-align: middle; }
-        .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; }
+        .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; position: sticky; left: 0; z-index: 1;}
         .celula-livre { background: #ffffff; color: #a8a8a8; font-style: italic; font-size: 12px; }
         .celula-ocupada { background: #d3e3fd; border-radius: 6px; padding: 8px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #a8c7fa; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
         .celula-ocupada strong { color: #041e49; font-size: 13px; margin-bottom: 2px;}
@@ -88,7 +91,6 @@
         .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
         .btn-modal-cancelar:hover { color: #1f1f1f; }
         
-        /* Ajuste para o painel de laboratório esticar quando não tiver o formulário (Aluno) */
         .box-calendario { grid-column: 1 / -1; }
     </style>
 </head>
@@ -135,7 +137,7 @@
     </div>
 
     <div id="area-publica">
-        <div class="container-calendario">
+        <div class="container-calendario" style="display: flex; flex-direction: column; height: 80vh;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
                 <div>
                     <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600;">Agenda dos Laboratórios</h1>
@@ -150,7 +152,7 @@
                     <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
                 </div>
             </div>
-            <div id="grade-laboratorios-publica" style="display: block;">
+            <div id="grade-laboratorios-publica" class="scroll-interno" style="display: flex; flex-direction: column;">
                 <div style="color: #747775; font-size: 14px;">Sincronizando com a nuvem...</div>
             </div>
         </div>
@@ -207,14 +209,14 @@
                             <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
                         </div>
                     </div>
-                    <div class="scroll-interno" id="grade-laboratorios" style="display: block;"></div>
+                    <div class="scroll-interno" id="grade-laboratorios" style="display: flex; flex-direction: column;"></div>
                 </div>
             </div>
         </div>
 
         <div id="pag-admin" class="pagina">
             <h3 style="margin-top:0;">Painel de Controle</h3>
-            <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="grid-layout" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
                 <div class="box">
                     <h4>Administradores</h4>
                     <input type="email" id="admin-novo-admin" placeholder="E-mail do Admin">
@@ -225,7 +227,8 @@
                 </div>
                 <div class="box">
                     <h4>Professores</h4>
-                    <input type="email" id="admin-novo-prof" placeholder="E-mail do Professor">
+                    <input type="text" id="admin-nome-prof" placeholder="Nome do Professor (Ex: João Silva)">
+                    <input type="email" id="admin-novo-prof" placeholder="E-mail (Opcional)">
                     <button class="action-btn" onclick="adminAcao('admin_add_prof')">Cadastrar Professor</button>
                     <div class="scroll-interno" style="margin-top: 16px;">
                         <ul id="lista-admin-profs" class="lista-arq"></ul>
@@ -249,7 +252,7 @@
                         <ul id="lista-admin-alunos" class="lista-arq"></ul>
                     </div>
                 </div>
-                </div>
+            </div>
         </div>
 
         <div id="pag-visao-prof" class="pagina">
@@ -270,10 +273,9 @@
                     <h4>Alunos Matriculados</h4>
                     <div class="scroll-interno"><ul class="lista-arq" id="lista-prof-alunos"></ul></div>
                 </div>
-                </div>
+            </div>
         </div>
-
-        </div>
+    </div>
 
     <script>
         // ==========================================
@@ -297,17 +299,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ATIVAÇÃO DO CACHE OFFLINE PARA ECONOMIZAR COTA!
         db.enablePersistence().catch(function(err) {
             console.log("Persistência não ativada (múltiplas abas ou não suportado)", err);
         });
-
-        // FASE 1: URL DO SCRIPT GOOGLE MANTIDA, PORÉM SEM USO NESTA FASE
-        const URL_DO_SCRIPT = 'https://script.google.com/macros/s/AKfycbzRnwoVxl_9ZSFNJJIHKijWFFhfqS1T7US_KGNhCI6qxfeYWsnSoRsHLOcQC5AEwdsi/exec';
         
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
-        // DEFINIÇÃO DOS TURNOS E SEUS HORÁRIOS EXATOS
         const TURNOS = {
             'Manhã': [
                 "Manhã - 1ª Aula - 07:30 até 08:20", "Manhã - 2ª Aula - 08:20 até 09:10",
@@ -325,10 +322,11 @@
             ]
         };
 
-        // O CÉREBRO DO SISTEMA COM ADMINS DINÂMICOS
-        let STATE = { admins: [], professores: [], turmas: {}, alunos: {}, agendamentos: [], arquivos: [] };
+        // O CÉREBRO DO SISTEMA COM NOME DE PROFESSORES
+        let STATE = { admins: [], professores: [], turmas: {}, alunos: {}, agendamentos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = '';
+        let USER_NOME = '';
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
         let isInitialLoad = true;
         let escutasPrivadasAtivas = false; 
@@ -397,8 +395,9 @@
         function iniciarPortal(dados, isAutoLogin = false) {
             localStorage.setItem("epblab_user", JSON.stringify(dados));
             USER_EMAIL = (dados.email || "").toLowerCase().trim();
+            USER_NOME = (dados.given_name || "Usuário"); // Salva o nome de quem logou para uso no agendamento
             
-            setTextSafe('nome-usuario', dados.given_name);
+            setTextSafe('nome-usuario', USER_NOME);
             let foto = document.getElementById('foto-perfil');
             if(foto) foto.src = dados.picture;
 
@@ -421,14 +420,14 @@
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME OTIMIZADO E BLINDADO
+        // 3. MOTOR FIREBASE REAL-TIME
         // ==========================================
         function iniciarEscutasPublicas() {
             db.collection('agendamentos').onSnapshot(snap => {
                 STATE.agendamentos = [];
                 snap.forEach(doc => {
                     let data = doc.data();
-                    if(data.prof) data.prof = data.prof.toLowerCase(); 
+                    // Agora o 'prof' armazena o NOME do professor, não precisamos forçar para minúsculo como fazíamos com e-mail
                     STATE.agendamentos.push({id: doc.id, ...data});
                 });
                 renderCalendarioPublico(); 
@@ -443,15 +442,22 @@
                 atualizarInterface();
             });
 
+            // ESCUTA DE PROFESSORES MODIFICADA: Agora traz a chave (NOME) e o e-mail associado
             db.collection('professores').onSnapshot(snap => {
                 STATE.professores = []; 
-                snap.forEach(d => STATE.professores.push(d.id.toLowerCase())); 
+                snap.forEach(d => {
+                    STATE.professores.push({
+                        nome: d.id, // O ID no banco agora é o NOME do professor
+                        email: (d.data().email || "").toLowerCase() // O email fica salvo como um dado extra
+                    });
+                }); 
                 atualizarInterface();
             });
 
             db.collection('turmas').onSnapshot(snap => {
                 STATE.turmas = {}; 
-                snap.forEach(d => STATE.turmas[d.id] = (d.data().professor || "").toLowerCase()); 
+                // A turma agora aponta para o NOME do professor
+                snap.forEach(d => STATE.turmas[d.id] = (d.data().professor || "")); 
                 atualizarInterface();
             });
 
@@ -462,19 +468,6 @@
                 });
                 atualizarInterface();
             });
-
-            // FASE 1 TEMPORÁRIO: Leitura de arquivos desligada para economizar cota
-            /*
-            db.collection('arquivos').onSnapshot(snap => {
-                STATE.arquivos = [];
-                snap.forEach(d => {
-                    let data = d.data();
-                    if(data.autor) data.autor = data.autor.toLowerCase(); 
-                    STATE.arquivos.push({idFb: d.id, ...data});
-                });
-                atualizarInterface();
-            });
-            */
         }
 
         let debounceTimer;
@@ -484,48 +477,32 @@
                 if (!USER_EMAIL) return;
 
                 let role = "aluno";
-                if(STATE.admins.includes(USER_EMAIL)) role = "admin";
-                else if(STATE.professores.includes(USER_EMAIL)) role = "professor";
-
-                let materiais = []; let envios = []; let visaoGeralAdmin = []; let visaoGeral = []; let alunosDoProf = []; let minhasTurmas = [];
-
-                // FASE 1 TEMPORÁRIO: Lógica de separação de arquivos comentada
-                /*
-                if(role === "admin") {
-                    Object.keys(STATE.turmas).forEach(t => {
-                        let mats = STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t);
-                        let ents = STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
-                        if(mats.length > 0 || ents.length > 0) visaoGeralAdmin.push({ turma: t, professor: STATE.turmas[t], materiais: mats, entregas: ents });
-                    });
-                }
-                else if(role === "professor") {
-                    let tProf = Object.keys(STATE.turmas).filter(t => STATE.turmas[t] === USER_EMAIL);
-                    for(let a in STATE.alunos) { STATE.alunos[a].forEach(ta => { if(tProf.includes(ta)) alunosDoProf.push({email: a, turma: ta}); }); }
-                    tProf.forEach(t => {
-                        materiais.push(...STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
-                        let ents = STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t);
-                        let porAluno = {}; ents.forEach(e => { if(!porAluno[e.autor]) porAluno[e.autor] = []; porAluno[e.autor].push(e); });
-                        for(let alu in porAluno) { visaoGeral.push({turma: t, aluno: alu, arquivos: porAluno[alu]}); }
-                    });
-                }
+                
+                // Verifica Admin
+                if(STATE.admins.includes(USER_EMAIL)) {
+                    role = "admin";
+                } 
+                // Verifica Professor: Procura se o USER_EMAIL logado está associado a algum professor cadastrado
                 else {
-                    minhasTurmas = STATE.alunos[USER_EMAIL] || [];
-                    minhasTurmas.forEach(t => {
-                        materiais.push(...STATE.arquivos.filter(a => a.tipo === 'professor' && a.turmaAlvo === t));
-                        envios.push(...STATE.arquivos.filter(a => a.tipo === 'aluno' && a.turmaAlvo === t && a.autor === USER_EMAIL));
-                    });
+                    let profEncontrado = STATE.professores.find(p => p.email === USER_EMAIL);
+                    if (profEncontrado) {
+                        role = "professor";
+                        USER_NOME = profEncontrado.nome; // Força o nome do usuário a ser o nome oficial de professor no banco
+                    }
                 }
-                */
 
-                // FASE 1: Adaptação para continuar preenchendo as turmas do prof e do aluno, mesmo sem arquivos
+                let alunosDoProf = []; let minhasTurmas = [];
+
+                // FASE 1: Adaptação para turmas (sem arquivos)
                 if(role === "professor") {
-                    let tProf = Object.keys(STATE.turmas).filter(t => STATE.turmas[t] === USER_EMAIL);
+                    // O professor agora é dono da turma pelo seu NOME
+                    let tProf = Object.keys(STATE.turmas).filter(t => STATE.turmas[t] === USER_NOME);
                     for(let a in STATE.alunos) { STATE.alunos[a].forEach(ta => { if(tProf.includes(ta)) alunosDoProf.push({email: a, turma: ta}); }); }
                 } else if(role === "aluno") {
                     minhasTurmas = STATE.alunos[USER_EMAIL] || [];
                 }
 
-                DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos, materiais, envios, visaoGeral, visaoGeralAdmin, alunosDoProf, minhasTurmas };
+                DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos, alunosDoProf, minhasTurmas };
                 
                 configurarPainel(DADOS_SISTEMA, isInitialLoad);
                 renderCalendario();
@@ -538,7 +515,7 @@
         }
 
         // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS
+        // 4. AÇÕES DE BANCO DE DADOS (COM NOVA LÓGICA DE PROFESSOR)
         // ==========================================
         function adminAcao(acao) {
             showStatus("Enviando para a nuvem...", "processando");
@@ -547,13 +524,28 @@
                 db.collection('admins').doc(v).set({ativo: true}).then(() => { document.getElementById('admin-novo-admin').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
             if (acao === 'admin_add_prof') { 
-                let v = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); if(!v) return showStatus("Digite o e-mail", "erro");
-                db.collection('professores').doc(v).set({ativo: true}).then(() => { document.getElementById('admin-novo-prof').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
+                // NOVO: Lê o Nome (Obrigatório) e o E-mail (Opcional)
+                let nome = document.getElementById('admin-nome-prof').value.trim();
+                let email = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); 
+                if(!nome) return showStatus("Digite o Nome do Professor", "erro");
+                
+                // Salva no banco usando o NOME como ID (chave primária)
+                db.collection('professores').doc(nome).set({email: email, ativo: true}).then(() => { 
+                    document.getElementById('admin-nome-prof').value = ''; 
+                    document.getElementById('admin-novo-prof').value = ''; 
+                    showStatus("Professor Salvo!"); 
+                }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
             if (acao === 'admin_add_turma') { 
-                let t = document.getElementById('admin-nome-turma').value; let p = document.getElementById('admin-select-prof').value;
+                let t = document.getElementById('admin-nome-turma').value; 
+                let p = document.getElementById('admin-select-prof').value; // Aqui vem o NOME do professor
                 if(!t || !p) return showStatus("Preencha turma e professor", "erro");
-                db.collection('turmas').doc(t).set({professor: p.trim().toLowerCase()}).then(() => { document.getElementById('admin-nome-turma').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
+                
+                // Salva a turma associando ao NOME do professor
+                db.collection('turmas').doc(t).set({professor: p}).then(() => { 
+                    document.getElementById('admin-nome-turma').value = ''; 
+                    showStatus("Turma Criada!"); 
+                }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
             if (acao === 'admin_add_aluno') { 
                 let a = document.getElementById('admin-novo-aluno').value.trim().toLowerCase(); let t = document.getElementById('admin-select-turma').value;
@@ -579,7 +571,8 @@
         function profAddTurma() {
             let t = document.getElementById('prof-nova-turma').value; if(!t) return showStatus("Digite o nome da turma", "erro");
             showStatus("Criando...", "processando");
-            db.collection('turmas').doc(t).set({professor: USER_EMAIL}).then(() => { document.getElementById('prof-nova-turma').value = ''; showStatus("Criado!"); }).catch(e => showStatus("Erro", "erro"));
+            // Agora a turma recebe o USER_NOME do professor
+            db.collection('turmas').doc(t).set({professor: USER_NOME}).then(() => { document.getElementById('prof-nova-turma').value = ''; showStatus("Criado!"); }).catch(e => showStatus("Erro", "erro"));
         }
 
         function profAddAluno() {
@@ -616,11 +609,13 @@
                 
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
-                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: USER_EMAIL, groupId: String(groupId) });
+                    // Agora grava o USER_NOME como o prof do agendamento
+                    let nomeParaGravar = (DADOS_SISTEMA.role === 'admin') ? "Admin" : USER_NOME;
+                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: nomeParaGravar, groupId: String(groupId) });
                 }
                 await batch.commit(); 
                 showStatus("Agendamento concluído!");
-                document.getElementById('lab-semanas').value = "1"; // Reseta o form
+                document.getElementById('lab-semanas').value = "1"; 
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
@@ -675,16 +670,6 @@
         }
 
         // ==========================================
-        // 5. FUNÇÕES DE ARQUIVOS OCULTAS TEMPORARIAMENTE (FASE 1)
-        // ==========================================
-        /*
-        function upload(tipo) { ... }
-        function apagar(idDrive, idFb) { ... }
-        function renderMateriaisAluno() { ... }
-        function renderArquivosAdmin() { ... }
-        */
-
-        // ==========================================
         // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA
         // ==========================================
         function gerarTabelaHTML(agendamentosFiltrados, turnoSelecionado, isPrivado) {
@@ -705,10 +690,16 @@
                     let res = agendamentosFiltrados.find(a => a.lab === lab && a.horario === horario);
                     
                     if (res) {
-                        let profName = res.prof.split('@')[0];
-                        let btnExcluir = (isPrivado && (DADOS_SISTEMA.role === 'admin' || res.prof === USER_EMAIL)) 
-                            ? `<button class="btn-apagar" style="margin-top:4px; font-size:10px; padding:2px 6px;" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` 
-                            : '';
+                        let profName = res.prof; // A chave do prof já é o nome bonito!
+                        
+                        // Permissão de exclusão: Admin pode tudo, Prof só apaga o dele
+                        let podeApagar = false;
+                        if (isPrivado) {
+                            if (DADOS_SISTEMA.role === 'admin') podeApagar = true;
+                            if (DADOS_SISTEMA.role === 'professor' && res.prof === USER_NOME) podeApagar = true;
+                        }
+
+                        let btnExcluir = podeApagar ? `<button class="btn-apagar" style="margin-top:4px; font-size:10px; padding:2px 6px;" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
                         
                         html += `<td>
                                     <div class="celula-ocupada">
@@ -754,13 +745,12 @@
         }
 
         // ==========================================
-        // 7. O NÚCLEO DA INTERFACE (ADAPTADO FASE 1)
+        // 7. O NÚCLEO DA INTERFACE (ADAPTADO FASE 1 COM NOVOS PROFESSORES)
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
             let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
             
-            // TODOS TÊM ACESSO À ABA DE LABORATÓRIOS
             if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
             let paginaInicial = 'pag-perfil';
 
@@ -780,16 +770,20 @@
                 let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                 setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
 
-                let htmlProfs = ''; STATE.professores.forEach(p => htmlProfs += `<li><span>👤 ${p}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p}')">Excluir</button></li>`); 
+                // RENDERIZAÇÃO PROFESSORES MODIFICADA PARA EXIBIR O NOME
+                let htmlProfs = ''; STATE.professores.forEach(p => {
+                    let infoExtra = p.email ? ` <span style="font-size:10px; color:#747775;">(${p.email})</span>` : '';
+                    htmlProfs += `<li><span>👤 ${p.nome}${infoExtra}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p.nome}')">Excluir</button></li>`
+                }); 
                 setHTMLSafe('lista-admin-profs', htmlProfs || '<li>Sem professores.</li>');
                 
-                let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${STATE.turmas[t].split('@')[0]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
+                let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t} <span style="font-size:11px; color:#747775;">(${STATE.turmas[t]})</span></span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
                 setHTMLSafe('lista-admin-turmas', htmlTurmas || '<li>Sem turmas.</li>');
                 
                 let htmlAlunos = ''; Object.keys(STATE.alunos).forEach(a => { STATE.alunos[a].forEach(t => htmlAlunos += `<li><span>🎓 ${a} <span style="font-size:11px; color:#747775;">(${t})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a}', '${t}')">Excluir</button></li>`); }); 
                 setHTMLSafe('lista-admin-alunos', htmlAlunos || '<li>Sem alunos.</li>');
 
-                let opProf = '<option value="">Prof Responsável</option>'; STATE.professores.forEach(p => opProf += `<option value="${p}">${p}</option>`); 
+                let opProf = '<option value="">Prof Responsável</option>'; STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
                 setHTMLSafe('admin-select-prof', opProf);
                 
                 let opTurma = '<option value="">Qual Turma?</option>'; Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
@@ -803,23 +797,21 @@
                     document.getElementById('box-calendario-container').classList.remove('box-calendario');
                 }
                 setTextSafe('badge-funcao', "Professor"); 
-                // FASE 1: Removido botão de "Materiais", mantido botão de "Gestão"
                 if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-visao-prof', this)">Gestão</button>`;
                 
                 let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
                 
-                let op = '<option value="">Qual a Turma?</option>'; Object.keys(STATE.turmas).forEach(t => { if(STATE.turmas[t] === USER_EMAIL) op += `<option value="${t}">${t}</option>`; }); 
+                // O Professor agora só vê as turmas que têm o NOME dele como responsável
+                let op = '<option value="">Qual a Turma?</option>'; Object.keys(STATE.turmas).forEach(t => { if(STATE.turmas[t] === USER_NOME) op += `<option value="${t}">${t}</option>`; }); 
                 setHTMLSafe('lab-turma', op);
                 setHTMLSafe('prof-select-turma-add', op);
 
                 let htmlAlunosProf = ''; if (dados.alunosDoProf) { dados.alunosDoProf.forEach(a => htmlAlunosProf += `<li><span>🎓 ${a.email} <span style="font-size:11px; color:#747775;">(${a.turma})</span></span><button class="btn-apagar" onclick="adminExcluirAluno('${a.email}', '${a.turma}')">Excluir</button></li>`); }
                 setHTMLSafe('lista-prof-alunos', htmlAlunosProf || '<li>Sem alunos matriculados.</li>');
                 
-                // FASE 1: Professor pode focar nos laboratórios primeiro
                 if(isInitial) paginaInicial = 'pag-perfil';
 
             } else { 
-                // FASE 1: ALUNO SÓ VÊ O CALENDÁRIO ESTICADO
                 if(gridLabs) {
                     gridLabs.style.gridTemplateColumns = '1fr'; 
                     document.getElementById('box-calendario-container').classList.add('box-calendario');
@@ -831,7 +823,7 @@
                     setTextSafe('badge-funcao', "Pendente");
                 }
                 
-                if(isInitial) paginaInicial = 'pag-perfil'; // Força o aluno a cair direto no calendário
+                if(isInitial) paginaInicial = 'pag-perfil'; 
             }
             
             if(isInitial) {
