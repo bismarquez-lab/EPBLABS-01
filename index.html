@@ -187,12 +187,12 @@
                                 <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option><option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
+                        
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         
-                        <select id="lab-semanas">
-                            <option value="1">Apenas hoje</option><option value="4">4 semanas (Mensal)</option><option value="20">Semestre todo</option>
-                        </select>
+                        <select id="lab-semanas"></select>
+                        
                         <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px;">Agendar Sala</button>
                     </div>
                 </div>
@@ -243,7 +243,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -502,8 +501,13 @@
             let lab = document.getElementById('lab-numero').value;
             let hor = document.getElementById('lab-horario').value; 
             let t = document.getElementById('lab-turma').value;
-            let p = document.getElementById('lab-prof').value; // Novo Campo Professor
+            let p = document.getElementById('lab-prof').value; 
             let sem = parseInt(document.getElementById('lab-semanas').value, 10);
+            
+            // TRAVA DE SEGURANÇA NO BANCO: Professor só agenda 1 dia.
+            if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') {
+                sem = 1;
+            }
             
             if(!dataR || !lab || !hor || !t || !p) return showStatus("Preencha todos os campos!", "erro");
             
@@ -532,7 +536,7 @@
                 }
                 await batch.commit(); 
                 showStatus("Agendamento concluído!");
-                document.getElementById('lab-semanas').value = "1"; 
+                // Não reseta a turma nem o prof para facilitar agendamentos em sequência
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
@@ -660,7 +664,7 @@
         }
 
         // ==========================================
-        // 7. O NÚCLEO DA INTERFACE 
+        // 7. O NÚCLEO DA INTERFACE
         // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
@@ -675,28 +679,25 @@
                     document.getElementById('box-calendario-container').classList.remove('box-calendario');
                 }
                 
-                if (dados.role === "admin") {
-                    setTextSafe('badge-funcao', "Admin"); 
-                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
-                    paginaInicial = 'pag-admin';
-                } else {
-                    setTextSafe('badge-funcao', "Professor"); 
-                    paginaInicial = 'pag-perfil';
-                }
-                
                 let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
                 
-                // PREENCHE A CAIXA DE SELEÇÃO DE PROFESSORES (NOVA RESERVA)
-                let opProf = '<option value="">Selecione o Professor...</option>'; 
-                STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
-                setHTMLSafe('lab-prof', opProf);
-                
-                // PREENCHE A CAIXA DE SELEÇÃO DE TURMAS COM *TODAS* AS TURMAS
+                // PREENCHE A CAIXA DE SELEÇÃO DE TURMAS COM *TODAS* AS TURMAS (PROF/ADMIN)
                 let opTurma = '<option value="">Qual Turma?</option>'; 
                 Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
                 setHTMLSafe('lab-turma', opTurma);
 
                 if (dados.role === "admin") {
+                    setTextSafe('badge-funcao', "Admin"); 
+                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
+                    paginaInicial = 'pag-admin';
+
+                    // ADMIN VÊ TODOS OS PROFESSORES E PODE AGENDAR MULTIPLAS SEMANAS
+                    let opProf = '<option value="">Selecione o Professor...</option>'; 
+                    STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
+                    setHTMLSafe('lab-prof', opProf);
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option><option value="4">4 semanas (Mensal)</option><option value="20">Semestre todo</option>');
+
+                    // LISTAS DO PAINEL ADMIN
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
 
@@ -708,6 +709,14 @@
                     
                     let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-turmas', htmlTurmas || '<li>Sem turmas.</li>');
+                    
+                } else {
+                    setTextSafe('badge-funcao', "Professor"); 
+                    paginaInicial = 'pag-perfil';
+                    
+                    // PROFESSOR SÓ VÊ ELE MESMO NA LISTA E SÓ PODE AGENDAR 1 DIA
+                    setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option>');
                 }
 
             } else { 
