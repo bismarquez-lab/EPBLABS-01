@@ -104,7 +104,7 @@
         
         .box-calendario { grid-column: 1 / -1; }
 
-        /* --- CONFIGURAÇÃO MAGICA DO PDF (DIÁRIO, TUDO EM UMA PÁGINA) --- */
+        /* --- CONFIGURAÇÃO MAGICA DO PDF (COMPRIMIDO EM UMA PÁGINA) --- */
         @media print {
             @page { size: landscape; margin: 5mm; }
             body { background: #fff !important; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -112,20 +112,24 @@
             #print-area { display: block !important; width: 100% !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
-            .pdf-container-dia { width: 100%; box-sizing: border-box; page-break-after: always; padding: 10px; }
+            /* O container precisa ter no máximo a altura da folha (98vh pra margem de segurança) e flex para distribuir a tabela */
+            .pdf-container-dia { width: 100%; height: 98vh; box-sizing: border-box; page-break-after: always; padding: 0; display: flex; flex-direction: column;}
             
-            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; font-size: 9px; }
-            .pdf-tabela th { background: #f0f4f9; padding: 4px 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 10px;}
-            .pdf-tabela td { padding: 2px; border: 1px solid #000; vertical-align: middle; height: 35px; } /* Altura comprimida para caber tudo */
+            /* Tabela fluida, ocupa o espaço mas sem margin-top para poupar espaço */
+            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; }
             
-            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 100px; color: #1f1f1f; }
-            .pdf-turno-sep { background-color: #e3e3e3 !important; font-weight: bold; text-align: center; padding: 3px !important; letter-spacing: 1px; border: 1px solid #000;}
+            /* Encolhendo o padding e removendo height fixa para o navegador espremer o conteúdo */
+            .pdf-tabela th { background: #f0f4f9; padding: 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 9px; height: auto;}
+            .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1.1; height: auto;} 
+            
+            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 80px; color: #1f1f1f; font-size: 8px;}
+            .pdf-turno-sep { background-color: #e3e3e3 !important; font-weight: bold; text-align: center; padding: 1px !important; letter-spacing: 1px; border: 1px solid #000; font-size: 9px; height: auto;}
             
             .pdf-celula-admin { background-color: #d3e3fd !important; }
             .pdf-celula-prof { background-color: #e6f4ea !important; }
             
-            .pdf-turma { font-weight: 700; display: block; font-size: 8px; margin-bottom: 2px; word-break: break-word; line-height: 1.1;}
-            .pdf-prof { display: block; font-size: 7px; color: #1f1f1f; font-weight: 600; text-transform: uppercase;}
+            .pdf-turma { font-weight: 700; display: block; font-size: 8px; margin-bottom: 1px; word-break: break-word;}
+            .pdf-prof { display: block; font-size: 6px; color: #1f1f1f; font-weight: 600; text-transform: uppercase;}
         }
     </style>
 </head>
@@ -355,6 +359,12 @@
                 "Noite - 1ª Aula - 19:00 até 19:50", "Noite - 2ª Aula - 19:50 até 20:40",
                 "Noite - 3ª Aula - 21:00 até 21:50", "Noite - 4ª Aula - 21:50 até 22:45"
             ]
+        };
+
+        const AULAS_CURTAS = {
+            'Manhã': ["07:30 - 08:20", "08:20 - 09:10", "09:10 - 10:00", "10:20 - 11:10", "11:10 - 12:00", "12:00 - 12:50"],
+            'Tarde': ["13:30 - 14:20", "14:20 - 15:10", "15:10 - 16:00", "16:20 - 17:10", "17:10 - 18:00", "18:00 - 18:50"],
+            'Noite': ["19:00 - 19:50", "19:50 - 20:40", "21:00 - 21:50", "21:50 - 22:45"]
         };
 
         let STATE = { admins: [], professores: [], turmas: {}, componentes: [], agendamentos: [] };
@@ -588,7 +598,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF (COMPLETO POR DIA)
+        // 5. GERAÇÃO DE RELATÓRIO PDF (COMPRIMIDO E OTIMIZADO)
         // ==========================================
         function abrirModalRelatorio() {
             document.getElementById('modal-relatorio').style.display = 'flex';
@@ -615,7 +625,6 @@
                 return;
             }
 
-            // Agrupa todas as reservas de um mesmo dia
             let agrupadoData = {};
             reservasFiltradas.forEach(r => {
                 if(!agrupadoData[r.data]) agrupadoData[r.data] = [];
@@ -630,28 +639,22 @@
                     <table class="pdf-tabela">
                         <thead>
                             <tr>
-                                <th style="width: 90px;">Horário</th>`;
+                                <th style="width: 80px;">Horário</th>`;
                 
-                // Cabeçalho com os Labs
                 LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
                 
                 tabelas += `        </tr>
                         </thead>
                         <tbody>`;
 
-                // Percorre todos os Turnos e Aulas do dia para colocar na mesma tabela
                 ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
-                    let aulasTurno = TURNOS[turno]; // Pega a lista completa de horários do turno
-                    
-                    // Verifica se tem alguma aula reservada nesse turno inteiro para não imprimir tabela em branco
+                    let aulasTurno = TURNOS[turno]; 
                     let temReservaNoTurno = resDoDia.some(r => r.horario.startsWith(turno));
                     
                     if (temReservaNoTurno) {
-                        // Linha separadora do Turno
                         tabelas += `<tr><td colspan="${LISTA_SALAS.length + 1}" class="pdf-turno-sep">${turno.toUpperCase()}</td></tr>`;
 
                         aulasTurno.forEach((horarioCompleto) => {
-                            // Quebra "Manhã - 1ª Aula - 07:30 até 08:20" para exibir só "1ª Aula <br> 07:30 até 08:20"
                             let partes = horarioCompleto.split(' - '); 
                             let textoHorario = `${partes[1]}<br><span style="font-size:6px; font-weight:normal;">${partes[2]}</span>`;
 
@@ -681,22 +684,20 @@
                 return tabelas;
             }
 
-            // Monta as páginas do PDF (1 Página = 1 Dia completo)
             chavesOrdenadas.forEach((dataChave, index) => {
                 let dataBr = dataChave.split('-').reverse().join('/');
                 let resDoDia = agrupadoData[dataChave];
                 
-                // Força a quebra de página se não for o último dia
                 let cssBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
 
                 htmlFinal += `
                     <div class="pdf-container-dia" style="${cssBreak}">
-                        <div style="border-bottom: 2px solid #000; margin-bottom: 8px; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div style="border-bottom: 2px solid #000; margin-bottom: 4px; padding-bottom: 2px; display: flex; justify-content: space-between; align-items: flex-end; flex-shrink: 0;">
                             <div>
-                                <h2 style="margin: 0; font-size: 16px;">Etec Parque Belém - Relatório de Ocupação de Laboratórios</h2>
-                                <p style="margin: 2px 0 0 0; font-size: 12px; font-weight: bold;">Data: ${dataBr}</p>
+                                <h2 style="margin: 0; font-size: 14px;">Etec Parque Belém - Relatório de Ocupação de Laboratórios</h2>
+                                <p style="margin: 1px 0 0 0; font-size: 10px; font-weight: bold;">Data: ${dataBr}</p>
                             </div>
-                            <div style="text-align: right; font-size: 9px; color: #444;">
+                            <div style="text-align: right; font-size: 8px; color: #444;">
                                 Impresso em: ${new Date().toLocaleDateString('pt-BR')} por ${USER_NOME}
                             </div>
                         </div>
@@ -745,7 +746,6 @@
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
                         let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
                         
-                        // NA TELA, UNIMOS A TURMA E COMPONENTE NA MESMA LINHA EM NEGRITO
                         html += `<td>
                                     <div class="celula-ocupada ${classeCor}">
                                         <strong>${headerText}</strong>
