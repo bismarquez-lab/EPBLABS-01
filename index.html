@@ -34,8 +34,8 @@
         .btn-sair-nav:hover { background: #fce8e6; border-color: #fce8e6; }
 
         /* --- ÁREAS DE CONTEÚDO E BOXES --- */
-        #app-wrapper { display: block; } /* Envolve o site inteiro para podermos esconder no PDF */
-        #print-area { display: none; } /* Onde o PDF vai ser desenhado de forma limpa */
+        #app-wrapper { display: block; } /* Envolve o site inteiro para ocultar na impressão */
+        #print-area { display: none; } /* Camada invisível onde o PDF é desenhado */
 
         #area-publica { position: relative; z-index: 10; margin-top: 90px; width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px;}
         .container-calendario { background: #ffffff; border-radius: 24px; padding: 24px 32px; width: 95%; max-width: 1400px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid #e3e3e3;}
@@ -69,21 +69,24 @@
         
         /* CORES DAS RESERVAS */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+        
+        /* Azul = Admin */
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
         .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
+        
+        /* Verde = Professor */
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
         .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px;}
         .celula-ocupada.prof span { color: #137333; font-size: 11px;}
 
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
-        .btn-apagar:hover { background: #fce8e6;}
+        .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
-        .lista-arq a { color: #0b57d0; text-decoration: none; font-weight: 500; word-break: break-all;} 
-
+        
         /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
@@ -104,14 +107,22 @@
         
         .box-calendario { grid-column: 1 / -1; }
 
-        /* --- CONFIGURAÇÃO MAGICA DO PDF (IMPRESSÃO) --- */
+        /* --- CONFIGURAÇÃO MAGICA DO PDF (IMPRESSÃO VISUAL COMPLETA) --- */
         @media print {
-            @page { size: portrait; margin: 15mm; }
+            @page { size: landscape; margin: 10mm; }
             body { background: #fff !important; margin: 0; padding: 0; }
             #app-wrapper, canvas { display: none !important; }
-            #print-area { display: block !important; }
-            /* Garante que as cores de fundo apareçam no PDF (Azul e Verde) */
+            #print-area { display: block !important; width: 100% !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            
+            /* Ajustes para a grade caber e ficar linda no papel */
+            .tabela-responsiva { overflow: visible !important; border: none !important; margin-top: 10px !important; }
+            .tabela-grade { min-width: 100% !important; border-collapse: collapse !important;}
+            .tabela-grade th, .tabela-grade td { height: auto !important; padding: 8px 4px !important; font-size: 11px !important; }
+            .td-lab { width: 110px !important; }
+            .celula-ocupada { padding: 6px !important; }
+            .celula-ocupada strong { font-size: 11px !important; }
+            .celula-ocupada span { font-size: 10px !important; }
         }
     </style>
 </head>
@@ -158,15 +169,15 @@
 
     <div id="modal-relatorio" class="modal-overlay">
         <div class="modal-box">
-            <h3>📄 Gerar Relatório</h3>
-            <p>Selecione o período para gerar um relatório em lista com todas as reservas.</p>
+            <h3>📄 Relatório Visual</h3>
+            <p style="font-size: 13px;">O sistema irá gerar páginas contendo a grade colorida para todos os dias e turnos que possuam agendamentos no período.</p>
             <input type="date" id="relatorio-data" style="margin-bottom: 12px;">
             <select id="relatorio-periodo" style="margin-bottom: 24px;">
                 <option value="7">Próxima 1 Semana</option>
                 <option value="30">Próximo 1 Mês</option>
                 <option value="180">Próximo 1 Semestre</option>
             </select>
-            <button class="btn-modal-serie" onclick="gerarEImprimirRelatorio()">Gerar PDF e Imprimir</button>
+            <button class="btn-modal-serie" onclick="gerarRelatorioVisual()">Gerar Grades e Imprimir</button>
             <button class="btn-modal-cancelar" onclick="document.getElementById('modal-relatorio').style.display='none'">Cancelar</button>
         </div>
     </div>
@@ -194,6 +205,7 @@
     </div>
 
     <div id="area-privada">
+        
         <div id="pag-perfil" class="pagina">
             <div class="grid-layout" id="grid-perfil" style="grid-template-columns: 280px 1fr;">
                 <div class="box" id="painel-reserva-lab" style="display: none; background: #f8f9fa;">
@@ -224,6 +236,7 @@
                                 <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option><option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
+                        
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
                         <select id="lab-semanas"></select>
@@ -240,7 +253,7 @@
                                 <option value="Noite">Noite</option>
                             </select>
                             <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
-                            </div>
+                        </div>
                     </div>
                     <div class="scroll-interno" id="grade-laboratorios" style="display: flex; flex-direction: column;"></div>
                 </div>
@@ -291,18 +304,11 @@
         function definirTurnoAtual() {
             let hora = new Date().getHours();
             let turnoAtual = "Manhã";
+            if (hora >= 13 && hora < 18) { turnoAtual = "Tarde"; } 
+            else if (hora >= 18 || hora < 5) { turnoAtual = "Noite"; }
             
-            if (hora >= 13 && hora < 18) {
-                turnoAtual = "Tarde";
-            } else if (hora >= 18 || hora < 5) { 
-                turnoAtual = "Noite";
-            }
-            
-            let filtroPub = document.getElementById('filtro-turno-publico');
-            if(filtroPub) filtroPub.value = turnoAtual;
-            
-            let filtroPriv = document.getElementById('filtro-turno');
-            if(filtroPriv) filtroPriv.value = turnoAtual;
+            let filtroPub = document.getElementById('filtro-turno-publico'); if(filtroPub) filtroPub.value = turnoAtual;
+            let filtroPriv = document.getElementById('filtro-turno'); if(filtroPriv) filtroPriv.value = turnoAtual;
         }
 
         // ==========================================
@@ -319,10 +325,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
-        db.enablePersistence().catch(function(err) {
-            console.log("Persistência não ativada (múltiplas abas ou não suportado)", err);
-        });
+        db.enablePersistence().catch(function(err) { console.log("Persistência não ativada", err); });
         
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
@@ -345,16 +348,14 @@
 
         let STATE = { admins: [], professores: [], turmas: {}, agendamentos: [] };
         let DADOS_SISTEMA = null; 
-        let USER_EMAIL = '';
-        let USER_NOME = '';
+        let USER_EMAIL = ''; let USER_NOME = '';
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
-        let isInitialLoad = true;
-        let escutasPrivadasAtivas = false; 
+        let isInitialLoad = true; let escutasPrivadasAtivas = false; 
 
         document.getElementById('filtro-calendario-publico').valueAsDate = new Date();
         document.getElementById('filtro-calendario').valueAsDate = new Date();
         document.getElementById('lab-data').valueAsDate = new Date();
-        document.getElementById('relatorio-data').valueAsDate = new Date(); // Para o modal
+        document.getElementById('relatorio-data').valueAsDate = new Date();
 
         let toastTimeout;
         function showStatus(msg, tipo="sucesso") {
@@ -383,24 +384,11 @@
 
         window.onload = function() {
             definirTurnoAtual(); 
-            
-            setTimeout(() => {
-                let txt = document.getElementById('txt-acesso');
-                if(txt) txt.style.display = 'inline-block';
-            }, 1000);
-            
+            setTimeout(() => { let txt = document.getElementById('txt-acesso'); if(txt) txt.style.display = 'inline-block'; }, 1000);
             iniciarEscutasPublicas();
-
-            document.onmousemove = resetarTempo;
-            document.onkeypress = resetarTempo;
-            document.onclick = resetarTempo;
-            document.onscroll = resetarTempo;
-            resetarTempo();
-
+            document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
             let usuarioSalvo = localStorage.getItem("epblab_user");
-            if(usuarioSalvo) {
-                iniciarPortal(JSON.parse(usuarioSalvo), true);
-            }
+            if(usuarioSalvo) iniciarPortal(JSON.parse(usuarioSalvo), true);
         };
 
         const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
@@ -415,19 +403,16 @@
 
         async function iniciarPortal(dados, isAutoLogin = false) {
             let emailTentativa = (dados.email || "").toLowerCase().trim();
-            
             if(!isAutoLogin) showStatus("Validando permissões...", "processando");
 
             try {
                 let docAdmin = await db.collection('admins').doc(emailTentativa).get();
                 let isAdmin = docAdmin.exists;
-
                 let profQuery = await db.collection('professores').where('email', '==', emailTentativa).get();
                 let isProf = !profQuery.empty;
 
                 if (!isAdmin && !isProf) {
                     localStorage.removeItem("epblab_user"); 
-                    
                     if (!isAutoLogin) {
                         alert(`⚠️ ACESSO NEGADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, peça para a coordenação vincular o seu e-mail ao seu nome no Painel de Controle.`);
                         location.reload(); 
@@ -437,12 +422,7 @@
 
                 localStorage.setItem("epblab_user", JSON.stringify(dados));
                 USER_EMAIL = emailTentativa;
-                
-                if (isProf) {
-                    USER_NOME = profQuery.docs[0].id; 
-                } else {
-                    USER_NOME = (dados.given_name || "Admin");
-                }
+                if (isProf) { USER_NOME = profQuery.docs[0].id; } else { USER_NOME = (dados.given_name || "Admin"); }
                 
                 setTextSafe('nome-usuario', USER_NOME);
                 let foto = document.getElementById('foto-perfil');
@@ -456,16 +436,8 @@
                 
                 if(!isAutoLogin) showStatus("Acesso Liberado! Sincronizando...", "sucesso");
                 
-                if (!escutasPrivadasAtivas) {
-                    iniciarEscutasPrivadas();
-                    escutasPrivadasAtivas = true;
-                } else {
-                    atualizarInterface();
-                }
-            } catch (e) {
-                console.error(e);
-                showStatus("Erro ao validar login", "erro");
-            }
+                if (!escutasPrivadasAtivas) { iniciarEscutasPrivadas(); escutasPrivadasAtivas = true; } else { atualizarInterface(); }
+            } catch (e) { showStatus("Erro ao validar login", "erro"); }
         }
 
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
@@ -476,38 +448,16 @@
         function iniciarEscutasPublicas() {
             db.collection('agendamentos').onSnapshot(snap => {
                 STATE.agendamentos = [];
-                snap.forEach(doc => {
-                    let data = doc.data();
-                    STATE.agendamentos.push({id: doc.id, ...data});
-                });
+                snap.forEach(doc => { STATE.agendamentos.push({id: doc.id, ...doc.data()}); });
                 renderCalendarioPublico(); 
                 if(escutasPrivadasAtivas) atualizarInterface(); 
             });
         }
 
         function iniciarEscutasPrivadas() {
-            db.collection('admins').onSnapshot(snap => {
-                STATE.admins = []; 
-                snap.forEach(d => STATE.admins.push(d.id.toLowerCase())); 
-                atualizarInterface();
-            });
-
-            db.collection('professores').onSnapshot(snap => {
-                STATE.professores = []; 
-                snap.forEach(d => {
-                    STATE.professores.push({
-                        nome: d.id, 
-                        email: (d.data().email || "").toLowerCase() 
-                    });
-                }); 
-                atualizarInterface();
-            });
-
-            db.collection('turmas').onSnapshot(snap => {
-                STATE.turmas = {}; 
-                snap.forEach(d => STATE.turmas[d.id] = true); 
-                atualizarInterface();
-            });
+            db.collection('admins').onSnapshot(snap => { STATE.admins = []; snap.forEach(d => STATE.admins.push(d.id.toLowerCase())); atualizarInterface(); });
+            db.collection('professores').onSnapshot(snap => { STATE.professores = []; snap.forEach(d => { STATE.professores.push({ nome: d.id, email: (d.data().email || "").toLowerCase() }); }); atualizarInterface(); });
+            db.collection('turmas').onSnapshot(snap => { STATE.turmas = {}; snap.forEach(d => STATE.turmas[d.id] = true); atualizarInterface(); });
         }
 
         let debounceTimer;
@@ -515,29 +465,15 @@
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 if (!USER_EMAIL) return;
-
                 let role = "aluno";
-                
-                if(STATE.admins.includes(USER_EMAIL)) {
-                    role = "admin";
-                } 
-                else {
+                if(STATE.admins.includes(USER_EMAIL)) { role = "admin"; } else {
                     let profEncontrado = STATE.professores.find(p => p.email === USER_EMAIL);
-                    if (profEncontrado) {
-                        role = "professor";
-                        USER_NOME = profEncontrado.nome; 
-                    }
+                    if (profEncontrado) { role = "professor"; USER_NOME = profEncontrado.nome; }
                 }
-
                 DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos };
-                
                 configurarPainel(DADOS_SISTEMA, isInitialLoad);
                 renderCalendario();
-                
-                if(isInitialLoad && STATE.agendamentos.length > 0) {
-                    showStatus("Sessão Sincronizada!");
-                    isInitialLoad = false;
-                }
+                if(isInitialLoad && STATE.agendamentos.length > 0) { showStatus("Sessão Sincronizada!"); isInitialLoad = false; }
             }, 150); 
         }
 
@@ -551,24 +487,13 @@
                 db.collection('admins').doc(v).set({ativo: true}).then(() => { document.getElementById('admin-novo-admin').value = ''; showStatus("Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
             if (acao === 'admin_add_prof') { 
-                let nome = document.getElementById('admin-nome-prof').value.trim();
-                let email = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); 
+                let nome = document.getElementById('admin-nome-prof').value.trim(); let email = document.getElementById('admin-novo-prof').value.trim().toLowerCase(); 
                 if(!nome) return showStatus("Digite o Nome do Professor", "erro");
-                
-                db.collection('professores').doc(nome).set({email: email, ativo: true}).then(() => { 
-                    document.getElementById('admin-nome-prof').value = ''; 
-                    document.getElementById('admin-novo-prof').value = ''; 
-                    showStatus("Professor Salvo!"); 
-                }).catch(e => showStatus("Erro ao salvar", "erro"));
+                db.collection('professores').doc(nome).set({email: email, ativo: true}).then(() => { document.getElementById('admin-nome-prof').value = ''; document.getElementById('admin-novo-prof').value = ''; showStatus("Professor Salvo!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
             if (acao === 'admin_add_turma') { 
-                let t = document.getElementById('admin-nome-turma').value.trim(); 
-                if(!t) return showStatus("Preencha o nome da turma", "erro");
-                
-                db.collection('turmas').doc(t).set({ativo: true}).then(() => { 
-                    document.getElementById('admin-nome-turma').value = ''; 
-                    showStatus("Turma Criada!"); 
-                }).catch(e => showStatus("Erro ao salvar", "erro"));
+                let t = document.getElementById('admin-nome-turma').value.trim(); if(!t) return showStatus("Preencha o nome da turma", "erro");
+                db.collection('turmas').doc(t).set({ativo: true}).then(() => { document.getElementById('admin-nome-turma').value = ''; showStatus("Turma Criada!"); }).catch(e => showStatus("Erro ao salvar", "erro"));
             }
         }
 
@@ -581,17 +506,11 @@
         }
 
         async function reservarLab() {
-            let dataR = document.getElementById('lab-data').value; 
-            let lab = document.getElementById('lab-numero').value;
-            let hor = document.getElementById('lab-horario').value; 
-            let t = document.getElementById('lab-turma').value;
-            let p = document.getElementById('lab-prof').value; 
-            let sem = parseInt(document.getElementById('lab-semanas').value, 10);
+            let dataR = document.getElementById('lab-data').value; let lab = document.getElementById('lab-numero').value;
+            let hor = document.getElementById('lab-horario').value; let t = document.getElementById('lab-turma').value;
+            let p = document.getElementById('lab-prof').value; let sem = parseInt(document.getElementById('lab-semanas').value, 10);
             
-            if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') {
-                sem = 1;
-            }
-            
+            if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { sem = 1; }
             if(!dataR || !lab || !hor || !t || !p) return showStatus("Preencha todos os campos!", "erro");
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
@@ -610,18 +529,13 @@
 
             showStatus("Agendando Sala...", "processando");
             try {
-                let groupId = "GRP_" + new Date().getTime(); 
-                let batch = db.batch();
-                
+                let groupId = "GRP_" + new Date().getTime(); let batch = db.batch();
                 for (let i = 0; i < datasParaAgendar.length; i++) {
                     let docRef = db.collection('agendamentos').doc();
-                    // GRAVA A COR DA RESERVA NO BANCO (ADMIN OU PROF)
                     let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
                     batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, groupId: String(groupId), criadoPorRole: tagCriador });
                 }
-                await batch.commit(); 
-                showStatus("Agendamento concluído!");
-                document.getElementById('lab-semanas').value = "1"; 
+                await batch.commit(); showStatus("Agendamento concluído!"); document.getElementById('lab-semanas').value = "1"; 
             } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
@@ -629,133 +543,117 @@
             if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
                 if(confirm("Deseja excluir esta reserva antiga?")) {
                     showStatus("Excluindo...", "processando");
-                    db.collection('agendamentos').doc(idFb).delete()
-                        .then(() => showStatus("Reserva excluída!"))
-                        .catch((e) => { console.error(e); showStatus("Erro ao excluir", "erro"); });
+                    db.collection('agendamentos').doc(idFb).delete().then(() => showStatus("Reserva excluída!")).catch((e) => showStatus("Erro", "erro"));
                 }
                 return;
             }
-            
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
-            let modal = document.getElementById('modal-exclusao');
-            if(modal) modal.style.display = 'flex';
+            document.getElementById('modal-exclusao').style.display = 'flex';
         }
 
-        function fecharModalExclusao() {
-            let modal = document.getElementById('modal-exclusao');
-            if(modal) modal.style.display = 'none';
-        }
+        function fecharModalExclusao() { document.getElementById('modal-exclusao').style.display = 'none'; }
 
         async function confirmarExclusao(tipo) {
-            let idFbAlvo = reservaExclusaoAlvo.idFb;
-            let groupIdAlvo = reservaExclusaoAlvo.groupId;
-            
-            fecharModalExclusao();
-            showStatus("Processando exclusão...", "processando");
-
+            let idFbAlvo = reservaExclusaoAlvo.idFb; let groupIdAlvo = reservaExclusaoAlvo.groupId;
+            fecharModalExclusao(); showStatus("Processando exclusão...", "processando");
             try {
-                if (tipo === 'dia') {
-                    await db.collection('agendamentos').doc(idFbAlvo).delete();
-                } else if (tipo === 'serie') {
+                if (tipo === 'dia') { await db.collection('agendamentos').doc(idFbAlvo).delete(); } 
+                else if (tipo === 'serie') {
                     let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupIdAlvo);
                     if (reservasDaSerie.length > 0) {
-                        let batch = db.batch();
-                        reservasDaSerie.forEach(reserva => {
-                            let ref = db.collection('agendamentos').doc(reserva.id);
-                            batch.delete(ref);
-                        });
+                        let batch = db.batch(); reservasDaSerie.forEach(reserva => { batch.delete(db.collection('agendamentos').doc(reserva.id)); });
                         await batch.commit();
                     }
                 }
                 showStatus("Excluído com sucesso!");
-            } catch (erro) {
-                console.error("ERRO AO EXCLUIR:", erro);
-                showStatus("Falha ao excluir.", "erro");
-            }
+            } catch (erro) { showStatus("Falha ao excluir.", "erro"); }
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF DINÂMICO
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
         // ==========================================
         function abrirModalRelatorio() {
             document.getElementById('modal-relatorio').style.display = 'flex';
         }
 
-        function gerarEImprimirRelatorio() {
+        function gerarRelatorioVisual() {
             let dataInicioStr = document.getElementById('relatorio-data').value;
             let dias = parseInt(document.getElementById('relatorio-periodo').value);
             
             if(!dataInicioStr) return showStatus("Selecione a data inicial", "erro");
 
-            // Define a janela de tempo
+            // Define o período
             let dataInicio = new Date(dataInicioStr + "T00:00:00");
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             dataFim.setDate(dataFim.getDate() + dias);
 
-            // Filtra os agendamentos que caem dentro desse período
+            // Filtra as reservas desse período
             let reservasFiltradas = STATE.agendamentos.filter(a => {
                 let d = new Date(a.data + "T00:00:00");
                 return d >= dataInicio && d <= dataFim;
             });
 
-            // Ordena primeiro por data, depois por turno, depois por sala
-            reservasFiltradas.sort((a, b) => new Date(a.data) - new Date(b.data));
-
-            // Monta o cabeçalho do PDF
-            let html = `
-                <div style="font-family: 'Inter', sans-serif; color: #1f1f1f; padding: 20px;">
-                    <div style="border-bottom: 2px solid #0b57d0; margin-bottom: 20px; padding-bottom: 10px;">
-                        <h2 style="margin: 0; font-size: 22px;">🎓 Etec Parque Belém - Relatório de Laboratórios</h2>
-                        <p style="margin: 5px 0 0 0; color: #444746; font-size: 14px;">
-                            <strong>Período:</strong> ${dataInicio.toLocaleDateString('pt-BR')} até ${dataFim.toLocaleDateString('pt-BR')} <br>
-                            <strong>Gerado por:</strong> ${USER_NOME} (${DADOS_SISTEMA.role})
-                        </p>
-                    </div>
-            `;
-
-            // Preenche os dados
             if(reservasFiltradas.length === 0) {
-                html += `<p style="font-style:italic; color:#747775;">Nenhuma reserva encontrada para o período selecionado.</p>`;
-            } else {
-                html += `
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
-                        <thead>
-                            <tr style="background-color: #f0f4f9; border-bottom: 2px solid #dadce0;">
-                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Data</th>
-                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Laboratório</th>
-                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Horário</th>
-                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Turma</th>
-                                <th style="padding: 10px 8px; border: 1px solid #e3e3e3;">Professor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                reservasFiltradas.forEach(r => {
-                    let dataBr = r.data.split('-').reverse().join('/');
-                    // Aplica as cores no PDF
-                    let corFundo = (r.criadoPorRole === 'professor') ? '#e6f4ea' : '#d3e3fd'; 
-                    let corTexto = (r.criadoPorRole === 'professor') ? '#0d652d' : '#041e49'; 
-
-                    html += `
-                        <tr style="border-bottom: 1px solid #e3e3e3;">
-                            <td style="padding: 8px; border: 1px solid #e3e3e3; font-weight: 600;">${dataBr}</td>
-                            <td style="padding: 8px; border: 1px solid #e3e3e3;">${r.lab}</td>
-                            <td style="padding: 8px; border: 1px solid #e3e3e3;">${r.horario}</td>
-                            <td style="padding: 8px; border: 1px solid #e3e3e3; background-color: ${corFundo}; color: ${corTexto}; font-weight: 600;">${r.turma}</td>
-                            <td style="padding: 8px; border: 1px solid #e3e3e3; background-color: ${corFundo}; color: ${corTexto};">${r.prof}</td>
-                        </tr>
-                    `;
-                });
-                
-                html += `</tbody></table>`;
+                alert("Nenhuma reserva encontrada para este período.");
+                document.getElementById('modal-relatorio').style.display = 'none';
+                return;
             }
-            html += `</div>`;
 
-            // Joga o HTML pro container invisível e chama a impressão do sistema!
-            document.getElementById('print-area').innerHTML = html;
+            // Agrupa por DATA e TURNO (Ex: "2026-04-15|Manhã")
+            let agrupado = {};
+            reservasFiltradas.forEach(r => {
+                let turno = r.horario.split(' - ')[0]; // Pega "Manhã", "Tarde" ou "Noite"
+                let chave = r.data + "|" + turno;
+                if(!agrupado[chave]) agrupado[chave] = [];
+                agrupado[chave].push(r);
+            });
+
+            // Ordena cronologicamente
+            let chavesOrdenadas = Object.keys(agrupado).sort((a, b) => {
+                let [dataA, turnoA] = a.split('|'); let [dataB, turnoB] = b.split('|');
+                if(dataA !== dataB) return new Date(dataA) - new Date(dataB);
+                const ordemTurno = { 'Manhã': 1, 'Tarde': 2, 'Noite': 3 };
+                return ordemTurno[turnoA] - ordemTurno[turnoB];
+            });
+
+            let htmlFinal = '';
+
+            // Monta uma grade por página
+            chavesOrdenadas.forEach((chave, index) => {
+                let [dataBase, turno] = chave.split('|');
+                let dataBr = dataBase.split('-').reverse().join('/');
+                let resDoTurno = agrupado[chave];
+
+                // Gera o HTML da grade limpa (isPrivado = false, sem botão apagar)
+                let tabelaHTML = gerarTabelaHTML(resDoTurno, turno, false); 
+
+                // Quebra de página
+                let pageBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
+
+                htmlFinal += `
+                    <div style="font-family: 'Inter', sans-serif; color: #1f1f1f; padding: 10px; width: 100%; box-sizing: border-box; ${pageBreak}">
+                        <div style="border-bottom: 2px solid #0b57d0; margin-bottom: 16px; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <h2 style="margin: 0; font-size: 20px;">🎓 Etec Parque Belém - Grade de Laboratórios</h2>
+                                <p style="margin: 4px 0 0 0; color: #444746; font-size: 14px;">
+                                    <strong>Data:</strong> ${dataBr} | <strong>Turno:</strong> ${turno}
+                                </p>
+                            </div>
+                            <div style="text-align: right; font-size: 12px; color: #747775;">
+                                Impresso em: ${new Date().toLocaleDateString('pt-BR')} por ${USER_NOME}
+                            </div>
+                        </div>
+                        ${tabelaHTML}
+                    </div>
+                `;
+            });
+
+            // Escreve na camada invisível e chama a impressora!
+            document.getElementById('print-area').innerHTML = htmlFinal;
             document.getElementById('modal-relatorio').style.display = 'none';
-            window.print();
+
+            // Aguarda meio segundo pro navegador renderizar antes de imprimir
+            setTimeout(() => { window.print(); }, 500);
         }
 
         // ==========================================
@@ -789,7 +687,6 @@
 
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
                         
-                        // LÓGICA DE CORES NA TELA (Admin = Azul, Prof = Verde)
                         let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
                         
                         html += `<td>
@@ -814,12 +711,8 @@
             let elData = document.getElementById('filtro-calendario-publico');
             let elTurno = document.getElementById('filtro-turno-publico');
             if(!elData || !elTurno) return;
-
-            let data = elData.value;
-            let turno = elTurno.value;
-            let res = STATE.agendamentos.filter(a => a.data === data);
-            
-            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(res, turno, false));
+            let res = STATE.agendamentos.filter(a => a.data === elData.value);
+            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(res, elTurno.value, false));
         }
 
         function renderCalendario() {
@@ -827,12 +720,8 @@
             let elData = document.getElementById('filtro-calendario');
             let elTurno = document.getElementById('filtro-turno');
             if(!elData || !elTurno) return;
-
-            let data = elData.value;
-            let turno = elTurno.value;
-            let res = STATE.agendamentos.filter(a => a.data === data);
-            
-            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, turno, true));
+            let res = STATE.agendamentos.filter(a => a.data === elData.value);
+            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, elTurno.value, true));
         }
 
         // ==========================================
@@ -851,7 +740,7 @@
                     document.getElementById('box-calendario-container').classList.remove('box-calendario');
                 }
                 
-                // INJETA O BOTÃO DE RELATÓRIO PARA ADMINS E PROFS
+                // INJETA O BOTÃO DE RELATÓRIO PARA ADMINS E PROFS (Area Privada)
                 let divFiltrosPrivada = document.getElementById('filtros-agenda-privada');
                 if(divFiltrosPrivada && !document.getElementById('btn-abrir-relatorio')) {
                     divFiltrosPrivada.innerHTML += `<button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()" style="margin-left: 8px;">📄 Relatório PDF</button>`;
