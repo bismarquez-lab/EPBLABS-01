@@ -74,15 +74,14 @@
         .celula-ocupada strong { color: #1f1f1f; font-size: 12px; margin-bottom: 2px; text-align: center; line-height: 1.1;}
         .celula-ocupada span { color: #444746; font-size: 11px;}
 
-        .comp-tag { font-size: 10px; opacity: 0.85; margin-top: 2px; font-style: italic;}
-
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
         .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
         
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
-        
+        .lista-arq a { color: #0b57d0; text-decoration: none; font-weight: 500; word-break: break-all;} 
+
         /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
@@ -103,32 +102,6 @@
         
         .box-calendario { grid-column: 1 / -1; }
 
-        /* ==========================================
-           MODO MOBILE (CELULARES E TABLETS PEQUENOS)
-           ========================================== */
-        @media (max-width: 768px) {
-            /* Reorganiza o cabeçalho para caber botões e nome */
-            #navbar { flex-wrap: wrap; height: auto; min-height: 68px; padding: 12px 16px; justify-content: center; gap: 12px; }
-            .nav-links { margin-left: 0; justify-content: center; width: 100%; flex-wrap: wrap; }
-            #area-usuario { width: 100%; justify-content: center; margin-top: 5px; }
-            
-            /* Empurra o conteúdo para baixo devido ao novo tamanho do cabeçalho */
-            #area-publica, #area-privada { margin-top: 140px; width: 100%; }
-            .container-calendario, .pagina { padding: 16px; border-radius: 16px; }
-            
-            /* Empilha as colunas (Admin e Telas de Agendamento) */
-            #grid-perfil { grid-template-columns: 1fr !important; }
-            .grid-layout { grid-template-columns: 1fr !important; }
-            
-            /* Garante que filtros e botões não fiquem espremidos */
-            #filtros-agenda-privada, .container-calendario > div:first-child > div:last-child { flex-direction: column; width: 100%; }
-            #filtros-agenda-privada select, #filtros-agenda-privada input, #filtros-agenda-privada button,
-            .container-calendario select, .container-calendario input { width: 100% !important; margin-top: 4px; }
-            
-            .box { padding: 16px; }
-            h1 { font-size: 20px !important; text-align: center; }
-        }
-
         /* --- CONFIGURAÇÃO MAGICA DO PDF (COMPRIMIDO EM UMA PÁGINA) --- */
         @media print {
             @page { size: landscape; margin: 5mm; }
@@ -139,19 +112,19 @@
             
             .pdf-container-dia { width: 100%; height: 98vh; box-sizing: border-box; page-break-after: always; padding: 0; display: flex; flex-direction: column;}
             
-            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; }
+            .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; table-layout: fixed; }
             
             .pdf-tabela th { background: #f0f4f9; padding: 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 9px; height: auto;}
-            .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1.1; height: auto;} 
+            .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1; height: auto;} 
             
-            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 80px; color: #1f1f1f; font-size: 8px;}
+            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 60px; color: #1f1f1f; font-size: 8px;}
             .pdf-turno-sep { background-color: #e3e3e3 !important; font-weight: bold; text-align: center; padding: 1px !important; letter-spacing: 1px; border: 1px solid #000; font-size: 9px; height: auto;}
             
             .pdf-celula-admin { background-color: #d3e3fd !important; }
             .pdf-celula-prof { background-color: #e6f4ea !important; }
             
             .pdf-turma { font-weight: 700; display: block; font-size: 8px; margin-bottom: 1px; word-break: break-word;}
-            .pdf-prof { display: block; font-size: 6px; color: #1f1f1f; font-weight: 600; text-transform: uppercase;}
+            .pdf-prof { display: block; font-size: 7px; color: #1f1f1f; font-weight: 500; text-transform: uppercase;}
         }
     </style>
 </head>
@@ -214,11 +187,11 @@
     <div id="area-publica">
         <div class="container-calendario" style="display: flex; flex-direction: column; height: 85vh;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px;">
-                <div style="width: 100%;">
+                <div>
                     <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600;">Agenda dos Laboratórios de Informática</h1>
                     <p style="margin: 0; color: #747775; font-size: 14px;">Professor(a) para agendamentos avulsos, utilize seu e-mail institucional.</p>
                 </div>
-                <div style="display: flex; gap: 12px; width: 100%;">
+                <div style="display: flex; gap: 12px;">
                     <select id="filtro-turno-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
                         <option value="Manhã">Manhã</option>
                         <option value="Tarde">Tarde</option>
@@ -549,9 +522,10 @@
             let dataR = document.getElementById('lab-data').value; let lab = document.getElementById('lab-numero').value;
             let hor = document.getElementById('lab-horario').value; let t = document.getElementById('lab-turma').value;
             let p = document.getElementById('lab-prof').value; let c = document.getElementById('lab-comp').value;
-            let sem = (DADOS_SISTEMA.role === 'professor') ? 1 : parseInt(document.getElementById('lab-semanas').value, 10);
+            let sem = parseInt(document.getElementById('lab-semanas').value, 10);
             
-            if(!dataR || !lab || !hor || !t || !p || !c) return alert("Preencha todos os campos!");
+            if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { sem = 1; }
+            if(!dataR || !lab || !hor || !t || !p || !c) return showStatus("Preencha todos os campos!", "erro"); 
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             let datasParaAgendar = [];
@@ -561,20 +535,29 @@
             }
 
             let conflito = STATE.agendamentos.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
-            if (conflito) return alert(`BLOQUEADO! O ${lab} já está ocupado dia ${conflito.data.split('-').reverse().join('/')}`);
-
-            showStatus("Agendando...", "processando");
-            let groupId = "GRP_" + new Date().getTime(); let batch = db.batch();
-            for (let i = 0; i < datasParaAgendar.length; i++) {
-                let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
-                batch.set(db.collection('agendamentos').doc(), { data: datasParaAgendar[i], lab, horario: hor, turma: t, prof: p, comp: c, groupId: String(groupId), criadoPorRole: tagCriador });
+            if (conflito) {
+                let dataBr = conflito.data.split('-').reverse().join('/');
+                return alert(`⚠️ BLOQUEADO!\n\nO ${lab} já está reservado no dia ${dataBr} para este horário.\nPor favor, escolha outro laboratório ou horário.`);
             }
-            await batch.commit(); showStatus("Sucesso!");
+
+            showStatus("Agendando Sala...", "processando");
+            try {
+                let groupId = "GRP_" + new Date().getTime(); let batch = db.batch();
+                for (let i = 0; i < datasParaAgendar.length; i++) {
+                    let docRef = db.collection('agendamentos').doc();
+                    let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
+                    batch.set(docRef, { data: datasParaAgendar[i], lab: lab, horario: hor, turma: t, prof: p, comp: c, groupId: String(groupId), criadoPorRole: tagCriador });
+                }
+                await batch.commit(); showStatus("Agendamento concluído!"); document.getElementById('lab-semanas').value = "1"; 
+            } catch(e) { console.error(e); showStatus("Erro ao agendar", "erro"); }
         }
 
         function cancelarReserva(idFb, groupId) { 
-            if(!groupId || groupId === 'undefined') {
-                if(confirm("Excluir esta reserva?")) db.collection('agendamentos').doc(idFb).delete();
+            if(!groupId || String(groupId) === 'undefined' || String(groupId) === 'null' || String(groupId) === '') {
+                if(confirm("Deseja excluir esta reserva antiga?")) {
+                    showStatus("Excluindo...", "processando");
+                    db.collection('agendamentos').doc(idFb).delete().then(() => showStatus("Reserva excluída!")).catch((e) => showStatus("Erro", "erro"));
+                }
                 return;
             }
             reservaExclusaoAlvo = { idFb, groupId: String(groupId) };
@@ -585,171 +568,292 @@
 
         async function confirmarExclusao(tipo) {
             let idFbAlvo = reservaExclusaoAlvo.idFb; let groupIdAlvo = reservaExclusaoAlvo.groupId;
-            fecharModalExclusao();
-            if (tipo === 'dia') { await db.collection('agendamentos').doc(idFbAlvo).delete(); } 
-            else {
-                let batch = db.batch(); 
-                STATE.agendamentos.filter(a => String(a.groupId) === groupIdAlvo).forEach(r => batch.delete(db.collection('agendamentos').doc(r.id)));
-                await batch.commit();
-            }
+            fecharModalExclusao(); showStatus("Processando exclusão...", "processando");
+            try {
+                if (tipo === 'dia') { await db.collection('agendamentos').doc(idFbAlvo).delete(); } 
+                else if (tipo === 'serie') {
+                    let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupIdAlvo);
+                    if (reservasDaSerie.length > 0) {
+                        let batch = db.batch(); reservasDaSerie.forEach(reserva => { batch.delete(db.collection('agendamentos').doc(reserva.id)); });
+                        await batch.commit();
+                    }
+                }
+                showStatus("Excluído com sucesso!");
+            } catch (erro) { showStatus("Falha ao excluir.", "erro"); }
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL E OTIMIZADO
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
         // ==========================================
-        function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
+        function abrirModalRelatorio() {
+            document.getElementById('modal-relatorio').style.display = 'flex';
+        }
 
         function gerarRelatorioVisual() {
             let dataInicioStr = document.getElementById('relatorio-data').value;
             let dias = parseInt(document.getElementById('relatorio-periodo').value);
-            if(!dataInicioStr) return;
+            
+            if(!dataInicioStr) return showStatus("Selecione a data inicial", "erro");
 
             let dataInicio = new Date(dataInicioStr + "T00:00:00");
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             dataFim.setDate(dataFim.getDate() + dias);
 
-            let resFiltradas = STATE.agendamentos.filter(a => {
+            let reservasFiltradas = STATE.agendamentos.filter(a => {
                 let d = new Date(a.data + "T00:00:00");
                 return d >= dataInicio && d <= dataFim;
             });
 
-            if(resFiltradas.length === 0) return alert("Nada agendado para o período.");
+            if(reservasFiltradas.length === 0) {
+                alert("Nenhuma reserva encontrada para este período.");
+                document.getElementById('modal-relatorio').style.display = 'none';
+                return;
+            }
 
             let agrupadoData = {};
-            resFiltradas.forEach(r => { if(!agrupadoData[r.data]) agrupadoData[r.data] = []; agrupadoData[r.data].push(r); });
+            reservasFiltradas.forEach(r => {
+                if(!agrupadoData[r.data]) agrupadoData[r.data] = [];
+                agrupadoData[r.data].push(r);
+            });
 
             let chavesOrdenadas = Object.keys(agrupadoData).sort((a, b) => new Date(a) - new Date(b));
             let htmlFinal = '';
+
+            function construirTabelaInvertida(resDoDia) {
+                let tabelas = `
+                    <table class="pdf-tabela">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Horário</th>`;
+                
+                LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
+                
+                tabelas += `        </tr>
+                        </thead>
+                        <tbody>`;
+
+                ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
+                    let aulasTurno = TURNOS[turno]; 
+                    let temReservaNoTurno = resDoDia.some(r => r.horario.startsWith(turno));
+                    
+                    if (temReservaNoTurno) {
+                        tabelas += `<tr><td colspan="${LISTA_SALAS.length + 1}" class="pdf-turno-sep">${turno.toUpperCase()}</td></tr>`;
+
+                        aulasTurno.forEach((horarioCompleto) => {
+                            let partes = horarioCompleto.split(' - '); 
+                            let textoHorario = `${partes[1]}<br><span style="font-size:6px; font-weight:normal;">${partes[2]}</span>`;
+
+                            tabelas += `<tr><td class="pdf-col-horario">${textoHorario}</td>`;
+                            
+                            LISTA_SALAS.forEach(lab => {
+                                let res = resDoDia.find(a => a.lab === lab && a.horario === horarioCompleto);
+                                if (res) {
+                                    let classeCor = (res.criadoPorRole === 'professor') ? 'pdf-celula-prof' : 'pdf-celula-admin';
+                                    let compName = res.comp || ''; 
+                                    let headerText = compName ? `${res.turma} - ${compName}` : res.turma;
+                                    
+                                    tabelas += `<td class="${classeCor}">
+                                                    <span class="pdf-turma">${headerText}</span>
+                                                    <span class="pdf-prof">${res.prof}</span>
+                                                </td>`;
+                                } else {
+                                    tabelas += `<td style="color: #a8a8a8; font-style: italic;">Livre</td>`;
+                                }
+                            });
+                            tabelas += `</tr>`;
+                        });
+                    }
+                });
+                
+                tabelas += `</tbody></table>`;
+                return tabelas;
+            }
 
             chavesOrdenadas.forEach((dataChave, index) => {
                 let dataBr = dataChave.split('-').reverse().join('/');
                 let resDoDia = agrupadoData[dataChave];
                 
-                let gradeHtml = '<table class="pdf-tabela"><thead><tr><th style="width: 70px;">Aula</th>';
-                LISTA_SALAS.forEach(lab => gradeHtml += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`);
-                gradeHtml += '</tr></thead><tbody>';
+                let cssBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
 
-                ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
-                    // Verifica se tem agendamentos nesse turno
-                    let temReservaNoTurno = resDoDia.some(r => r.horario.startsWith(turno));
-                    if (temReservaNoTurno) {
-                        gradeHtml += `<tr><td colspan="${LISTA_SALAS.length + 1}" class="pdf-turno-sep">${turno.toUpperCase()}</td></tr>`;
-                        
-                        // Array com as aulas do turno
-                        let aulasDoTurno = (turno === 'Manhã') ? ["07:30 - 08:20", "08:20 - 09:10", "09:10 - 10:00", "10:20 - 11:10", "11:10 - 12:00", "12:00 - 12:50"] :
-                                           (turno === 'Tarde') ? ["13:30 - 14:20", "14:20 - 15:10", "15:10 - 16:00", "16:20 - 17:10", "17:10 - 18:00", "18:00 - 18:50"] :
-                                                                 ["19:00 - 19:50", "19:50 - 20:40", "21:00 - 21:50", "21:50 - 22:45"];
-
-                        aulasDoTurno.forEach((aulaHorario, i) => {
-                            let aulaNum = i + 1;
-                            gradeHtml += `<tr><td class="pdf-col-horario"><strong>${aulaNum}ª Aula</strong><br>${aulaHorario}</td>`;
-                            
-                            LISTA_SALAS.forEach(lab => {
-                                let res = resDoDia.find(a => a.lab === lab && a.horario.includes(aulaHorario.split(' - ')[0]));
-                                if (res) {
-                                    let classeCor = (res.criadoPorRole === 'professor') ? 'pdf-celula-prof' : 'pdf-celula-admin';
-                                    gradeHtml += `<td class="${classeCor}"><span class="pdf-turma">${res.turma} - ${res.comp}</span><span class="pdf-prof">${res.prof}</span></td>`;
-                                } else gradeHtml += '<td style="color:#a8a8a8; font-style:italic;">Livre</td>';
-                            });
-                            gradeHtml += '</tr>';
-                        });
-                    }
-                });
-                gradeHtml += '</tbody></table>';
-
-                htmlFinal += `<div class="pdf-container-dia"><h2 style="margin:0 0 5px 0; font-size:14px;">🎓 EPBLAB - Grade de Uso em ${dataBr}</h2>${gradeHtml}</div>`;
+                htmlFinal += `
+                    <div class="pdf-container-dia" style="${cssBreak}">
+                        <div style="border-bottom: 2px solid #000; margin-bottom: 4px; padding-bottom: 2px; display: flex; justify-content: space-between; align-items: flex-end; flex-shrink: 0;">
+                            <div>
+                                <h2 style="margin: 0; font-size: 14px;">Etec Parque Belém - Relatório de Ocupação de Laboratórios</h2>
+                                <p style="margin: 1px 0 0 0; font-size: 10px; font-weight: bold;">Data: ${dataBr}</p>
+                            </div>
+                            <div style="text-align: right; font-size: 8px; color: #444;">
+                                Impresso em: ${new Date().toLocaleDateString('pt-BR')} por ${USER_NOME}
+                            </div>
+                        </div>
+                        ${construirTabelaInvertida(resDoDia)}
+                    </div>
+                `;
             });
 
             document.getElementById('print-area').innerHTML = htmlFinal;
             document.getElementById('modal-relatorio').style.display = 'none';
+
             setTimeout(() => { window.print(); }, 500);
         }
 
         // ==========================================
-        // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA NA TELA
+        // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA (TELA DO SISTEMA)
         // ==========================================
         function gerarTabelaHTML(agendamentosFiltrados, turnoSelecionado, isPrivado) {
             let horarios = TURNOS[turnoSelecionado];
+            
             let html = '<div class="tabela-responsiva"><table class="tabela-grade"><thead><tr><th class="td-lab">Laboratório</th>';
-            horarios.forEach(h => html += `<th>${h.split(' - ')[1]}<br><span style="font-size:10px; font-weight:normal; color:#747775;">${h.split(' - ')[2]}</span></th>`);
+            
+            horarios.forEach(h => {
+                let horarioCurto = h.split(' - ')[1] + '<br><span style="font-size:10px; font-weight:normal; color:#747775;">' + h.split(' - ')[2] + '</span>';
+                html += `<th>${horarioCurto}</th>`;
+            });
             html += '</tr></thead><tbody>';
 
             LISTA_SALAS.forEach(lab => {
                 html += `<tr><td class="td-lab">${lab}</td>`;
+                
                 horarios.forEach(horario => {
                     let res = agendamentosFiltrados.find(a => a.lab === lab && a.horario === horario);
+                    
                     if (res) {
-                        let podeApagar = isPrivado && (DADOS_SISTEMA.role === 'admin' || res.prof === USER_NOME);
-                        let btn = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId}')">Excluir</button>` : '';
-                        let cor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
-                        html += `<td><div class="celula-ocupada ${cor}"><strong>${res.turma} - ${res.comp}</strong><span>${res.prof}</span>${btn}</div></td>`;
-                    } else html += '<td class="celula-livre">Livre</td>';
+                        let profName = res.prof; 
+                        let compName = res.comp || ''; 
+                        let headerText = compName ? `${res.turma} - ${compName}` : res.turma;
+
+                        let podeApagar = false;
+                        if (isPrivado) {
+                            if (DADOS_SISTEMA.role === 'admin') podeApagar = true;
+                            if (DADOS_SISTEMA.role === 'professor' && res.prof === USER_NOME) podeApagar = true;
+                        }
+
+                        let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
+                        let classeCor = (res.criadoPorRole === 'professor') ? 'prof' : 'admin';
+                        
+                        html += `<td>
+                                    <div class="celula-ocupada ${classeCor}">
+                                        <strong>${headerText}</strong>
+                                        <span>${profName}</span>
+                                        ${btnExcluir}
+                                    </div>
+                                 </td>`;
+                    } else {
+                        html += `<td class="celula-livre">Livre</td>`;
+                    }
                 });
                 html += '</tr>';
             });
-            return html + '</tbody></table></div>';
+
+            html += '</tbody></table></div>';
+            return html;
         }
 
         function renderCalendarioPublico() {
             let elData = document.getElementById('filtro-calendario-publico');
             let elTurno = document.getElementById('filtro-turno-publico');
             if(!elData || !elTurno) return;
-            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(STATE.agendamentos.filter(a => a.data === elData.value), elTurno.value, false));
+            let res = STATE.agendamentos.filter(a => a.data === elData.value);
+            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(res, elTurno.value, false));
         }
 
         function renderCalendario() {
             if (!DADOS_SISTEMA) return;
             let elData = document.getElementById('filtro-calendario');
             let elTurno = document.getElementById('filtro-turno');
-            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(STATE.agendamentos.filter(a => a.data === elData.value), elTurno.value, true));
+            if(!elData || !elTurno) return;
+            let res = STATE.agendamentos.filter(a => a.data === elData.value);
+            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, elTurno.value, true));
         }
 
+        // ==========================================
+        // 7. O NÚCLEO DA INTERFACE 
+        // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
-            if(isInitial) menu.innerHTML = `<button class="nav-btn active" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
+            let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
             
-            document.getElementById('painel-reserva-lab').style.display = 'flex';
-            
-            // O layout no modo mobile é reescrito no CSS @media (max-width: 768px), mas mantemos o padrão no desktop
-            let gridLabs = document.getElementById('grid-perfil');
-            if (gridLabs) gridLabs.style.gridTemplateColumns = (dados.role === 'admin' || dados.role === 'professor') ? '280px 1fr' : '1fr';
-            
-            let opTurma = '<option value="">Turma...</option>'; Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
-            setHTMLSafe('lab-turma', opTurma);
-            let opComp = '<option value="">Componente...</option>'; STATE.componentes.forEach(c => opComp += `<option value="${c}">${c}</option>`); 
-            setHTMLSafe('lab-comp', opComp);
+            if(isInitial && menu) menu.innerHTML = `<button class="nav-btn" onclick="abrirPagina('pag-perfil', this)">Laboratórios</button>`;
+            let paginaInicial = 'pag-perfil';
 
-            if (dados.role === "admin") {
-                setTextSafe('badge-funcao', "Admin"); 
-                if(isInitial) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
+            if (dados.role === "admin" || dados.role === "professor") {
+                if(gridLabs) {
+                    gridLabs.style.gridTemplateColumns = '280px 1fr';
+                    document.getElementById('box-calendario-container').classList.remove('box-calendario');
+                }
                 
-                let opProf = '<option value="">Professor...</option>'; STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
-                setHTMLSafe('lab-prof', opProf);
-                setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option><option value="4">Mensal</option><option value="20">Semestral</option>');
+                let divFiltrosPrivada = document.getElementById('filtros-agenda-privada');
+                if(divFiltrosPrivada && !document.getElementById('btn-abrir-relatorio')) {
+                    divFiltrosPrivada.innerHTML += `<button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()" style="margin-left: 8px;">📄 Relatório PDF</button>`;
+                }
+                
+                if (dados.role === "admin") {
+                    setTextSafe('badge-funcao', "Admin"); 
+                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Controle</button>`;
+                    paginaInicial = 'pag-admin';
+                } else {
+                    setTextSafe('badge-funcao', "Professor"); 
+                    paginaInicial = 'pag-perfil';
+                }
+                
+                let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
+                
+                let opTurma = '<option value="">Qual Turma?</option>'; 
+                Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
+                setHTMLSafe('lab-turma', opTurma);
 
-                setHTMLSafe('lista-admin-admins', STATE.admins.map(a => `<li><span>${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">X</button></li>`).join(''));
-                setHTMLSafe('lista-admin-profs', STATE.professores.map(p => `<li><span>${p.nome}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p.nome}')">X</button></li>`).join(''));
-                setHTMLSafe('lista-admin-turmas', Object.keys(STATE.turmas).map(t => `<li><span>${t}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">X</button></li>`).join(''));
-                setHTMLSafe('lista-admin-comps', STATE.componentes.map(c => `<li><span>${c}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_comp', '${c}')">X</button></li>`).join(''));
-                
-                if(!document.getElementById('btn-abrir-relatorio')) document.getElementById('filtros-agenda-privada').innerHTML += `<button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()">📄 PDF</button>`;
-            } else {
-                setTextSafe('badge-funcao', "Professor"); 
-                setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
-                setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option>');
-                if(!document.getElementById('btn-abrir-relatorio')) document.getElementById('filtros-agenda-privada').innerHTML += `<button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()">📄 PDF</button>`;
+                let opComp = '<option value="">Componente...</option>'; 
+                STATE.componentes.forEach(c => opComp += `<option value="${c}">${c}</option>`); 
+                setHTMLSafe('lab-comp', opComp);
+
+                if (dados.role === "admin") {
+                    let opProf = '<option value="">Selecione o Professor...</option>'; 
+                    STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
+                    setHTMLSafe('lab-prof', opProf);
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option><option value="4">4 semanas (Mensal)</option><option value="20">Semestre todo</option>');
+
+                    let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
+                    setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
+
+                    let htmlProfs = ''; STATE.professores.forEach(p => {
+                        let infoExtra = p.email ? ` <span style="font-size:10px; color:#747775;">(${p.email})</span>` : '';
+                        htmlProfs += `<li><span>👤 ${p.nome}${infoExtra}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_prof', '${p.nome}')">Excluir</button></li>`
+                    }); 
+                    setHTMLSafe('lista-admin-profs', htmlProfs || '<li>Sem professores.</li>');
+                    
+                    let htmlTurmas = ''; Object.keys(STATE.turmas).forEach(t => htmlTurmas += `<li><span>🏫 ${t}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_turma', '${t}')">Excluir</button></li>`); 
+                    setHTMLSafe('lista-admin-turmas', htmlTurmas || '<li>Sem turmas.</li>');
+                    
+                    let htmlComps = ''; STATE.componentes.forEach(c => htmlComps += `<li><span>📘 ${c}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_comp', '${c}')">Excluir</button></li>`); 
+                    setHTMLSafe('lista-admin-comps', htmlComps || '<li>Sem componentes.</li>');
+                    
+                } else {
+                    setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option>');
+                }
+
+            } else { 
+                fazerLogout();
+            }
+            
+            if(isInitial) {
+                 document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none');
+                 let pIni = document.getElementById(paginaInicial); if(pIni) pIni.style.display = 'flex';
+                 if(menu) menu.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes(paginaInicial)) b.classList.add('active'); });
             }
         }
 
         function abrirPagina(id, btn) { 
             document.querySelectorAll('.pagina').forEach(p => p.style.display = 'none'); 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); 
-            document.getElementById(id).style.display = 'flex'; btn.classList.add('active'); 
+            let pag = document.getElementById(id); if(pag) pag.style.display = 'flex'; 
+            btn.classList.add('active'); 
         }
 
         const canvas = document.getElementById('meuCanvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        let p = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } u() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
-        for(let i=0; i<40; i++) p.push(new P()); function anim() { requestAnimationFrame(anim); ctx.clearRect(0,0,canvas.width,canvas.height); p.forEach(i => i.u()); } anim();
+        let particles = []; class P { constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.dx = (Math.random()-0.5)*0.5; this.dy = (Math.random()-0.5)*0.5; } update() { this.x += this.dx; this.y += this.dy; if(this.x<0||this.x>canvas.width)this.dx*=-1; if(this.y<0||this.y>canvas.height)this.dy*=-1; ctx.beginPath(); ctx.arc(this.x, this.y, 1.5, 0, Math.PI*2); ctx.fillStyle = '#dadce0'; ctx.fill(); } }
+        for(let i=0; i<40; i++) particles.push(new P()); function animar() { requestAnimationFrame(animar); ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => p.update()); } animar();
+        
     </script>
 </body>
 </html>
