@@ -282,7 +282,7 @@
         </div>
 
         <div id="pag-admin" class="pagina">
-            <h3 style="margin-top:0;">Painel de Gestão</h3>
+            <h3 style="margin-top:0;">Painel de Gestão de Professores e Laboratórios</h3>
             <div class="grid-layout" style="grid-template-columns: repeat(4, 1fr);">
                 <div class="box">
                     <h4>Administradores</h4>
@@ -832,7 +832,7 @@
                 
                 if (dados.role === "admin") {
                     setTextSafe('badge-funcao', "Admin"); 
-                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel de Gestão de Professores e Laboratórios</button>`;
+                    if(isInitial && menu) menu.innerHTML += `<button class="nav-btn" onclick="abrirPagina('pag-admin', this)">Painel de Gestão</button>`;
                     paginaInicial = 'pag-admin';
                 } else {
                     setTextSafe('badge-funcao', "Professor"); 
