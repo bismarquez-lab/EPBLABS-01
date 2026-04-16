@@ -440,7 +440,7 @@
                 if (!isAdmin && !isProf) {
                     localStorage.removeItem("epblab_user"); 
                     if (!isAutoLogin) {
-                        alert(`⚠️ ACESSO NEGADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, peça para a coordenação vincular o seu e-mail ao seu nome no Painel de Controle.`);
+                        alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, solicite a coordenação vincular seu e-mail institucional.`);
                         location.reload(); 
                     }
                     return; 
