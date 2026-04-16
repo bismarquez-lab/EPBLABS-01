@@ -185,7 +185,7 @@
         <div class="modal-box">
             <h3>⚠️ Excluir Reserva</h3>
             <p>Esta reserva faz parte de uma <strong>série contínua</strong> (mensal ou semestral). Como você deseja excluir?</p>
-            <button class="btn-modal-dia" onclick="confirmarExclusao('dia')">Excluir APENAS o dia</button>
+            <button class="btn-modal-dia" onclick="confirmarExclusao('dia')">Excluir APENAS o Dia</button>
             <button class="btn-modal-serie" style="background:#d32f2f;" onclick="confirmarExclusao('serie')">Excluir TODA a série</button>
             <button class="btn-modal-cancelar" onclick="fecharModalExclusao()">Cancelar</button>
         </div>
@@ -855,7 +855,7 @@
                     setHTMLSafe('lab-prof', opProf);
                     
                     // AQUI ESTÃO AS NOVAS OPÇÕES DE SEMESTRE PARA O ADMIN
-                    setHTMLSafe('lab-semanas', '<option value="1">Apenas o dia</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas o Dia</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
 
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
