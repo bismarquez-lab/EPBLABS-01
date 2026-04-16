@@ -322,9 +322,8 @@
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 
-        let unsubscribeAgendamentos = null; // Variável para controlar a escuta cirúrgica do banco
+        let unsubscribeAgendamentos = null;
 
-        // Muda a data em todas as caixas juntas e aciona a busca de dados
         function mudarDataGlobal(novaData) {
             ['filtro-calendario-publico', 'filtro-calendario', 'lab-data', 'relatorio-data'].forEach(id => {
                 let el = document.getElementById(id); 
@@ -334,7 +333,7 @@
         }
 
         function configurarDataETurnoIniciais() {
-            // Recorta a data do computador garantindo YYYY-MM-DD
+            // RECORTA A DATA LOCAL MANUALMENTE E MONTA O FORMATO YYYY-MM-DD
             const dataObj = new Date();
             const ano = dataObj.getFullYear();
             const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
@@ -472,12 +471,9 @@
         // ==========================================
         // 3. MOTOR FIREBASE REAL-TIME (SOB DEMANDA)
         // ==========================================
-        
-        // Esta função baixa APENAS os dados do dia que o usuário selecionou, salvando rios de leituras (reads) no Firebase!
         function escutarAgendamentosDoDia(dataString) {
-            if (unsubscribeAgendamentos) unsubscribeAgendamentos(); // Cancela a busca do dia anterior
+            if (unsubscribeAgendamentos) unsubscribeAgendamentos(); 
             
-            // Cria um canal de escuta apenas para o dia específico
             unsubscribeAgendamentos = db.collection('agendamentos')
                 .where('data', '==', dataString)
                 .onSnapshot(snap => {
@@ -506,8 +502,8 @@
                     let profEncontrado = STATE.professores.find(p => p.email === USER_EMAIL);
                     if (profEncontrado) { role = "professor"; USER_NOME = profEncontrado.nome; }
                 }
-                DADOS_SISTEMA = { role, db: STATE }; // Agendamentos são alimentados via OnDemand agora
-                configurarPainel(DADOS_SISTEMA, true); // True só para inicializar menus
+                DADOS_SISTEMA = { role, db: STATE }; 
+                configurarPainel(DADOS_SISTEMA, true); 
                 renderCalendario();
             }, 150); 
         }
@@ -547,29 +543,43 @@
             let dataR = document.getElementById('lab-data').value; let lab = document.getElementById('lab-numero').value;
             let hor = document.getElementById('lab-horario').value; let t = document.getElementById('lab-turma').value;
             let p = document.getElementById('lab-prof').value; let c = document.getElementById('lab-comp').value;
-            let sem = parseInt(document.getElementById('lab-semanas').value, 10);
+            let opcaoSemanas = document.getElementById('lab-semanas').value;
             
-            if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { sem = 1; }
+            if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { opcaoSemanas = '1'; }
             if(!dataR || !lab || !hor || !t || !p || !c) return showStatus("Preencha todos os campos!", "erro"); 
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             
-            // TRAVA INTELIGENTE DE FÉRIAS E FIM DE SEMESTRE
-            let limiteSemestre = (dataBase.getMonth() < 6) ? new Date(dataBase.getFullYear(), 6, 6, 23, 59, 59) : new Date(dataBase.getFullYear(), 11, 15, 23, 59, 59); 
+            let dataLimite = null;
+            let maxSemanas = 1;
+
+            if (opcaoSemanas === '1') { maxSemanas = 1; }
+            else if (opcaoSemanas === '4') { maxSemanas = 4; }
+            else if (opcaoSemanas === 'sem1') {
+                maxSemanas = 50; 
+                dataLimite = new Date(dataBase.getFullYear(), 6, 6, 23, 59, 59); // 06 de Julho
+            }
+            else if (opcaoSemanas === 'sem2') {
+                maxSemanas = 50; 
+                dataLimite = new Date(dataBase.getFullYear(), 11, 15, 23, 59, 59); // 15 de Dezembro
+            }
 
             let datasParaAgendar = [];
-            for (let i = 0; i < sem; i++) { 
+            for (let i = 0; i < maxSemanas; i++) { 
                 let dCalc = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate() + (i * 7));
-                if (dCalc > limiteSemestre) break; // Para de agendar se bater nas férias
+                
+                if (dataLimite && dCalc > dataLimite) break; 
                 
                 let ano = dCalc.getFullYear(); let mes = String(dCalc.getMonth() + 1).padStart(2, '0'); let dia = String(dCalc.getDate()).padStart(2, '0');
                 datasParaAgendar.push(`${ano}-${mes}-${dia}`);
             }
 
+            if (datasParaAgendar.length === 0) {
+                return alert("A data inicial escolhida já ultrapassou o limite do semestre selecionado!");
+            }
+
             showStatus("Verificando disponibilidade...", "processando");
 
-            // CONSULTA CIRÚRGICA DE CONFLITO NO BANCO DE DADOS (Econômico)
-            // Em vez de baixar o banco todo, pergunta pro Firebase se essas 20 datas especificas estão ocupadas
             let snapshotConflito = await db.collection('agendamentos')
                 .where('lab', '==', lab)
                 .where('horario', '==', hor)
@@ -614,7 +624,6 @@
             try {
                 if (tipo === 'dia') { await db.collection('agendamentos').doc(idFbAlvo).delete(); } 
                 else if (tipo === 'serie') {
-                    // Busca toda a série cirurgicamente e deleta
                     let snapshotSerie = await db.collection('agendamentos').where('groupId', '==', groupIdAlvo).get();
                     let batch = db.batch(); 
                     snapshotSerie.forEach(doc => { batch.delete(doc.ref); });
@@ -645,7 +654,6 @@
 
             showStatus("Coletando dados da nuvem...", "processando");
 
-            // DOWNLOAD CIRÚRGICO: Baixa só o que precisa para o relatório, não estoura cota.
             let snapshot = await db.collection('agendamentos')
                 .where('data', '>=', dataInicioStr)
                 .where('data', '<=', dataFimStr)
@@ -845,7 +853,9 @@
                     let opProf = '<option value="">Selecione o Professor...</option>'; 
                     STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
                     setHTMLSafe('lab-prof', opProf);
-                    setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option><option value="4">4 semanas (Mensal)</option><option value="20">Semestre todo</option>');
+                    
+                    // AQUI ESTÃO AS NOVAS OPÇÕES DE SEMESTRE PARA O ADMIN
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas hoje</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
 
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
