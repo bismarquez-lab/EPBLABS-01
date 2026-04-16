@@ -8,7 +8,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -73,7 +72,6 @@
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
         .celula-ocupada strong { color: #1f1f1f; font-size: 12px; margin-bottom: 2px; text-align: center; line-height: 1.1;}
         .celula-ocupada span { color: #444746; font-size: 11px;}
-
         .comp-tag { font-size: 10px; opacity: 0.85; margin-top: 2px; font-style: italic;}
 
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
@@ -100,8 +98,6 @@
         .btn-modal-serie:hover { background: #0842a0; }
         .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
         .btn-modal-cancelar:hover { color: #1f1f1f; }
-        
-        .box-calendario { grid-column: 1 / -1; }
 
         /* ==========================================
            MODO MOBILE (CELULARES E TABLETS PEQUENOS)
@@ -110,13 +106,11 @@
             #navbar { position: relative; flex-direction: column; height: auto; padding: 16px; gap: 12px; text-align: center; }
             .nav-links { margin-left: 0; justify-content: center; flex-wrap: wrap; width: 100%;}
             .auth-area { flex-direction: column; width: 100%; gap: 12px; }
-            
             #area-usuario { flex-direction: column !important; align-items: center !important; gap: 10px; }
             #area-usuario div { align-items: center !important; margin-right: 0 !important; }
             .btn-sair-nav { margin-left: 0 !important; width: 100%; }
 
             #area-publica, #area-privada { margin-top: 20px; width: 100%; padding: 0 10px; box-sizing: border-box; left: 0; transform: none;}
-            
             .container-calendario { width: 100%; padding: 16px; border-radius: 16px; }
             .pagina { padding: 16px; border-radius: 16px; height: auto; }
             
@@ -134,7 +128,7 @@
             h1 { font-size: 22px !important; }
         }
 
-        /* --- CONFIGURAÇÃO MAGICA DO PDF (COMPRIMIDO EM UMA PÁGINA) --- */
+        /* --- CONFIGURAÇÃO MAGICA DO PDF --- */
         @media print {
             @page { size: landscape; margin: 5mm; }
             body { background: #fff !important; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -143,9 +137,7 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
             .pdf-container-dia { width: 100%; height: 98vh; box-sizing: border-box; page-break-after: always; padding: 0; display: flex; flex-direction: column;}
-            
             .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; table-layout: fixed;}
-            
             .pdf-tabela th { background: #f0f4f9; padding: 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 9px; height: auto;}
             .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1.1; height: auto;} 
             
@@ -170,15 +162,13 @@
             <div style="font-weight: 600; font-size: 18px; color:#1f1f1f; letter-spacing: -0.5px;">🎓 Etec Parque Belém</div>
             <div id="menu-dinamico" class="nav-links" style="display: none;"></div>
         </div>
-
         <div id="area-login" class="auth-area">
-            <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesse com e-mail institucional:</span>
+            <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesso restrito a Professores:</span>
             <button class="btn-microsoft-nav" onclick="loginMicrosoft()">
                 <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
                 Microsoft
             </button>
         </div>
-
         <div id="area-usuario" class="auth-area" style="display: none;">
             <div style="display:flex; flex-direction:column; align-items:flex-end; margin-right: 4px;">
                 <span id="nome-usuario" style="font-size: 14px; font-weight:600; color:#1f1f1f;"></span>
@@ -225,11 +215,9 @@
                 </div>
                 <div style="display: flex; gap: 12px;">
                     <select id="filtro-turno-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
-                        <option value="Manhã">Manhã</option>
-                        <option value="Tarde">Tarde</option>
-                        <option value="Noite">Noite</option>
+                        <option value="Manhã">Manhã</option><option value="Tarde">Tarde</option><option value="Noite">Noite</option>
                     </select>
-                    <input type="date" id="filtro-calendario-publico" onchange="renderCalendarioPublico()" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
+                    <input type="date" id="filtro-calendario-publico" onchange="mudarDataGlobal(this.value)" style="width: auto; margin: 0; padding: 8px 16px; border-radius: 100px;">
                 </div>
             </div>
             <div id="grade-laboratorios-publica" class="scroll-interno" style="display: flex; flex-direction: column;">
@@ -239,7 +227,6 @@
     </div>
 
     <div id="area-privada">
-        
         <div id="pag-perfil" class="pagina">
             <div class="grid-layout" id="grid-perfil" style="grid-template-columns: 280px 1fr;">
                 <div class="box" id="painel-reserva-lab" style="display: none; background: #f8f9fa;">
@@ -248,26 +235,27 @@
                         <input type="date" id="lab-data">
                         <select id="lab-numero">
                             <option value="">Selecione a Sala...</option>
-                            <option value="Laboratório 1">Laboratório 1</option>
-                            <option value="Laboratório 2">Laboratório 2</option>
-                            <option value="Laboratório 3">Laboratório 3</option>
-                            <option value="Laboratório 4">Laboratório 4</option>
-                            <option value="Laboratório 5">Laboratório 5</option>
-                            <option value="Laboratório 6">Laboratório 6</option>
-                            <option value="Laboratório 7">Laboratório 7</option>
-                            <option value="Sala Maker">Sala Maker</option>
+                            <option value="Laboratório 1">Laboratório 1</option><option value="Laboratório 2">Laboratório 2</option>
+                            <option value="Laboratório 3">Laboratório 3</option><option value="Laboratório 4">Laboratório 4</option>
+                            <option value="Laboratório 5">Laboratório 5</option><option value="Laboratório 6">Laboratório 6</option>
+                            <option value="Laboratório 7">Laboratório 7</option><option value="Sala Maker">Sala Maker</option>
                             <option value="Laboratório 9">Laboratório 9</option>
                         </select>
                         <select id="lab-horario">
                             <option value="">Qual a Aula?</option>
                             <optgroup label="Manhã">
-                                <option value="Manhã - 1ª Aula - 07:30 até 08:20">1ª Aula - 07:30 até 08:20</option><option value="Manhã - 2ª Aula - 08:20 até 09:10">2ª Aula - 08:20 até 09:10</option><option value="Manhã - 3ª Aula - 09:10 até 10:00">3ª Aula - 09:10 até 10:00</option><option value="Manhã - 4ª Aula - 10:20 até 11:10">4ª Aula - 10:20 até 11:10</option><option value="Manhã - 5ª Aula - 11:10 até 12:00">5ª Aula - 11:10 até 12:00</option><option value="Manhã - 6ª Aula - 12:00 até 12:50">6ª Aula - 12:00 até 12:50</option>
+                                <option value="Manhã - 1ª Aula - 07:30 até 08:20">1ª Aula - 07:30 até 08:20</option><option value="Manhã - 2ª Aula - 08:20 até 09:10">2ª Aula - 08:20 até 09:10</option>
+                                <option value="Manhã - 3ª Aula - 09:10 até 10:00">3ª Aula - 09:10 até 10:00</option><option value="Manhã - 4ª Aula - 10:20 até 11:10">4ª Aula - 10:20 até 11:10</option>
+                                <option value="Manhã - 5ª Aula - 11:10 até 12:00">5ª Aula - 11:10 até 12:00</option><option value="Manhã - 6ª Aula - 12:00 até 12:50">6ª Aula - 12:00 até 12:50</option>
                             </optgroup>
                             <optgroup label="Tarde">
-                                <option value="Tarde - 1ª Aula - 13:30 até 14:20">1ª Aula - 13:30 até 14:20</option><option value="Tarde - 2ª Aula - 14:20 até 15:10">2ª Aula - 14:20 até 15:10</option><option value="Tarde - 3ª Aula - 15:10 até 16:00">3ª Aula - 15:10 até 16:00</option><option value="Tarde - 4ª Aula - 16:20 até 17:10">4ª Aula - 16:20 até 17:10</option><option value="Tarde - 5ª Aula - 17:10 até 18:00">5ª Aula - 17:10 até 18:00</option><option value="Tarde - 6ª Aula - 18:00 até 18:50">6ª Aula - 18:00 até 18:50</option>
+                                <option value="Tarde - 1ª Aula - 13:30 até 14:20">1ª Aula - 13:30 até 14:20</option><option value="Tarde - 2ª Aula - 14:20 até 15:10">2ª Aula - 14:20 até 15:10</option>
+                                <option value="Tarde - 3ª Aula - 15:10 até 16:00">3ª Aula - 15:10 até 16:00</option><option value="Tarde - 4ª Aula - 16:20 até 17:10">4ª Aula - 16:20 até 17:10</option>
+                                <option value="Tarde - 5ª Aula - 17:10 até 18:00">5ª Aula - 17:10 até 18:00</option><option value="Tarde - 6ª Aula - 18:00 até 18:50">6ª Aula - 18:00 até 18:50</option>
                             </optgroup>
                             <optgroup label="Noite">
-                                <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option><option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
+                                <option value="Noite - 1ª Aula - 19:00 até 19:50">1ª Aula - 19:00 até 19:50</option><option value="Noite - 2ª Aula - 19:50 até 20:40">2ª Aula - 19:50 até 20:40</option>
+                                <option value="Noite - 3ª Aula - 21:00 até 21:50">3ª Aula - 21:00 até 21:50</option><option value="Noite - 4ª Aula - 21:50 até 22:45">4ª Aula - 21:50 até 22:45</option>
                             </optgroup>
                         </select>
                         <select id="lab-prof"><option value="">Professor...</option></select>
@@ -282,11 +270,9 @@
                         <h4 style="border:none; margin:0;">Agenda do Dia</h4>
                         <div id="filtros-agenda-privada" style="display: flex; gap: 8px;">
                             <select id="filtro-turno" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
-                                <option value="Manhã">Manhã</option>
-                                <option value="Tarde">Tarde</option>
-                                <option value="Noite">Noite</option>
+                                <option value="Manhã">Manhã</option><option value="Tarde">Tarde</option><option value="Noite">Noite</option>
                             </select>
-                            <input type="date" id="filtro-calendario" onchange="renderCalendario()" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
+                            <input type="date" id="filtro-calendario" onchange="mudarDataGlobal(this.value)" style="width: auto; margin:0; padding: 6px 12px; border-radius: 100px;">
                             <button id="btn-abrir-relatorio" class="btn-pdf" onclick="abrirModalRelatorio()" style="display: none;">📄 Relatório PDF</button>
                         </div>
                     </div>
@@ -302,73 +288,71 @@
                     <h4>Administradores</h4>
                     <input type="email" id="admin-novo-admin" placeholder="E-mail do Admin">
                     <button class="action-btn" onclick="adminAcao('admin_add_admin')">Cadastrar Admin</button>
-                    <div class="scroll-interno" style="margin-top: 16px;">
-                        <ul id="lista-admin-admins" class="lista-arq"></ul>
-                    </div>
+                    <div class="scroll-interno" style="margin-top: 16px;"><ul id="lista-admin-admins" class="lista-arq"></ul></div>
                 </div>
                 <div class="box">
                     <h4>Professores</h4>
                     <input type="text" id="admin-nome-prof" placeholder="Nome (Ex: João Silva)">
                     <input type="email" id="admin-novo-prof" placeholder="E-mail (Opcional)">
                     <button class="action-btn" onclick="adminAcao('admin_add_prof')">Cadastrar Professor</button>
-                    <div class="scroll-interno" style="margin-top: 16px;">
-                        <ul id="lista-admin-profs" class="lista-arq"></ul>
-                    </div>
+                    <div class="scroll-interno" style="margin-top: 16px;"><ul id="lista-admin-profs" class="lista-arq"></ul></div>
                 </div>
                 <div class="box">
                     <h4>Turmas</h4>
                     <input type="text" id="admin-nome-turma" placeholder="Ex: 3º Ano A">
                     <button class="action-btn" onclick="adminAcao('admin_add_turma')">Criar Turma</button>
-                    <div class="scroll-interno" style="margin-top: 16px;">
-                        <ul id="lista-admin-turmas" class="lista-arq"></ul>
-                    </div>
+                    <div class="scroll-interno" style="margin-top: 16px;"><ul id="lista-admin-turmas" class="lista-arq"></ul></div>
                 </div>
                 <div class="box">
                     <h4>Componentes</h4>
                     <input type="text" id="admin-nome-comp" placeholder="Ex: Banco de Dados">
                     <button class="action-btn" onclick="adminAcao('admin_add_comp')">Criar Componente</button>
-                    <div class="scroll-interno" style="margin-top: 16px;">
-                        <ul id="lista-admin-comps" class="lista-arq"></ul>
-                    </div>
+                    <div class="scroll-interno" style="margin-top: 16px;"><ul id="lista-admin-comps" class="lista-arq"></ul></div>
                 </div>
             </div>
         </div>
-
     </div>
 </div> 
 <div id="print-area"></div>
 
     <script>
         // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA E UX
+        // 0. FUNÇÕES DE SEGURANÇA, UX E OTIMIZAÇÃO (SOB DEMANDA)
         // ==========================================
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 
+        let unsubscribeAgendamentos = null; // Variável para controlar a escuta cirúrgica do banco
+
+        // Muda a data em todas as caixas juntas e aciona a busca de dados
+        function mudarDataGlobal(novaData) {
+            ['filtro-calendario-publico', 'filtro-calendario', 'lab-data', 'relatorio-data'].forEach(id => {
+                let el = document.getElementById(id); 
+                if (el) el.value = novaData;
+            });
+            escutarAgendamentosDoDia(novaData);
+        }
+
         function configurarDataETurnoIniciais() {
-            // RECORTA A DATA LOCAL MANUALMENTE E MONTA O FORMATO YYYY-MM-DD
+            // Recorta a data do computador garantindo YYYY-MM-DD
             const dataObj = new Date();
             const ano = dataObj.getFullYear();
             const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
             const dia = String(dataObj.getDate()).padStart(2, '0');
             const dataFormatada = `${ano}-${mes}-${dia}`;
             
-            // PREENCHE AS 4 CAIXAS DE DATA DO SISTEMA
-            ['filtro-calendario-publico', 'filtro-calendario', 'lab-data', 'relatorio-data'].forEach(id => {
-                let el = document.getElementById(id);
-                if (el) el.value = dataFormatada;
-            });
-
-            // DESCOBRE O TURNO E PREENCHE
             let hora = dataObj.getHours();
             let turnoAtual = "Manhã";
             if (hora >= 13 && hora < 18) { turnoAtual = "Tarde"; } 
             else if (hora >= 18 || hora < 5) { turnoAtual = "Noite"; }
             
             ['filtro-turno-publico', 'filtro-turno'].forEach(id => {
-                let el = document.getElementById(id);
+                let el = document.getElementById(id); 
                 if (el) el.value = turnoAtual;
             });
+
+            // Seta as datas iniciais e já baixa os dados de hoje!
+            mudarDataGlobal(dataFormatada);
         }
 
         // ==========================================
@@ -390,27 +374,16 @@
         const LISTA_SALAS = ["Laboratório 1", "Laboratório 2", "Laboratório 3", "Laboratório 4", "Laboratório 5", "Laboratório 6", "Laboratório 7", "Sala Maker", "Laboratório 9"];
 
         const TURNOS = {
-            'Manhã': [
-                "Manhã - 1ª Aula - 07:30 até 08:20", "Manhã - 2ª Aula - 08:20 até 09:10",
-                "Manhã - 3ª Aula - 09:10 até 10:00", "Manhã - 4ª Aula - 10:20 até 11:10",
-                "Manhã - 5ª Aula - 11:10 até 12:00", "Manhã - 6ª Aula - 12:00 até 12:50"
-            ],
-            'Tarde': [
-                "Tarde - 1ª Aula - 13:30 até 14:20", "Tarde - 2ª Aula - 14:20 até 15:10",
-                "Tarde - 3ª Aula - 15:10 até 16:00", "Tarde - 4ª Aula - 16:20 até 17:10",
-                "Tarde - 5ª Aula - 17:10 até 18:00", "Tarde - 6ª Aula - 18:00 até 18:50"
-            ],
-            'Noite': [
-                "Noite - 1ª Aula - 19:00 até 19:50", "Noite - 2ª Aula - 19:50 até 20:40",
-                "Noite - 3ª Aula - 21:00 até 21:50", "Noite - 4ª Aula - 21:50 até 22:45"
-            ]
+            'Manhã': ["Manhã - 1ª Aula - 07:30 até 08:20", "Manhã - 2ª Aula - 08:20 até 09:10", "Manhã - 3ª Aula - 09:10 até 10:00", "Manhã - 4ª Aula - 10:20 até 11:10", "Manhã - 5ª Aula - 11:10 até 12:00", "Manhã - 6ª Aula - 12:00 até 12:50"],
+            'Tarde': ["Tarde - 1ª Aula - 13:30 até 14:20", "Tarde - 2ª Aula - 14:20 até 15:10", "Tarde - 3ª Aula - 15:10 até 16:00", "Tarde - 4ª Aula - 16:20 até 17:10", "Tarde - 5ª Aula - 17:10 até 18:00", "Tarde - 6ª Aula - 18:00 até 18:50"],
+            'Noite': ["Noite - 1ª Aula - 19:00 até 19:50", "Noite - 2ª Aula - 19:50 até 20:40", "Noite - 3ª Aula - 21:00 até 21:50", "Noite - 4ª Aula - 21:50 até 22:45"]
         };
 
         let STATE = { admins: [], professores: [], turmas: {}, componentes: [], agendamentos: [] };
         let DADOS_SISTEMA = null; 
         let USER_EMAIL = ''; let USER_NOME = '';
         let reservaExclusaoAlvo = { idFb: null, groupId: null };
-        let isInitialLoad = true; let escutasPrivadasAtivas = false; 
+        let escutasPrivadasAtivas = false; 
 
         let toastTimeout;
         function showStatus(msg, tipo="sucesso") {
@@ -440,7 +413,6 @@
         window.onload = function() {
             configurarDataETurnoIniciais(); 
             setTimeout(() => { let txt = document.getElementById('txt-acesso'); if(txt) txt.style.display = 'inline-block'; }, 1000);
-            iniciarEscutasPublicas();
             document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
             let usuarioSalvo = localStorage.getItem("epblab_user");
             if(usuarioSalvo) iniciarPortal(JSON.parse(usuarioSalvo), true);
@@ -498,15 +470,23 @@
         function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME
+        // 3. MOTOR FIREBASE REAL-TIME (SOB DEMANDA)
         // ==========================================
-        function iniciarEscutasPublicas() {
-            db.collection('agendamentos').onSnapshot(snap => {
-                STATE.agendamentos = [];
-                snap.forEach(doc => { STATE.agendamentos.push({id: doc.id, ...doc.data()}); });
-                renderCalendarioPublico(); 
-                if(escutasPrivadasAtivas) atualizarInterface(); 
-            });
+        
+        // Esta função baixa APENAS os dados do dia que o usuário selecionou, salvando rios de leituras (reads) no Firebase!
+        function escutarAgendamentosDoDia(dataString) {
+            if (unsubscribeAgendamentos) unsubscribeAgendamentos(); // Cancela a busca do dia anterior
+            
+            // Cria um canal de escuta apenas para o dia específico
+            unsubscribeAgendamentos = db.collection('agendamentos')
+                .where('data', '==', dataString)
+                .onSnapshot(snap => {
+                    STATE.agendamentos = [];
+                    snap.forEach(doc => { STATE.agendamentos.push({id: doc.id, ...doc.data()}); });
+                    
+                    renderCalendarioPublico(); 
+                    if(escutasPrivadasAtivas) renderCalendario(); 
+                });
         }
 
         function iniciarEscutasPrivadas() {
@@ -526,10 +506,9 @@
                     let profEncontrado = STATE.professores.find(p => p.email === USER_EMAIL);
                     if (profEncontrado) { role = "professor"; USER_NOME = profEncontrado.nome; }
                 }
-                DADOS_SISTEMA = { role, db: STATE, agendamentos: STATE.agendamentos };
-                configurarPainel(DADOS_SISTEMA, isInitialLoad);
+                DADOS_SISTEMA = { role, db: STATE }; // Agendamentos são alimentados via OnDemand agora
+                configurarPainel(DADOS_SISTEMA, true); // True só para inicializar menus
                 renderCalendario();
-                if(isInitialLoad && STATE.agendamentos.length > 0) { showStatus("Sessão Sincronizada!"); isInitialLoad = false; }
             }, 150); 
         }
 
@@ -575,34 +554,31 @@
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             
-            // --- TRAVA INTELIGENTE DO CALENDÁRIO LETIVO ---
-            let limiteSemestre;
-            if (dataBase.getMonth() < 6) { 
-                // Se a reserva começa entre Jan-Jun, o limite é 06/Julho
-                limiteSemestre = new Date(dataBase.getFullYear(), 6, 6, 23, 59, 59); 
-            } else { 
-                // Se a reserva começa entre Jul-Dez, o limite é 15/Dezembro
-                limiteSemestre = new Date(dataBase.getFullYear(), 11, 15, 23, 59, 59); 
-            }
+            // TRAVA INTELIGENTE DE FÉRIAS E FIM DE SEMESTRE
+            let limiteSemestre = (dataBase.getMonth() < 6) ? new Date(dataBase.getFullYear(), 6, 6, 23, 59, 59) : new Date(dataBase.getFullYear(), 11, 15, 23, 59, 59); 
 
             let datasParaAgendar = [];
             for (let i = 0; i < sem; i++) { 
                 let dCalc = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate() + (i * 7));
+                if (dCalc > limiteSemestre) break; // Para de agendar se bater nas férias
                 
-                // Se a data que vai agendar passou do limite das férias, o sistema PARA de pular de semana em semana
-                if (dCalc > limiteSemestre) {
-                    break;
-                }
-                
-                let ano = dCalc.getFullYear();
-                let mes = String(dCalc.getMonth() + 1).padStart(2, '0');
-                let dia = String(dCalc.getDate()).padStart(2, '0');
+                let ano = dCalc.getFullYear(); let mes = String(dCalc.getMonth() + 1).padStart(2, '0'); let dia = String(dCalc.getDate()).padStart(2, '0');
                 datasParaAgendar.push(`${ano}-${mes}-${dia}`);
             }
 
-            let conflito = STATE.agendamentos.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
-            if (conflito) {
-                let dataBr = conflito.data.split('-').reverse().join('/');
+            showStatus("Verificando disponibilidade...", "processando");
+
+            // CONSULTA CIRÚRGICA DE CONFLITO NO BANCO DE DADOS (Econômico)
+            // Em vez de baixar o banco todo, pergunta pro Firebase se essas 20 datas especificas estão ocupadas
+            let snapshotConflito = await db.collection('agendamentos')
+                .where('lab', '==', lab)
+                .where('horario', '==', hor)
+                .where('data', 'in', datasParaAgendar)
+                .get();
+
+            if (!snapshotConflito.empty) {
+                let conflitoData = snapshotConflito.docs[0].data().data;
+                let dataBr = conflitoData.split('-').reverse().join('/');
                 return alert(`⚠️ BLOQUEADO!\n\nO ${lab} já está reservado no dia ${dataBr} para este horário.\nPor favor, escolha outro laboratório ou horário.`);
             }
 
@@ -638,42 +614,50 @@
             try {
                 if (tipo === 'dia') { await db.collection('agendamentos').doc(idFbAlvo).delete(); } 
                 else if (tipo === 'serie') {
-                    let reservasDaSerie = STATE.agendamentos.filter(a => String(a.groupId) === groupIdAlvo);
-                    if (reservasDaSerie.length > 0) {
-                        let batch = db.batch(); reservasDaSerie.forEach(reserva => { batch.delete(db.collection('agendamentos').doc(reserva.id)); });
-                        await batch.commit();
-                    }
+                    // Busca toda a série cirurgicamente e deleta
+                    let snapshotSerie = await db.collection('agendamentos').where('groupId', '==', groupIdAlvo).get();
+                    let batch = db.batch(); 
+                    snapshotSerie.forEach(doc => { batch.delete(doc.ref); });
+                    await batch.commit();
                 }
                 showStatus("Excluído com sucesso!");
             } catch (erro) { showStatus("Falha ao excluir.", "erro"); }
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL (BAIXA DADOS SÓ NA HORA)
         // ==========================================
-        function abrirModalRelatorio() {
-            document.getElementById('modal-relatorio').style.display = 'flex';
-        }
+        function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
 
-        function gerarRelatorioVisual() {
+        async function gerarRelatorioVisual() {
             let dataInicioStr = document.getElementById('relatorio-data').value;
             let dias = parseInt(document.getElementById('relatorio-periodo').value);
-            
             if(!dataInicioStr) return showStatus("Selecione a data inicial", "erro");
 
             let dataInicio = new Date(dataInicioStr + "T00:00:00");
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             dataFim.setDate(dataFim.getDate() + dias);
+            
+            let anoF = dataFim.getFullYear();
+            let mesF = String(dataFim.getMonth() + 1).padStart(2, '0');
+            let diaF = String(dataFim.getDate()).padStart(2, '0');
+            let dataFimStr = `${anoF}-${mesF}-${diaF}`;
 
-            let reservasFiltradas = STATE.agendamentos.filter(a => {
-                let d = new Date(a.data + "T00:00:00");
-                return d >= dataInicio && d <= dataFim;
-            });
+            showStatus("Coletando dados da nuvem...", "processando");
+
+            // DOWNLOAD CIRÚRGICO: Baixa só o que precisa para o relatório, não estoura cota.
+            let snapshot = await db.collection('agendamentos')
+                .where('data', '>=', dataInicioStr)
+                .where('data', '<=', dataFimStr)
+                .get();
+
+            let reservasFiltradas = [];
+            snapshot.forEach(doc => reservasFiltradas.push({id: doc.id, ...doc.data()}));
 
             if(reservasFiltradas.length === 0) {
                 alert("Nenhuma reserva encontrada para este período.");
                 document.getElementById('modal-relatorio').style.display = 'none';
-                return;
+                return showStatus("Concluído.", "sucesso");
             }
 
             let agrupadoData = {};
@@ -686,17 +670,9 @@
             let htmlFinal = '';
 
             function construirTabelaInvertida(resDoDia) {
-                let tabelas = `
-                    <table class="pdf-tabela">
-                        <thead>
-                            <tr>
-                                <th style="width: 80px;">Horário</th>`;
-                
+                let tabelas = `<table class="pdf-tabela"><thead><tr><th style="width: 80px;">Horário</th>`;
                 LISTA_SALAS.forEach(lab => { tabelas += `<th>${lab.replace('Laboratório ', 'Lab ')}</th>`; });
-                
-                tabelas += `        </tr>
-                        </thead>
-                        <tbody>`;
+                tabelas += `</tr></thead><tbody>`;
 
                 ['Manhã', 'Tarde', 'Noite'].forEach(turno => {
                     let aulasTurno = TURNOS[turno]; 
@@ -738,7 +714,6 @@
             chavesOrdenadas.forEach((dataChave, index) => {
                 let dataBr = dataChave.split('-').reverse().join('/');
                 let resDoDia = agrupadoData[dataChave];
-                
                 let cssBreak = (index < chavesOrdenadas.length - 1) ? 'page-break-after: always;' : '';
 
                 htmlFinal += `
@@ -759,6 +734,7 @@
 
             document.getElementById('print-area').innerHTML = htmlFinal;
             document.getElementById('modal-relatorio').style.display = 'none';
+            showStatus("Pronto!", "sucesso");
 
             setTimeout(() => { window.print(); }, 500);
         }
@@ -789,7 +765,7 @@
                         let headerText = compName ? `${res.turma} - ${compName}` : res.turma;
 
                         let podeApagar = false;
-                        if (isPrivado) {
+                        if (isPrivado && DADOS_SISTEMA) {
                             if (DADOS_SISTEMA.role === 'admin') podeApagar = true;
                             if (DADOS_SISTEMA.role === 'professor' && res.prof === USER_NOME) podeApagar = true;
                         }
@@ -816,20 +792,15 @@
         }
 
         function renderCalendarioPublico() {
-            let elData = document.getElementById('filtro-calendario-publico');
             let elTurno = document.getElementById('filtro-turno-publico');
-            if(!elData || !elTurno) return;
-            let res = STATE.agendamentos.filter(a => a.data === elData.value);
-            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(res, elTurno.value, false));
+            if(!elTurno) return;
+            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(STATE.agendamentos, elTurno.value, false));
         }
 
         function renderCalendario() {
-            if (!DADOS_SISTEMA) return;
-            let elData = document.getElementById('filtro-calendario');
             let elTurno = document.getElementById('filtro-turno');
-            if(!elData || !elTurno) return;
-            let res = STATE.agendamentos.filter(a => a.data === elData.value);
-            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, elTurno.value, true));
+            if(!elTurno) return;
+            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(STATE.agendamentos, elTurno.value, true));
         }
 
         // ==========================================
@@ -849,9 +820,7 @@
                 }
                 
                 let btnRelatorio = document.getElementById('btn-abrir-relatorio');
-                if(btnRelatorio) {
-                    btnRelatorio.style.display = 'flex';
-                }
+                if(btnRelatorio) btnRelatorio.style.display = 'flex';
                 
                 if (dados.role === "admin") {
                     setTextSafe('badge-funcao', "Admin"); 
