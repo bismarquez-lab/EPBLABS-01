@@ -70,9 +70,14 @@
         /* CORES DAS RESERVAS NA TELA */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
+        .celula-ocupada.admin strong { color: #041e49; font-size: 12px; margin-bottom: 2px; text-align: center;}
+        .celula-ocupada.admin span { color: #0b57d0; font-size: 11px;}
+        
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
-        .celula-ocupada strong { color: #1f1f1f; font-size: 12px; margin-bottom: 2px; text-align: center; line-height: 1.1;}
-        .celula-ocupada span { color: #444746; font-size: 11px;}
+        .celula-ocupada.prof strong { color: #0d652d; font-size: 12px; margin-bottom: 2px; text-align: center;}
+        .celula-ocupada.prof span { color: #137333; font-size: 11px;}
+
+        .comp-tag { font-size: 10px; opacity: 0.85; margin-top: 2px; font-style: italic;}
 
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
         .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
@@ -80,8 +85,7 @@
         /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
-        .lista-arq a { color: #0b57d0; text-decoration: none; font-weight: 500; word-break: break-all;} 
-
+        
         /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
@@ -115,16 +119,16 @@
             .pdf-tabela { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; table-layout: fixed; }
             
             .pdf-tabela th { background: #f0f4f9; padding: 2px; color: #1f1f1f; font-weight: 600; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 9px; height: auto;}
-            .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1; height: auto;} 
+            .pdf-tabela td { padding: 1px; border: 1px solid #000; vertical-align: middle; font-size: 8px; line-height: 1.1; height: auto;} 
             
-            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 60px; color: #1f1f1f; font-size: 8px;}
+            .pdf-col-horario { font-weight: 600; background: #f8f9fa; width: 80px; color: #1f1f1f; font-size: 8px;}
             .pdf-turno-sep { background-color: #e3e3e3 !important; font-weight: bold; text-align: center; padding: 1px !important; letter-spacing: 1px; border: 1px solid #000; font-size: 9px; height: auto;}
             
             .pdf-celula-admin { background-color: #d3e3fd !important; }
             .pdf-celula-prof { background-color: #e6f4ea !important; }
             
             .pdf-turma { font-weight: 700; display: block; font-size: 8px; margin-bottom: 1px; word-break: break-word;}
-            .pdf-prof { display: block; font-size: 7px; color: #1f1f1f; font-weight: 500; text-transform: uppercase;}
+            .pdf-prof { display: block; font-size: 6px; color: #1f1f1f; font-weight: 600; text-transform: uppercase;}
         }
     </style>
 </head>
@@ -312,16 +316,26 @@
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
 
         function configurarDataETurnoIniciais() {
-            // O truque 'sv-SE' força o fuso horário a cuspir YYYY-MM-DD
-            const hoje = new Date().toLocaleDateString('sv-SE');
+            // Recria a data local garantindo o formato YYYY-MM-DD
+            const dataObj = new Date();
+            const ano = dataObj.getFullYear();
+            const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+            const dia = String(dataObj.getDate()).padStart(2, '0');
+            const dataFormatada = `${ano}-${mes}-${dia}`;
+            
             ['filtro-calendario-publico', 'filtro-calendario', 'lab-data', 'relatorio-data'].forEach(id => {
-                let el = document.getElementById(id); if (el) el.value = hoje;
+                let el = document.getElementById(id); 
+                if (el) el.value = dataFormatada;
             });
 
-            let hora = new Date().getHours();
-            let turnoAtual = (hora >= 13 && hora < 18) ? "Tarde" : (hora >= 18 || hora < 5) ? "Noite" : "Manhã";
+            let hora = dataObj.getHours();
+            let turnoAtual = "Manhã";
+            if (hora >= 13 && hora < 18) { turnoAtual = "Tarde"; } 
+            else if (hora >= 18 || hora < 5) { turnoAtual = "Noite"; }
+            
             ['filtro-turno-publico', 'filtro-turno'].forEach(id => {
-                let el = document.getElementById(id); if (el) el.value = turnoAtual;
+                let el = document.getElementById(id); 
+                if (el) el.value = turnoAtual;
             });
         }
 
@@ -530,8 +544,11 @@
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             let datasParaAgendar = [];
             for (let i = 0; i < sem; i++) { 
-                let dCalc = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate() + (i * 7)); 
-                datasParaAgendar.push(dCalc.toLocaleDateString('sv-SE'));
+                let dCalc = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate() + (i * 7));
+                let ano = dCalc.getFullYear();
+                let mes = String(dCalc.getMonth() + 1).padStart(2, '0');
+                let dia = String(dCalc.getDate()).padStart(2, '0');
+                datasParaAgendar.push(`${ano}-${mes}-${dia}`);
             }
 
             let conflito = STATE.agendamentos.find(a => datasParaAgendar.includes(a.data) && a.lab === lab && a.horario === hor);
