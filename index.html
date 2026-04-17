@@ -317,7 +317,7 @@
 
     <script>
         // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA E UX
+        // 0. FUNÇÕES DE SEGURANÇA, UX E OTIMIZAÇÃO (SOB DEMANDA)
         // ==========================================
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -333,6 +333,7 @@
         }
 
         function configurarDataETurnoIniciais() {
+            // RECORTA A DATA LOCAL MANUALMENTE E MONTA O FORMATO YYYY-MM-DD
             const dataObj = new Date();
             const ano = dataObj.getFullYear();
             const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
@@ -349,6 +350,7 @@
                 if (el) el.value = turnoAtual;
             });
 
+            // Seta as datas iniciais e já baixa os dados de hoje!
             mudarDataGlobal(dataFormatada);
         }
 
@@ -450,11 +452,11 @@
                 let isProf = !profQuery.empty;
 
                 if (!isAdmin && !isProf) {
-                    firebase.auth().signOut(); // DESLOGA DO FIREBASE SE NÃO TIVER CADASTRADO NO BANCO
-                    if (!isAutoLogin) {
+                    // DESLOGA DO FIREBASE SE NÃO TIVER CADASTRADO NO BANCO E MOSTRA O ALERTA PRA TODO MUNDO
+                    firebase.auth().signOut().then(() => {
                         alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, solicite a coordenação vincular seu e-mail institucional.`);
                         location.reload(); 
-                    }
+                    });
                     return; 
                 }
 
@@ -667,7 +669,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL (BAIXA DADOS SÓ NA HORA)
         // ==========================================
         function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
 
