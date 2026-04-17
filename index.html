@@ -454,7 +454,7 @@
                 if (!isAdmin && !isProf) {
                     // DESLOGA DO FIREBASE SE NÃO TIVER CADASTRADO NO BANCO E MOSTRA O ALERTA PRA TODO MUNDO
                     firebase.auth().signOut().then(() => {
-                        alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, solicite a coordenação vincular seu e-mail institucional.`);
+                        alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSolicite a coordenação vincular seu e-mail institucional.`);
                         location.reload(); 
                     });
                     return; 
