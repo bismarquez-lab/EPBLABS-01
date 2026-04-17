@@ -394,7 +394,7 @@
         }
 
         // ==========================================
-        // 2. O NOVO LOGIN SEGURO (FIREBASE AUTH)
+        // 2. AUTENTICAÇÃO VIA FIREBASE (COM O POPUP DA MICROSOFT)
         // ==========================================
         let tempoOcioso;
         function resetarTempo() {
@@ -412,7 +412,7 @@
             setTimeout(() => { let txt = document.getElementById('txt-acesso'); if(txt) txt.style.display = 'inline-block'; }, 1000);
             document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
             
-            // O Firebase Auth cuida de lembrar quem está logado, ligando o frontend ao banco de dados com segurança!
+            // ESCUTA MÁGICA: O FIREBASE LEMBRA QUEM É VOCÊ E AVISA O BANCO
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) {
                     iniciarPortal({
@@ -427,10 +427,11 @@
         };
         
         async function loginMicrosoft() { 
-            showStatus("Conectando...", "processando");
+            showStatus("Conectando com a Microsoft...", "processando");
             try { 
                 const provider = new firebase.auth.OAuthProvider('microsoft.com');
                 provider.setCustomParameters({ prompt: 'select_account' });
+                // A CHAVE DE IGNIÇÃO NOVA: O FIREBASE CHAMA A MICROSOFT
                 await firebase.auth().signInWithPopup(provider);
             } catch(e) { 
                 console.error(e);
@@ -449,8 +450,7 @@
                 let isProf = !profQuery.empty;
 
                 if (!isAdmin && !isProf) {
-                    firebase.auth().signOut(); // Derruba do Firebase se não tiver permissão
-                    localStorage.removeItem("epblab_user"); 
+                    firebase.auth().signOut(); // DESLOGA DO FIREBASE SE NÃO TIVER CADASTRADO NO BANCO
                     if (!isAutoLogin) {
                         alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, solicite a coordenação vincular seu e-mail institucional.`);
                         location.reload(); 
@@ -479,13 +479,12 @@
 
         function fazerLogout() { 
             firebase.auth().signOut().then(() => {
-                localStorage.removeItem("epblab_user"); 
                 location.reload(); 
             });
         }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME
+        // 3. MOTOR FIREBASE REAL-TIME (SOB DEMANDA)
         // ==========================================
         function escutarAgendamentosDoDia(dataString) {
             if (unsubscribeAgendamentos) unsubscribeAgendamentos(); 
@@ -502,9 +501,10 @@
         }
 
         function iniciarEscutasPublicas() {
-            // No modo offline (deslogado) a escuta também precisa iniciar se a data global já foi setada
             let dataAtual = document.getElementById('filtro-calendario-publico');
-            if (dataAtual && dataAtual.value) { escutarAgendamentosDoDia(dataAtual.value); }
+            if (dataAtual && dataAtual.value && !escutasPrivadasAtivas) { 
+                escutarAgendamentosDoDia(dataAtual.value); 
+            }
         }
 
         function iniciarEscutasPrivadas() {
@@ -621,7 +621,6 @@
                     let docRef = db.collection('agendamentos').doc();
                     let tagCriador = (DADOS_SISTEMA.role === 'admin') ? 'admin' : 'professor';
                     
-                    // INJETANDO O CARIMBO DE SEGURANÇA (criadorEmail)
                     batch.set(docRef, { 
                         data: datasParaAgendar[i], 
                         lab: lab, 
@@ -668,7 +667,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL 
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
         // ==========================================
         function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
 
@@ -808,8 +807,14 @@
 
                         let podeApagar = false;
                         if (isPrivado && DADOS_SISTEMA) {
-                            if (DADOS_SISTEMA.role === 'admin') podeApagar = true;
-                            if (DADOS_SISTEMA.role === 'professor' && res.prof === USER_NOME) podeApagar = true;
+                            if (DADOS_SISTEMA.role === 'admin') {
+                                podeApagar = true;
+                            } else if (DADOS_SISTEMA.role === 'professor') {
+                                // SEGURANÇA FRONTEND VISUAL
+                                if (res.prof === USER_NOME || res.criadorEmail === USER_EMAIL) {
+                                    podeApagar = true;
+                                }
+                            }
                         }
 
                         let btnExcluir = podeApagar ? `<button class="btn-apagar" onclick="cancelarReserva('${res.id}', '${res.groupId || ''}')">Excluir</button>` : '';
