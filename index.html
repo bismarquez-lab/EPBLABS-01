@@ -183,7 +183,7 @@
 
     <div id="modal-acesso-negado" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="color: #d32f2f;">⚠️ E-mail sem Vínculo</h3>
+            <h3 style="color: #d32f2f;">⚠️ Acesso Negado</h3>
             <p id="txt-acesso-negado" style="font-size: 14px; color: #444746; margin-bottom: 24px; line-height: 1.5;"></p>
             <button class="btn-modal-serie" style="background:#d32f2f;" onclick="fecharModalAcessoNegado()">Entendi</button>
         </div>
@@ -444,6 +444,7 @@
                 const provider = new firebase.auth.OAuthProvider('microsoft.com');
                 provider.setCustomParameters({ prompt: 'select_account' });
                 await firebase.auth().signInWithPopup(provider);
+                showStatus("Autenticação concluída!", "sucesso"); 
             } catch(e) { 
                 console.error(e);
                 showStatus("Erro no Login", "erro"); 
@@ -462,8 +463,7 @@
 
                 if (!isAdmin && !isProf) {
                     firebase.auth().signOut().then(() => {
-                        // AGORA O ALERTA CHIQUE APARECE PRA TODO MUNDO (MESMO NO AUTO LOGIN)
-                        document.getElementById('txt-acesso-negado').innerHTML = `O e-mail <strong>${emailTentativa}</strong> não possui permissão de acesso.<br><br>Solicite à coordenação a vinculação do seu e-mail institucional.`;
+                        document.getElementById('txt-acesso-negado').innerHTML = `O e-mail <strong>${emailTentativa}</strong> não possui permissão de acesso.<br><br>Se você for professor, solicite à coordenação a vinculação do seu e-mail institucional.`;
                         document.getElementById('modal-acesso-negado').style.display = 'flex';
                     });
                     return; 
@@ -482,7 +482,7 @@
                 let aPriv = document.getElementById('area-privada'); if(aPriv) aPriv.style.display = 'block';
                 let mDyn = document.getElementById('menu-dinamico'); if(mDyn) mDyn.style.display = 'flex';
                 
-                if(!isAutoLogin) showStatus("Acesso Liberado! Sincronizando...", "sucesso");
+                showStatus("Acesso Liberado! Sincronizando...", "sucesso");
                 
                 if (!escutasPrivadasAtivas) { iniciarEscutasPrivadas(); escutasPrivadasAtivas = true; } else { atualizarInterface(); }
             } catch (e) { showStatus("Erro ao validar login", "erro"); }
@@ -821,7 +821,6 @@
                             if (DADOS_SISTEMA.role === 'admin') {
                                 podeApagar = true;
                             } else if (DADOS_SISTEMA.role === 'professor') {
-                                // SEGURANÇA FRONTEND VISUAL
                                 if (res.prof === USER_NOME || res.criadorEmail === USER_EMAIL) {
                                     podeApagar = true;
                                 }
