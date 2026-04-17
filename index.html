@@ -7,8 +7,8 @@
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
     
-    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
@@ -163,7 +163,7 @@
             <div id="menu-dinamico" class="nav-links" style="display: none;"></div>
         </div>
         <div id="area-login" class="auth-area">
-            <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesse com e-mail institucional:</span>
+            <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesso restrito a Professores:</span>
             <button class="btn-microsoft-nav" onclick="loginMicrosoft()">
                 <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
                 Microsoft
@@ -317,7 +317,7 @@
 
     <script>
         // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA, UX E OTIMIZAÇÃO (SOB DEMANDA)
+        // 0. FUNÇÕES DE SEGURANÇA E UX
         // ==========================================
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -333,7 +333,6 @@
         }
 
         function configurarDataETurnoIniciais() {
-            // RECORTA A DATA LOCAL MANUALMENTE E MONTA O FORMATO YYYY-MM-DD
             const dataObj = new Date();
             const ano = dataObj.getFullYear();
             const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
@@ -350,7 +349,6 @@
                 if (el) el.value = turnoAtual;
             });
 
-            // Seta as datas iniciais e já baixa os dados de hoje!
             mudarDataGlobal(dataFormatada);
         }
 
@@ -396,13 +394,13 @@
         }
 
         // ==========================================
-        // 2. PORTARIA VIP E LOGIN
+        // 2. O NOVO LOGIN SEGURO (FIREBASE AUTH)
         // ==========================================
         let tempoOcioso;
         function resetarTempo() {
             clearTimeout(tempoOcioso);
             tempoOcioso = setTimeout(() => {
-                if(localStorage.getItem("epblab_user")) {
+                if(USER_EMAIL) {
                     alert("Sessão encerrada por inatividade. Por segurança, você foi desconectado.");
                     fazerLogout();
                 }
@@ -413,18 +411,31 @@
             configurarDataETurnoIniciais(); 
             setTimeout(() => { let txt = document.getElementById('txt-acesso'); if(txt) txt.style.display = 'inline-block'; }, 1000);
             document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
-            let usuarioSalvo = localStorage.getItem("epblab_user");
-            if(usuarioSalvo) iniciarPortal(JSON.parse(usuarioSalvo), true);
+            
+            // O Firebase Auth cuida de lembrar quem está logado, ligando o frontend ao banco de dados com segurança!
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    iniciarPortal({
+                        email: user.email,
+                        given_name: user.displayName || "Usuário",
+                        picture: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || "Usuário")}&background=e3e3e3&color=1f1f1f&size=120`
+                    }, true);
+                } else {
+                    iniciarEscutasPublicas();
+                }
+            });
         };
-
-        const msalConfig = { auth: { clientId: "83802911-104c-43af-ab13-62ff6df1e42f", authority: "https://login.microsoftonline.com/common" } };
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
         
         async function loginMicrosoft() { 
+            showStatus("Conectando...", "processando");
             try { 
-                const loginRes = await msalInstance.loginPopup({ scopes: ["user.read"] }); 
-                iniciarPortal({ email: loginRes.account.username, given_name: loginRes.account.name || "Usuário", picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(loginRes.account.name)}&background=e3e3e3&color=1f1f1f&size=120` }); 
-            } catch(e) { showStatus("Erro Microsoft", "erro"); } 
+                const provider = new firebase.auth.OAuthProvider('microsoft.com');
+                provider.setCustomParameters({ prompt: 'select_account' });
+                await firebase.auth().signInWithPopup(provider);
+            } catch(e) { 
+                console.error(e);
+                showStatus("Erro no Login", "erro"); 
+            } 
         }
 
         async function iniciarPortal(dados, isAutoLogin = false) {
@@ -438,6 +449,7 @@
                 let isProf = !profQuery.empty;
 
                 if (!isAdmin && !isProf) {
+                    firebase.auth().signOut(); // Derruba do Firebase se não tiver permissão
                     localStorage.removeItem("epblab_user"); 
                     if (!isAutoLogin) {
                         alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSe você for professor, solicite a coordenação vincular seu e-mail institucional.`);
@@ -446,13 +458,12 @@
                     return; 
                 }
 
-                localStorage.setItem("epblab_user", JSON.stringify(dados));
                 USER_EMAIL = emailTentativa;
                 if (isProf) { USER_NOME = profQuery.docs[0].id; } else { USER_NOME = (dados.given_name || "Admin"); }
                 
                 setTextSafe('nome-usuario', USER_NOME);
                 let foto = document.getElementById('foto-perfil');
-                if(foto) foto.src = dados.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(USER_NOME)}&background=e3e3e3&color=1f1f1f&size=120`;
+                if(foto) foto.src = dados.picture;
 
                 let aLogin = document.getElementById('area-login'); if(aLogin) aLogin.style.display = 'none';
                 let aUser = document.getElementById('area-usuario'); if(aUser) aUser.style.display = 'flex';
@@ -466,10 +477,15 @@
             } catch (e) { showStatus("Erro ao validar login", "erro"); }
         }
 
-        function fazerLogout() { localStorage.removeItem("epblab_user"); location.reload(); }
+        function fazerLogout() { 
+            firebase.auth().signOut().then(() => {
+                localStorage.removeItem("epblab_user"); 
+                location.reload(); 
+            });
+        }
 
         // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (SOB DEMANDA)
+        // 3. MOTOR FIREBASE REAL-TIME
         // ==========================================
         function escutarAgendamentosDoDia(dataString) {
             if (unsubscribeAgendamentos) unsubscribeAgendamentos(); 
@@ -483,6 +499,12 @@
                     renderCalendarioPublico(); 
                     if(escutasPrivadasAtivas) renderCalendario(); 
                 });
+        }
+
+        function iniciarEscutasPublicas() {
+            // No modo offline (deslogado) a escuta também precisa iniciar se a data global já foi setada
+            let dataAtual = document.getElementById('filtro-calendario-publico');
+            if (dataAtual && dataAtual.value) { escutarAgendamentosDoDia(dataAtual.value); }
         }
 
         function iniciarEscutasPrivadas() {
@@ -646,7 +668,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL (BAIXA DADOS SÓ NA HORA)
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL 
         // ==========================================
         function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
 
@@ -813,14 +835,18 @@
 
         function renderCalendarioPublico() {
             let elTurno = document.getElementById('filtro-turno-publico');
-            if(!elTurno) return;
-            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(STATE.agendamentos, elTurno.value, false));
+            let elData = document.getElementById('filtro-calendario-publico');
+            if(!elTurno || !elData) return;
+            let res = STATE.agendamentos.filter(a => a.data === elData.value);
+            setHTMLSafe('grade-laboratorios-publica', gerarTabelaHTML(res, elTurno.value, false));
         }
 
         function renderCalendario() {
             let elTurno = document.getElementById('filtro-turno');
-            if(!elTurno) return;
-            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(STATE.agendamentos, elTurno.value, true));
+            let elData = document.getElementById('filtro-calendario');
+            if(!elTurno || !elData) return;
+            let res = STATE.agendamentos.filter(a => a.data === elData.value);
+            setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, elTurno.value, true));
         }
 
         // ==========================================
