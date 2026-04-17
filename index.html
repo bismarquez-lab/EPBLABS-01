@@ -181,6 +181,14 @@
 
     <div id="toast-msg">Mensagem</div>
 
+    <div id="modal-acesso-negado" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="color: #d32f2f;">⚠️ Acesso Negado</h3>
+            <p id="txt-acesso-negado" style="font-size: 14px; color: #444746; margin-bottom: 24px; line-height: 1.5;"></p>
+            <button class="btn-modal-serie" style="background:#d32f2f;" onclick="fecharModalAcessoNegado()">Entendi</button>
+        </div>
+    </div>
+
     <div id="modal-exclusao" class="modal-overlay">
         <div class="modal-box">
             <h3>⚠️ Excluir Reserva</h3>
@@ -317,7 +325,7 @@
 
     <script>
         // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA, UX E OTIMIZAÇÃO (SOB DEMANDA)
+        // 0. FUNÇÕES DE SEGURANÇA E UX
         // ==========================================
         function setHTMLSafe(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
         function setTextSafe(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; }
@@ -333,7 +341,6 @@
         }
 
         function configurarDataETurnoIniciais() {
-            // RECORTA A DATA LOCAL MANUALMENTE E MONTA O FORMATO YYYY-MM-DD
             const dataObj = new Date();
             const ano = dataObj.getFullYear();
             const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
@@ -350,8 +357,12 @@
                 if (el) el.value = turnoAtual;
             });
 
-            // Seta as datas iniciais e já baixa os dados de hoje!
             mudarDataGlobal(dataFormatada);
+        }
+
+        function fecharModalAcessoNegado() {
+            document.getElementById('modal-acesso-negado').style.display = 'none';
+            location.reload();
         }
 
         // ==========================================
@@ -414,7 +425,6 @@
             setTimeout(() => { let txt = document.getElementById('txt-acesso'); if(txt) txt.style.display = 'inline-block'; }, 1000);
             document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
             
-            // ESCUTA MÁGICA: O FIREBASE LEMBRA QUEM É VOCÊ E AVISA O BANCO
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) {
                     iniciarPortal({
@@ -433,7 +443,6 @@
             try { 
                 const provider = new firebase.auth.OAuthProvider('microsoft.com');
                 provider.setCustomParameters({ prompt: 'select_account' });
-                // A CHAVE DE IGNIÇÃO NOVA: O FIREBASE CHAMA A MICROSOFT
                 await firebase.auth().signInWithPopup(provider);
             } catch(e) { 
                 console.error(e);
@@ -452,10 +461,10 @@
                 let isProf = !profQuery.empty;
 
                 if (!isAdmin && !isProf) {
-                    // DESLOGA DO FIREBASE SE NÃO TIVER CADASTRADO NO BANCO E MOSTRA O ALERTA PRA TODO MUNDO
                     firebase.auth().signOut().then(() => {
-                        alert(`⚠️ E-MAIL NÃO VINCULADO!\n\nO e-mail ${emailTentativa} não tem permissão de acesso.\n\nSolicite a coordenação vincular seu e-mail institucional.`);
-                        location.reload(); 
+                        // AGORA O ALERTA CHIQUE APARECE PRA TODO MUNDO (MESMO NO AUTO LOGIN)
+                        document.getElementById('txt-acesso-negado').innerHTML = `O e-mail <strong>${emailTentativa}</strong> não possui permissão de acesso.<br><br>Se você for professor, solicite à coordenação a vinculação do seu e-mail institucional.`;
+                        document.getElementById('modal-acesso-negado').style.display = 'flex';
                     });
                     return; 
                 }
@@ -669,7 +678,7 @@
         }
 
         // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL (BAIXA DADOS SÓ NA HORA)
+        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
         // ==========================================
         function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
 
