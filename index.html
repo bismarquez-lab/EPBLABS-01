@@ -463,7 +463,7 @@
 
                 if (!isAdmin && !isProf) {
                     firebase.auth().signOut().then(() => {
-                        document.getElementById('txt-acesso-negado').innerHTML = `O e-mail <strong>${emailTentativa}</strong> não possui permissão de acesso.<br><br>Se você for professor, solicite à coordenação a vinculação do seu e-mail institucional.`;
+                        document.getElementById('txt-acesso-negado').innerHTML = `O e-mail <strong>${emailTentativa}</strong> não possui permissão de acesso.<br><br>Solicite à coordenação a vinculação do seu e-mail institucional.`;
                         document.getElementById('modal-acesso-negado').style.display = 'flex';
                     });
                     return; 
