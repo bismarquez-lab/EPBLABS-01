@@ -207,7 +207,8 @@
             <select id="relatorio-periodo" style="margin-bottom: 24px;">
                 <option value="7">Uma Semana</option>
                 <option value="30">Um Mês</option>
-                <option value="180">Um Semestre</option>
+                <option value="sem1">1º Semestre (até 06/07)</option>
+                <option value="sem2">2º Semestre (até 15/12)</option>
             </select>
             <button class="btn-modal-serie" onclick="gerarRelatorioVisual()">Gerar PDF e Imprimir</button>
             <button class="btn-modal-cancelar" onclick="document.getElementById('modal-relatorio').style.display='none'">Cancelar</button>
@@ -614,7 +615,6 @@
             showStatus("Verificando disponibilidade...", "processando");
 
             try {
-                // CORREÇÃO: Fatiando a consulta em lotes de 10 para respeitar o limite do Firebase
                 let temConflito = false;
                 let conflitoDataBr = "";
 
@@ -631,12 +631,12 @@
                         temConflito = true;
                         let dataDoBanco = snapshotConflito.docs[0].data().data;
                         conflitoDataBr = dataDoBanco.split('-').reverse().join('/');
-                        break; // Achou conflito, para de procurar na mesma hora
+                        break;
                     }
                 }
 
                 if (temConflito) {
-                    showStatus("Horário Indisponível", "erro"); // Tira o aviso de 'processando'
+                    showStatus("Horário Indisponível", "erro"); 
                     return alert(`⚠️ BLOQUEADO!\n\nO ${lab} já está reservado no dia ${conflitoDataBr} para este horário.\nPor favor, escolha outro laboratório ou horário.`);
                 }
 
@@ -705,17 +705,31 @@
 
         async function gerarRelatorioVisual() {
             let dataInicioStr = document.getElementById('relatorio-data').value;
-            let dias = parseInt(document.getElementById('relatorio-periodo').value);
+            let opcaoPeriodo = document.getElementById('relatorio-periodo').value;
             if(!dataInicioStr) return showStatus("Selecione a data inicial", "erro");
 
             let dataInicio = new Date(dataInicioStr + "T00:00:00");
             let dataFim = new Date(dataInicioStr + "T00:00:00");
-            dataFim.setDate(dataFim.getDate() + dias);
+            
+            // LÓGICA ATUALIZADA PARA LER AS OPÇÕES DO SEMESTRE
+            if (opcaoPeriodo === 'sem1') {
+                dataFim = new Date(dataInicio.getFullYear(), 6, 6); // 06 de Julho (mês 6)
+            } else if (opcaoPeriodo === 'sem2') {
+                dataFim = new Date(dataInicio.getFullYear(), 11, 15); // 15 de Dezembro (mês 11)
+            } else {
+                dataFim.setDate(dataFim.getDate() + parseInt(opcaoPeriodo)); // Para 7 ou 30 dias
+            }
             
             let anoF = dataFim.getFullYear();
             let mesF = String(dataFim.getMonth() + 1).padStart(2, '0');
             let diaF = String(dataFim.getDate()).padStart(2, '0');
             let dataFimStr = `${anoF}-${mesF}-${diaF}`;
+
+            // TRAVA: Se a data inicial já for depois da data limite escolhida
+            if (dataFimStr < dataInicioStr) {
+                document.getElementById('modal-relatorio').style.display = 'none';
+                return alert("⚠️ A data inicial escolhida já passou do limite do semestre selecionado!");
+            }
 
             showStatus("Coletando dados da nuvem...", "processando");
 
