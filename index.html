@@ -250,7 +250,7 @@
                             <option value="Laboratório 9">Laboratório 9</option>
                         </select>
                         <select id="lab-horario">
-                            <option value="">Qual a Aula?</option>
+                            <option value="">Horário da Aula</option>
                             <optgroup label="Manhã">
                                 <option value="Manhã - 1ª Aula - 07:30 até 08:20">1ª Aula - 07:30 até 08:20</option><option value="Manhã - 2ª Aula - 08:20 até 09:10">2ª Aula - 08:20 até 09:10</option>
                                 <option value="Manhã - 3ª Aula - 09:10 até 10:00">3ª Aula - 09:10 até 10:00</option><option value="Manhã - 4ª Aula - 10:20 até 11:10">4ª Aula - 10:20 até 11:10</option>
@@ -268,7 +268,7 @@
                         </select>
                         <select id="lab-prof"><option value="">Professor...</option></select>
                         <select id="lab-turma"><option value="">Sua Turma...</option></select>
-                        <select id="lab-comp"><option value="">Componente...</option></select>
+                        <select id="lab-comp"><option value="">Componente</option></select>
                         <select id="lab-semanas"></select>
                         <button class="action-btn" onclick="reservarLab()" style="margin-top: 8px;">Reservar Laboratório</button>
                     </div>
@@ -903,11 +903,11 @@
                 setHTMLSafe('lab-comp', opComp);
 
                 if (dados.role === "admin") {
-                    let opProf = '<option value="">Selecione o Professor...</option>'; 
+                    let opProf = '<option value="">Selecione o Professor</option>'; 
                     STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
                     setHTMLSafe('lab-prof', opProf);
                     
-                    setHTMLSafe('lab-semanas', '<option value="1">Apenas o Dia</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
+                    setHTMLSafe('lab-semanas', '<option value="1">Período de Reserva</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
 
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
