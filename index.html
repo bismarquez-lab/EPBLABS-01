@@ -242,7 +242,7 @@
                     <div class="scroll-interno">
                         <input type="date" id="lab-data">
                         <select id="lab-numero">
-                            <option value="">Selecione a Sala...</option>
+                            <option value="">Selecione a Laboratório</option>
                             <option value="Laboratório 1">Laboratório 1</option><option value="Laboratório 2">Laboratório 2</option>
                             <option value="Laboratório 3">Laboratório 3</option><option value="Laboratório 4">Laboratório 4</option>
                             <option value="Laboratório 5">Laboratório 5</option><option value="Laboratório 6">Laboratório 6</option>
@@ -250,7 +250,7 @@
                             <option value="Laboratório 9">Laboratório 9</option>
                         </select>
                         <select id="lab-horario">
-                            <option value="">Qual a Aula?</option>
+                            <option value="">Horário de Aula</option>
                             <optgroup label="Manhã">
                                 <option value="Manhã - 1ª Aula - 07:30 até 08:20">1ª Aula - 07:30 até 08:20</option><option value="Manhã - 2ª Aula - 08:20 até 09:10">2ª Aula - 08:20 até 09:10</option>
                                 <option value="Manhã - 3ª Aula - 09:10 até 10:00">3ª Aula - 09:10 até 10:00</option><option value="Manhã - 4ª Aula - 10:20 até 11:10">4ª Aula - 10:20 até 11:10</option>
@@ -894,20 +894,20 @@
                 
                 let painelRes = document.getElementById('painel-reserva-lab'); if(painelRes) painelRes.style.display = 'flex';
                 
-                let opTurma = '<option value="">Qual Turma?</option>'; 
+                let opTurma = '<option value="">Selecione a Turma</option>'; 
                 Object.keys(STATE.turmas).forEach(t => opTurma += `<option value="${t}">${t}</option>`); 
                 setHTMLSafe('lab-turma', opTurma);
 
-                let opComp = '<option value="">Componente...</option>'; 
+                let opComp = '<option value="">Selecione o Componente</option>'; 
                 STATE.componentes.forEach(c => opComp += `<option value="${c}">${c}</option>`); 
                 setHTMLSafe('lab-comp', opComp);
 
                 if (dados.role === "admin") {
-                    let opProf = '<option value="">Selecione o Professor...</option>'; 
+                    let opProf = '<option value="">Selecione o Professor</option>'; 
                     STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
                     setHTMLSafe('lab-prof', opProf);
                     
-                    setHTMLSafe('lab-semanas', '<option value="1">Apenas o Dia</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
+                    setHTMLSafe('lab-semanas', '<option value="1">Selecione o Período</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
 
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
