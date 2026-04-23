@@ -580,7 +580,9 @@
             let opcaoSemanas = document.getElementById('lab-semanas').value;
             
             if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { opcaoSemanas = '1'; }
-            if(!dataR || !lab || !hor || !t || !p || !c) return showStatus("Preencha todos os campos!", "erro"); 
+            
+            // TRAVA DE SEGURANÇA SE A PESSOA ESQUECER DE ESCOLHER O PERÍODO
+            if(!dataR || !lab || !hor || !t || !p || !c || !opcaoSemanas) return showStatus("Preencha todos os campos!", "erro"); 
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
             
@@ -711,7 +713,6 @@
             let dataInicio = new Date(dataInicioStr + "T00:00:00");
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             
-            // LÓGICA ATUALIZADA PARA LER AS OPÇÕES DO SEMESTRE
             if (opcaoPeriodo === 'sem1') {
                 dataFim = new Date(dataInicio.getFullYear(), 6, 6); // 06 de Julho (mês 6)
             } else if (opcaoPeriodo === 'sem2') {
@@ -725,7 +726,6 @@
             let diaF = String(dataFim.getDate()).padStart(2, '0');
             let dataFimStr = `${anoF}-${mesF}-${diaF}`;
 
-            // TRAVA: Se a data inicial já for depois da data limite escolhida
             if (dataFimStr < dataInicioStr) {
                 document.getElementById('modal-relatorio').style.display = 'none';
                 return alert("⚠️ A data inicial escolhida já passou do limite do semestre selecionado!");
@@ -942,7 +942,8 @@
                     STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
                     setHTMLSafe('lab-prof', opProf);
                     
-                    setHTMLSafe('lab-semanas', '<option value="1">Selecione o Período</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
+                    // RECOLOCANDO A OPÇÃO DE "APENAS O DIA" DE FORMA CLARA PARA O ADMIN
+                    setHTMLSafe('lab-semanas', '<option value="">Selecione o Período...</option><option value="1">Apenas o Dia</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
 
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
                     setHTMLSafe('lista-admin-admins', htmlAdmins || '<li>Sem outros admins.</li>');
@@ -961,7 +962,8 @@
                     
                 } else {
                     setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
-                    setHTMLSafe('lab-semanas', '<option value="1">Apenas o dia</option>');
+                    // GARANTINDO QUE APAREÇA "APENAS O DIA" PARA O PROFESSOR
+                    setHTMLSafe('lab-semanas', '<option value="1">Apenas o Dia</option>');
                 }
 
             } else { 
