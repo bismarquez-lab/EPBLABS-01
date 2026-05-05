@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MÁGICA DO MOBILE: Forçando a exibição de Desktop (1200px) -->
+    <meta name="viewport" content="width=1200">
     <title>EPBLAB</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
@@ -99,35 +100,6 @@
         .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
         .btn-modal-cancelar:hover { color: #1f1f1f; }
 
-        /* ==========================================
-           MODO MOBILE (CELULARES E TABLETS PEQUENOS)
-           ========================================== */
-        @media (max-width: 768px) {
-            #navbar { position: relative; flex-direction: column; height: auto; padding: 16px; gap: 12px; text-align: center; }
-            .nav-links { margin-left: 0; justify-content: center; flex-wrap: wrap; width: 100%;}
-            .auth-area { flex-direction: column; width: 100%; gap: 12px; }
-            #area-usuario { flex-direction: column !important; align-items: center !important; gap: 10px; }
-            #area-usuario div { align-items: center !important; margin-right: 0 !important; }
-            .btn-sair-nav { margin-left: 0 !important; width: 100%; }
-
-            #area-publica, #area-privada { margin-top: 20px; width: 100%; padding: 0 10px; box-sizing: border-box; left: 0; transform: none;}
-            .container-calendario { width: 100%; padding: 16px; border-radius: 16px; }
-            .pagina { padding: 16px; border-radius: 16px; height: auto; }
-            
-            #grid-perfil { grid-template-columns: 1fr !important; }
-            .grid-layout { grid-template-columns: 1fr !important; display: flex; flex-direction: column; }
-            
-            .container-calendario > div:first-child { flex-direction: column; align-items: stretch !important; text-align: center; gap: 16px; }
-            .container-calendario > div:first-child > div { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-            .container-calendario select, .container-calendario input { width: 100% !important; margin: 0; }
-            
-            #filtros-agenda-privada { flex-direction: column; align-items: stretch; width: 100%; }
-            #filtros-agenda-privada > * { width: 100% !important; margin: 0 0 8px 0 !important; }
-            
-            .box { padding: 16px; }
-            h1 { font-size: 22px !important; }
-        }
-
         /* --- CONFIGURAÇÃO MAGICA DO PDF --- */
         @media print {
             @page { size: landscape; margin: 5mm; }
@@ -163,6 +135,7 @@
             <div id="menu-dinamico" class="nav-links" style="display: none;"></div>
         </div>
         <div id="area-login" class="auth-area">
+            <!-- TEXTO ORIGINAL CORRIGIDO -->
             <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesse com e-mail institucional:</span>
             <button class="btn-microsoft-nav" onclick="loginMicrosoft()">
                 <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
@@ -581,7 +554,6 @@
             
             if (DADOS_SISTEMA && DADOS_SISTEMA.role === 'professor') { opcaoSemanas = '1'; }
             
-            // TRAVA DE SEGURANÇA SE A PESSOA ESQUECER DE ESCOLHER O PERÍODO
             if(!dataR || !lab || !hor || !t || !p || !c || !opcaoSemanas) return showStatus("Preencha todos os campos!", "erro"); 
             
             let partes = dataR.split('-'); let dataBase = new Date(partes[0], partes[1] - 1, partes[2]); 
@@ -942,7 +914,6 @@
                     STATE.professores.forEach(p => opProf += `<option value="${p.nome}">${p.nome}</option>`); 
                     setHTMLSafe('lab-prof', opProf);
                     
-                    // RECOLOCANDO A OPÇÃO DE "APENAS O DIA" DE FORMA CLARA PARA O ADMIN
                     setHTMLSafe('lab-semanas', '<option value="">Selecione o Período...</option><option value="1">Apenas o Dia</option><option value="4">4 semanas (Mensal)</option><option value="sem1">1º Semestre (até 06/07)</option><option value="sem2">2º Semestre (até 15/12)</option>');
 
                     let htmlAdmins = ''; STATE.admins.forEach(a => htmlAdmins += `<li><span>👑 ${a}</span><button class="btn-apagar" onclick="adminExcluir('admin_del_admin', '${a}')">Excluir</button></li>`); 
@@ -962,7 +933,6 @@
                     
                 } else {
                     setHTMLSafe('lab-prof', `<option value="${USER_NOME}">${USER_NOME}</option>`);
-                    // GARANTINDO QUE APAREÇA "APENAS O DIA" PARA O PROFESSOR
                     setHTMLSafe('lab-semanas', '<option value="1">Apenas o Dia</option>');
                 }
 
