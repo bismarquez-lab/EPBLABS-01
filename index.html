@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -13,32 +12,27 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* --- TIPOGRAFIA E LAYOUT MODERNO --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         body, html { margin: 0; padding: 0; overflow-x: hidden; font-family: 'Inter', system-ui, sans-serif; background-color: #f0f4f9; color: #1f1f1f;}
         canvas { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none;}
 
-        /* --- NAVBAR FIXA NO TOPO --- */
         #navbar { position: fixed; top: 0; left: 0; width: 100%; height: 68px; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); border-bottom: 1px solid #e3e3e3; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; box-sizing: border-box; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
         .nav-links { display: flex; gap: 8px; margin-left: 24px;}
         .nav-btn { background: transparent; color: #444746; border: none; padding: 8px 16px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px; font-family: 'Inter', sans-serif;}
         .nav-btn:hover { background: #f1f3f4; color: #1f1f1f; }
         .nav-btn.active { background: #d3e3fd; color: #041e49; }
 
-        /* Botão Novo de Arquivos - Padrão Material Design Tonal */
         .btn-arquivos-topo { background: #f0f4f9; color: #0b57d0; border: 1px solid transparent; padding: 8px 18px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-size: 14px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; }
         .btn-arquivos-topo:hover { background: #d3e3fd; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .btn-arquivos-topo svg { width: 18px; height: 18px; fill: currentColor; }
         
-        /* --- ÁREA DE LOGIN --- */
         .auth-area { display: flex; align-items: center; gap: 12px; }
         .btn-microsoft-nav { background-color: #ffffff; color: #444746; border: 1px solid #dadce0; border-radius: 100px; padding: 0 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 36px; font-size: 14px; font-family: 'Inter', sans-serif;}
         .btn-microsoft-nav:hover { background-color: #f8f9fa; border-color: #d5d9d9;}
         .btn-sair-nav { background: transparent; color: #d32f2f; border: 1px solid transparent; padding: 6px 16px; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 13px; transition: 0.2s;}
         .btn-sair-nav:hover { background: #fce8e6; color: #b3261e; }
 
-        /* --- ÁREAS DE CONTEÚDO E BOXES --- */
         #app-wrapper { display: block; } 
         #print-area { display: none; } 
 
@@ -56,7 +50,6 @@
         .scroll-interno::-webkit-scrollbar { width: 6px; } 
         .scroll-interno::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
 
-        /* --- FORMULÁRIOS E BOTÕES --- */
         input, select { width: 100%; padding: 10px 14px; margin-bottom: 12px; background: #ffffff; border: 1px solid #747775; color: #1f1f1f; border-radius: 8px; box-sizing: border-box; font-size: 14px; font-family: 'Inter', sans-serif;}
         button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif; transition: 0.2s;}
         button.action-btn:hover { background: #0842a0;}
@@ -64,7 +57,6 @@
         .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
         .btn-pdf:hover { background: #f8f9fa; color: #1f1f1f; }
 
-        /* --- TABELA DE GRADE (TELA) --- */
         .tabela-responsiva { width: 100%; flex-grow: 1; overflow-y: auto; overflow-x: auto; margin-top: 8px; border-radius: 8px; border: 1px solid #e3e3e3; -webkit-overflow-scrolling: touch;}
         .tabela-grade { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; min-width: 800px; height: 100%; }
         .tabela-grade th { background: #f0f4f9; padding: 12px 8px; color: #1f1f1f; font-weight: 600; border: 1px solid #e3e3e3; position: sticky; top: 0; z-index: 2;}
@@ -72,7 +64,6 @@
         .td-lab { font-weight: 600; background: #f8f9fa; width: 130px; color: #1f1f1f; text-align: left; padding-left: 16px !important; position: sticky; left: 0; z-index: 1;}
         .celula-livre { background: #ffffff; color: #a8a8a8; font-style: italic; font-size: 12px; }
         
-        /* CORES DAS RESERVAS NA TELA */
         .celula-ocupada { border-radius: 6px; padding: 4px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
         .celula-ocupada.admin { background: #d3e3fd; border: 1px solid #a8c7fa; }
         .celula-ocupada.prof { background: #e6f4ea; border: 1px solid #ceead6; }
@@ -83,21 +74,17 @@
         .btn-apagar { background: transparent; color: #d32f2f; border: 1px solid transparent; font-size: 10px; cursor: pointer; font-weight: 500; padding: 2px 6px; border-radius: 4px; margin-top: 2px;}
         .btn-apagar:hover { background: rgba(211, 47, 47, 0.1);}
         
-        /* --- LISTAS --- */
         .lista-arq { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444746; }
         .lista-arq li { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between; align-items: center;}
         
-        /* --- TOAST NOTIFICATION --- */
         #toast-msg { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #323232; color: #ffffff; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-in-out; display: flex; align-items: center; gap: 8px;}
         #toast-msg.show { bottom: 32px; }
 
-        /* --- MODAIS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 3000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
         .modal-box { background: white; padding: 32px; border-radius: 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;}
         .modal-box h3 { margin: 0 0 12px 0; font-size: 20px; color: #1f1f1f; font-weight: 600;}
         .modal-box p { color: #444746; font-size: 14px; margin-bottom: 24px; line-height: 1.5;}
         
-        /* Botão fechar modal arquivos (Estilo Material Outlined) */
         .btn-fechar-modal-arquivos { position: absolute; top: 20px; right: 24px; background: transparent; color: #444746; border: 1px solid #dadce0; padding: 6px 14px; border-radius: 100px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s; font-family: 'Inter', sans-serif;}
         .btn-fechar-modal-arquivos:hover { background: #f1f3f4; color: #1f1f1f; }
 
@@ -109,7 +96,6 @@
         .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px; border-radius: 100px;}
         .btn-modal-cancelar:hover { color: #1f1f1f; background: #f1f3f4; }
 
-        /* --- CONFIGURAÇÃO MAGICA DO PDF --- */
         @media print {
             @page { size: landscape; margin: 5mm; }
             body { background: #fff !important; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -147,11 +133,10 @@
         <div style="display: flex; align-items: center; gap: 16px;">
             <button class="btn-arquivos-topo" onclick="abrirModalArquivos()">
                 <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
-                Arquivos e Materiais
+                Arquivos do Lab
             </button>
             
             <div id="area-login" class="auth-area">
-                <!-- AQUI: Removi o "display: none" para o texto aparecer de imediato -->
                 <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px;" id="txt-acesso">Acesse com e-mail institucional:</span>
                 <button class="btn-microsoft-nav" onclick="loginMicrosoft()">
                     <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
@@ -326,10 +311,6 @@
 <div id="print-area"></div>
 
     <script>
-        // ==========================================
-        // 0. FUNÇÕES DE SEGURANÇA E UX
-        // ==========================================
-        
         function abrirModalArquivos() {
             document.getElementById('modal-arquivos-drive').style.display = 'flex';
         }
@@ -338,7 +319,6 @@
             document.getElementById('modal-arquivos-drive').style.display = 'none';
         }
 
-        // FUNÇÃO DE PROTEÇÃO CONTRA INJEÇÃO DE CÓDIGO (XSS)
         function sanitizeHTML(str) {
             if (!str) return '';
             return str.toString().replace(/[&<>'"]/g, function(tag) {
@@ -385,9 +365,6 @@
             location.reload();
         }
 
-        // ==========================================
-        // 1. CONFIGURAÇÃO FIREBASE E VARIÁVEIS GERAIS
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAz_QgvgVDx80smVoX20lJR9sfZvZEg7c0",
             authDomain: "epblabs-10353.firebaseapp.com",
@@ -426,9 +403,6 @@
             if(tipo !== "processando") toastTimeout = setTimeout(() => el.classList.remove("show"), 3500);
         }
 
-        // ==========================================
-        // 2. AUTENTICAÇÃO VIA FIREBASE (COM O POPUP DA MICROSOFT)
-        // ==========================================
         let tempoOcioso;
         function resetarTempo() {
             clearTimeout(tempoOcioso);
@@ -442,7 +416,6 @@
 
         window.onload = function() {
             configurarDataETurnoIniciais(); 
-            // AQUI: Removi o setTimeout de 1000ms que atrasava a exibição do texto
             document.onmousemove = resetarTempo; document.onkeypress = resetarTempo; document.onclick = resetarTempo; document.onscroll = resetarTempo; resetarTempo();
             
             firebase.auth().onAuthStateChanged((user) => {
@@ -514,9 +487,6 @@
             });
         }
 
-        // ==========================================
-        // 3. MOTOR FIREBASE REAL-TIME (SOB DEMANDA)
-        // ==========================================
         function escutarAgendamentosDoDia(dataString) {
             if (unsubscribeAgendamentos) unsubscribeAgendamentos(); 
             
@@ -561,9 +531,6 @@
             }, 150); 
         }
 
-        // ==========================================
-        // 4. AÇÕES DE BANCO DE DADOS E RESERVAS
-        // ==========================================
         function adminAcao(acao) {
             showStatus("Enviando para a nuvem...", "processando");
             if (acao === 'admin_add_admin') { 
@@ -618,11 +585,11 @@
             else if (opcaoSemanas === '4') { maxSemanas = 4; }
             else if (opcaoSemanas === 'sem1') {
                 maxSemanas = 50; 
-                dataLimite = new Date(dataBase.getFullYear(), 6, 6, 23, 59, 59); // 06 de Julho
+                dataLimite = new Date(dataBase.getFullYear(), 6, 6, 23, 59, 59);
             }
             else if (opcaoSemanas === 'sem2') {
                 maxSemanas = 50; 
-                dataLimite = new Date(dataBase.getFullYear(), 11, 15, 23, 59, 59); // 15 de Dezembro
+                dataLimite = new Date(dataBase.getFullYear(), 11, 15, 23, 59, 59);
             }
 
             let datasParaAgendar = [];
@@ -725,9 +692,6 @@
             } catch (erro) { showStatus("Falha ao excluir.", "erro"); }
         }
 
-        // ==========================================
-        // 5. GERAÇÃO DE RELATÓRIO PDF VISUAL
-        // ==========================================
         function abrirModalRelatorio() { document.getElementById('modal-relatorio').style.display = 'flex'; }
 
         async function gerarRelatorioVisual() {
@@ -739,11 +703,11 @@
             let dataFim = new Date(dataInicioStr + "T00:00:00");
             
             if (opcaoPeriodo === 'sem1') {
-                dataFim = new Date(dataInicio.getFullYear(), 6, 6); // 06 de Julho (mês 6)
+                dataFim = new Date(dataInicio.getFullYear(), 6, 6);
             } else if (opcaoPeriodo === 'sem2') {
-                dataFim = new Date(dataInicio.getFullYear(), 11, 15); // 15 de Dezembro (mês 11)
+                dataFim = new Date(dataInicio.getFullYear(), 11, 15);
             } else {
-                dataFim.setDate(dataFim.getDate() + parseInt(opcaoPeriodo)); // Para 7 ou 30 dias
+                dataFim.setDate(dataFim.getDate() + parseInt(opcaoPeriodo));
             }
             
             let anoF = dataFim.getFullYear();
@@ -853,9 +817,6 @@
             setTimeout(() => { window.print(); }, 500);
         }
 
-        // ==========================================
-        // 6. RENDERIZAÇÕES DINÂMICAS COM SEGURANÇA (TELA DO SISTEMA)
-        // ==========================================
         function gerarTabelaHTML(agendamentosFiltrados, turnoSelecionado, isPrivado) {
             let horarios = TURNOS[turnoSelecionado];
             
@@ -927,9 +888,6 @@
             setHTMLSafe('grade-laboratorios', gerarTabelaHTML(res, elTurno.value, true));
         }
 
-        // ==========================================
-        // 7. O NÚCLEO DA INTERFACE 
-        // ==========================================
         function configurarPainel(dados, isInitial) {
             let menu = document.getElementById('menu-dinamico'); 
             let gridLabs = document.querySelector('#pag-perfil .grid-layout'); 
@@ -1017,5 +975,3 @@
     </script>
 </body>
 </html>
-
-```
