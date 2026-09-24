@@ -1,3 +1,10 @@
+Ajustei o design do botão para seguir o padrão **Material Design 3** do Google. Substituí o azul vibrante por um tom "Tonal" (fundo azul bem claro com texto azul escuro) com bordas arredondadas suaves, integrando-se perfeitamente à paleta do seu sistema e à fonte 'Inter'. Também suavizei o botão de fechar do modal para manter a consistência visual.
+
+Sobre a exibição da data dos arquivos: a visualização em lista do iframe do Google Drive (`embeddedfolderview`) gerencia a coluna "Última modificação" de forma automática. O padrão do Google é mostrar apenas o **horário** se o arquivo foi adicionado *hoje*, e mostrar a **data** se foi adicionado em *dias anteriores*. Como o conteúdo roda dentro de um iframe protegido pelos servidores do Google, não é possível injetar código HTML ou CSS para forçar a exibição da data para arquivos recentes.
+
+Abaixo está o arquivo completo e atualizado com o novo visual:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -25,16 +32,17 @@
         .nav-btn:hover { background: #f1f3f4; color: #1f1f1f; }
         .nav-btn.active { background: #d3e3fd; color: #041e49; }
 
-        /* Botão Novo de Arquivos */
-        .btn-arquivos-topo { background: #1a73e8; color: #ffffff; border: none; padding: 8px 16px; border-radius: 100px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-arquivos-topo:hover { background: #1557b0; }
+        /* Botão Novo de Arquivos - Padrão Material Design Tonal */
+        .btn-arquivos-topo { background: #f0f4f9; color: #0b57d0; border: 1px solid transparent; padding: 8px 18px; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-size: 14px; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 8px; }
+        .btn-arquivos-topo:hover { background: #d3e3fd; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-arquivos-topo svg { width: 18px; height: 18px; fill: currentColor; }
         
         /* --- ÁREA DE LOGIN --- */
         .auth-area { display: flex; align-items: center; gap: 12px; }
-        .btn-microsoft-nav { background-color: #ffffff; color: #444746; border: 1px solid #dadce0; border-radius: 4px; padding: 0 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; transition: 0.2s; height: 40px; font-size: 14px; font-family: 'Inter', sans-serif;}
+        .btn-microsoft-nav { background-color: #ffffff; color: #444746; border: 1px solid #dadce0; border-radius: 100px; padding: 0 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; transition: 0.2s; height: 36px; font-size: 14px; font-family: 'Inter', sans-serif;}
         .btn-microsoft-nav:hover { background-color: #f8f9fa; border-color: #d5d9d9;}
-        .btn-sair-nav { background: transparent; color: #d32f2f; border: 1px solid #e3e3e3; padding: 6px 16px; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 13px;}
-        .btn-sair-nav:hover { background: #fce8e6; border-color: #fce8e6; }
+        .btn-sair-nav { background: transparent; color: #d32f2f; border: 1px solid transparent; padding: 6px 16px; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 13px; transition: 0.2s;}
+        .btn-sair-nav:hover { background: #fce8e6; color: #b3261e; }
 
         /* --- ÁREAS DE CONTEÚDO E BOXES --- */
         #app-wrapper { display: block; } 
@@ -59,7 +67,7 @@
         button.action-btn { width: 100%; padding: 10px; color: white; border: none; border-radius: 100px; font-weight: 500; cursor: pointer; font-size: 14px; background: #0b57d0; font-family: 'Inter', sans-serif; transition: 0.2s;}
         button.action-btn:hover { background: #0842a0;}
         
-        .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
+        .btn-pdf { background: #ffffff; border: 1px solid #dadce0; color: #444746; padding: 8px 14px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; font-family: 'Inter', sans-serif;}
         .btn-pdf:hover { background: #f8f9fa; color: #1f1f1f; }
 
         /* --- TABELA DE GRADE (TELA) --- */
@@ -91,17 +99,21 @@
 
         /* --- MODAIS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 3000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
-        .modal-box { background: white; padding: 32px; border-radius: 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .modal-box { background: white; padding: 32px; border-radius: 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); position: relative;}
         .modal-box h3 { margin: 0 0 12px 0; font-size: 20px; color: #1f1f1f; font-weight: 600;}
         .modal-box p { color: #444746; font-size: 14px; margin-bottom: 24px; line-height: 1.5;}
         
-        .btn-modal-dia, .btn-modal-serie { color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+        /* Botão fechar modal arquivos (Estilo Material Outlined) */
+        .btn-fechar-modal-arquivos { position: absolute; top: 20px; right: 24px; background: transparent; color: #444746; border: 1px solid #dadce0; padding: 6px 14px; border-radius: 100px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s; font-family: 'Inter', sans-serif;}
+        .btn-fechar-modal-arquivos:hover { background: #f1f3f4; color: #1f1f1f; }
+
+        .btn-modal-dia, .btn-modal-serie { color: white; border: none; padding: 12px; border-radius: 100px; font-weight: 500; width: 100%; margin-bottom: 12px; cursor: pointer; transition: 0.2s; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn-modal-dia { background: #f0f4f9; color: #0b57d0; }
         .btn-modal-dia:hover { background: #d3e3fd; }
         .btn-modal-serie { background: #0b57d0; }
         .btn-modal-serie:hover { background: #0842a0; }
-        .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px;}
-        .btn-modal-cancelar:hover { color: #1f1f1f; }
+        .btn-modal-cancelar { background: transparent; color: #747775; border: none; padding: 12px; font-weight: 500; width: 100%; cursor: pointer; font-size: 14px; border-radius: 100px;}
+        .btn-modal-cancelar:hover { color: #1f1f1f; background: #f1f3f4; }
 
         /* --- CONFIGURAÇÃO MAGICA DO PDF --- */
         @media print {
@@ -138,9 +150,12 @@
             <div id="menu-dinamico" class="nav-links" style="display: none;"></div>
         </div>
         
-        <!-- Adicionado um container para alinhar o novo botão com as áreas de login/usuário -->
         <div style="display: flex; align-items: center; gap: 16px;">
-            <button class="btn-arquivos-topo" onclick="abrirModalArquivos()">📁 Acessar Pasta de Arquivos</button>
+            <!-- Novo botão com padrão Material Design -->
+            <button class="btn-arquivos-topo" onclick="abrirModalArquivos()">
+                <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                Arquivos do Lab
+            </button>
             
             <div id="area-login" class="auth-area">
                 <span style="font-size: 13px; color: #747775; font-weight: 500; margin-right: 4px; display: none;" id="txt-acesso">Acesse com e-mail institucional:</span>
@@ -162,29 +177,32 @@
 
     <div id="toast-msg">Mensagem</div>
 
-    <!-- MODAL DE ARQUIVOS (Novo Modal Adicionado Aqui) -->
+    <!-- MODAL DE ARQUIVOS (Estilizado para Material Design) -->
     <div id="modal-arquivos-drive" class="modal-overlay">
-        <div class="modal-box" style="max-width: 850px; width: 90%; padding: 24px; position: relative; text-align: left;">
-            <button onclick="fecharModalArquivos()" style="position: absolute; top: 16px; right: 16px; background: #d32f2f; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">X Fechar</button>
-            <h3 style="margin-top: 0; margin-bottom: 16px;">📁 Arquivos e Materiais</h3>
-            <iframe src="https://drive.google.com/embeddedfolderview?id=1GUizI1WSG-jDVc1a_3FAykq9XA5XhZeZ#list" width="100%" height="450" frameborder="0" style="border: 1px solid #e3e3e3; border-radius: 8px; background: #f8f9fa;"></iframe>
+        <div class="modal-box" style="max-width: 850px; width: 90%; padding: 24px; text-align: left; background: #ffffff;">
+            <button class="btn-fechar-modal-arquivos" onclick="fecharModalArquivos()">Fechar</button>
+            <h3 style="margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; color: #1f1f1f;">
+                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: #444746;"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                Arquivos e Materiais
+            </h3>
+            <iframe src="https://drive.google.com/embeddedfolderview?id=1GUizI1WSG-jDVc1a_3FAykq9XA5XhZeZ#list" width="100%" height="450" frameborder="0" style="border: 1px solid #e3e3e3; border-radius: 12px; background: #f8f9fa;"></iframe>
         </div>
     </div>
 
     <div id="modal-acesso-negado" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="color: #d32f2f;">⚠️ E-mail não Cadastrado</h3>
+            <h3 style="color: #b3261e;">⚠️ E-mail não Cadastrado</h3>
             <p id="txt-acesso-negado" style="font-size: 14px; color: #444746; margin-bottom: 24px; line-height: 1.5;"></p>
-            <button class="btn-modal-serie" style="background:#d32f2f;" onclick="fecharModalAcessoNegado()">Entendi</button>
+            <button class="btn-modal-serie" style="background:#b3261e; color: #ffffff;" onclick="fecharModalAcessoNegado()">Entendi</button>
         </div>
     </div>
 
     <div id="modal-exclusao" class="modal-overlay">
         <div class="modal-box">
-            <h3>⚠️ Excluir Reserva</h3>
+            <h3 style="color: #1f1f1f;">⚠️ Excluir Reserva</h3>
             <p>Esta reserva faz parte de uma <strong>série contínua</strong> (mensal ou semestral). Como você deseja excluir?</p>
             <button class="btn-modal-dia" onclick="confirmarExclusao('dia')">Excluir APENAS o Dia</button>
-            <button class="btn-modal-serie" style="background:#d32f2f;" onclick="confirmarExclusao('serie')">Excluir TODA a série</button>
+            <button class="btn-modal-serie" style="background:#b3261e;" onclick="confirmarExclusao('serie')">Excluir TODA a série</button>
             <button class="btn-modal-cancelar" onclick="fecharModalExclusao()">Cancelar</button>
         </div>
     </div>
@@ -411,7 +429,7 @@
             let el = document.getElementById('toast-msg');
             if(!el) return;
             el.innerHTML = tipo === "erro" ? `❌ ${msg}` : (tipo === "processando" ? `⏳ ${msg}` : `✅ ${msg}`);
-            el.style.backgroundColor = tipo === "erro" ? "#d32f2f" : (tipo === "processando" ? "#0b57d0" : "#323232");
+            el.style.backgroundColor = tipo === "erro" ? "#b3261e" : (tipo === "processando" ? "#0b57d0" : "#323232");
             el.classList.add("show");
             if(toastTimeout) clearTimeout(toastTimeout);
             if(tipo !== "processando") toastTimeout = setTimeout(() => el.classList.remove("show"), 3500);
@@ -1008,3 +1026,5 @@
     </script>
 </body>
 </html>
+
+```
