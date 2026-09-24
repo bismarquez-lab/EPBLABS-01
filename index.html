@@ -1,9 +1,3 @@
-Sim, é perfeitamente possível corrigir! Isso estava acontecendo porque no seu código original havia um comando programado (um `setTimeout`) que forçava esse texto a ficar oculto e só aparecer exatamente 1 segundo (1000 milissegundos) após a página carregar, o que causava esse "empurrão" visual nos outros botões.
-
-Eu removi esse atraso no script e tirei o bloqueio de exibição (`display: none`) do HTML. Agora, o texto "Acesse com e-mail institucional:" vai carregar instantaneamente junto com o restante da barra superior, deixando a interface muito mais fluida e sem solavancos.
-
-Aqui está o código completo e atualizado com essa correção:
-
 ```html
 <!DOCTYPE html>
 <html lang="pt-BR">
